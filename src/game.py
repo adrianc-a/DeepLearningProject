@@ -25,3 +25,9 @@ class GameTree():
     # updates the tree
     def mcts(self, simulations):
         pass
+    
+    # feel free to change the names
+    def backup(self):
+        pass
+    def forward(self):
+        pass
