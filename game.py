@@ -1,12 +1,7 @@
 import players
 
 
-class Tree():
-    # maintain edges, vertices etc.
-    pass
-
-
-class Game():
+class Game:
     def __init__(self, player1, player2):
         self.turn = True
         self.player1 = player1
@@ -14,8 +9,7 @@ class Game():
 
     def new_game(self):
         pass
-
-    # question: how to give the player function access to this?
+# question: how to give the player function access to this?
     def legal_moves(self):
         pass
 
@@ -60,16 +54,19 @@ class Chess(Game):
 
 
 # specifically for the AlphaGo Zero Player
-class GameTree():
+class GameTree:
     # maintain game tree, specific to game
-    def __init__(self, state_manager, nn):
-        self.tree = None
+    def __init__(self, nn):
+        self.nn = nn
+        self.edges = []
+        self.children = []
+        self.value = None
 
     # updates the tree
     def mcts(self, simulations):
         pass
 
-    def play_move(self):
+    def make_move(self, state):
         pass
 
     # feel free to change the names
@@ -81,7 +78,7 @@ class GameTree():
 
 
 # question: is this necessary?
-class Player():
+class Player:
     def make_move(self, state, who):
         raise NotImplementedError()
 
