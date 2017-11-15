@@ -1,7 +1,4 @@
-from __future__ import print_function
-
 import random
-from . import utils
 import numpy as np
 
 class MCTS(object):
