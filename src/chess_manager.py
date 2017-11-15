@@ -25,12 +25,11 @@ class ChessManager(StateManager):
         next_state.push(uci)
         return ChessManager(next_state) 
    
-
     #presumabely different from checking if a checkmate occured 
     def is_terminal_state(self):
         return self.board.is_game_over()
 
-    def is_checkmate(self): 
+    def is_win(self): 
         """
         Returns if a checkmate has occured, this should be called before 
         checking who the winner is.
@@ -59,7 +58,3 @@ class ChessManager(StateManager):
            (i.e. for each pair of moves by white and black)"""
         return int(self.fen()[-1])
 
-s = ChessManager()
-
-s.get_moves()
-y = s.make_move(0)

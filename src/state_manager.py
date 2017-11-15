@@ -23,12 +23,18 @@ class StateManager():
     def move2vec(self):
         pass
 
+    def is_terminal_state(self):
+        pass 
+
+    def is_win(self):
+        pass
+
     def is_draw(self):
         pass
 
-    def zero_won(self):
+    def zero_is_winner(self):
         pass
     
-    def two_won(self):
+    def one_is_winner(self):
         pass
 

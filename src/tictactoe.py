@@ -1,17 +1,16 @@
-
-
 # holds the game state in the first 9 positions then the current player
 # at index 9 and the move count at index 10 
 STARTING_CONFIG = ['.', '.', '.', '.', '.', '.', '.', '.', '.', 0, 0]
 
 ICONS = ['X', 'O']
 
-class TTT():
-    
-    def __init__(self, board_rep=STARTING_CONFIG):
-        self.board = board_rep[:]
-        self.move_stack = [] #really just to maintain parity with the way python chess works
+STARTING_MOVES = []
 
+class TTT():
+   
+    def __init__(self, board_rep=STARTING_CONFIG, move_stack=STARTING_MOVES):
+        self.board = board_rep[:]
+        self.move_stack = move_stack[:] #really just to maintain parity with the way python chess works
     
     def __repr__(self):
         res = '' 
@@ -20,12 +19,15 @@ class TTT():
                 res += self.board[3*i + j]
             res += '\n'
         return res
+   
+    def copy(self):
+       return TTT(self.board, self.move_stack) 
 
     @property
     def legal_moves(self):
-        return (idx for idx,_ in enumerate(self.board))
+        return (i for i in range(9) if self.board[i] == '.')
 
-    def push_move(self,move_idx):
+    def push(self,move_idx):
         lmvs = len(self.move_stack) 
         player_idx =  self.board[9]
         
@@ -45,16 +47,16 @@ class TTT():
     def move_count(self):
         return self.board[10]
 
+    def draw(self):
+        return all(board[i] != '.' for i in range(9))
+
     def is_three_in_a_row(self): 
         return tiar(self,0) or tiar(self,1)
         
-
     def tiar(self,player_idx):
-
         tiar = False
 
         icon = ICONS[player_idx]
-
 
         #check horizontal matches
         for i in range(3):
@@ -69,10 +71,13 @@ class TTT():
 
         return tiar
 
+    @property
+    def turn(self):
+        return self.board[9] 
 
-    # decrement move count
-    # change current player
-    # remove board location 
+    def num_full_moves(self):
+        return self.board / 2
+
     def pop(self):
         if self.move_count == 0: raise ValueError("No more available moves to pop")
 
