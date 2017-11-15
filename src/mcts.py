@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import random
 from . import utils
-
+import numpy as np
 
 class MCTS(object):
 
@@ -12,10 +12,10 @@ class MCTS(object):
 
     def __call__(self, root, n = 1500):
         for i in range(n):
-            node = _get_next_node(root, self.tree_policy)
-            node.reward = self.default_policy(node)
+            node = _get_next_node(root, self.policy)
+            node.reward = self.policy(node)
             self.back_propagate(node)
-        return utils.rand_max(root.children.values(), key=lambda x: x.q).action
+        return rand_max(root.children.values(), key=lambda x: x.q).action
 
     def back_propagate(not):
         r = node.reward
@@ -24,19 +24,34 @@ class MCTS(object):
             node.q = ((node.n - 1) / node.n) * node.q + 1 / node.n * r
             node = node.parent
 
-    def expand(state_node):
-        action = random.choice(state_node.untried_actions)
-        return state_node.children[action].sample_state()
+    def expand(node):
+        action = random.choice(node.untried_actions)
+        return node.children[action].sample_state()
 
-    def best_child(state_node, tree_policy):
-        best_action_node = utils.rand_max(state_node.children.values(),
-                                        key=tree_policy)
-        return best_action_node.sample_state()
+    def best_child(node, tree_policy):
+        best_child = utils.rand_max(node.children.values(), policy = tree_policy)
+        return best_child.sample_state()
 
-    def _get_next_node(state_node, tree_policy):
-        while not state_node.state.is_terminal():
-            if state_node.untried_actions:
-                return _expand(state_node)
+    def get_next_node(node, tree_policy):
+        while not node.state.is_terminal():
+            if node.untried_actions:
+                return expand(node)
             else:
-                state_node = _best_child(state_node, tree_policy)
+                state_node = best_child(node, tree_policy)
         return state_node
+
+    def rand_max(iterable, policy = None):
+        if key is None:
+            key = lambda x: x
+
+        max_value = -np.inf
+        candidates = []
+
+        for item, value in zip(iterable, [key(i) for i in iterable]):
+            if value == max_value:
+                candidates.append(item)
+            elif value > max_value:
+                candidates = [item]
+                max_value = value
+
+        return random.choice(candidates)
