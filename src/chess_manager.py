@@ -7,9 +7,9 @@ class ChessManager(StateManager):
 
     def __init__(self, board=DEFAULT_BOARD):
         super().__init__()
-        self.new_game()
+        self.new_game(board)
 
-    def new_game(self):
+    def new_game(self, board=DEFAULT_BOARD):
         self.board = board.copy()
         self.current_legal_moves = []
 
@@ -48,6 +48,12 @@ class ChessManager(StateManager):
         # also False == Black, True == White hence the not
         return int(not self.board.turn)
 
+    def current_state(self):
+        return ChessManager(self.board.copy())
+
+    def is_draw(self):
+        return self.board.is_stalemate()
+
     def zero_is_winner(self):
         """Checks that player 0 (white) is the winner"""
         return self.is_checkmate() and self.turn() == 1
@@ -61,3 +67,5 @@ class ChessManager(StateManager):
            (i.e. for each pair of moves by white and black)"""
         return int(self.fen()[-1])
 
+    def output(self):
+        print(self.board)

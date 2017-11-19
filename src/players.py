@@ -1,4 +1,5 @@
 from random import randint
+import chess
 
 
 def simple_player(state, moves):
@@ -40,3 +41,10 @@ def connect_human_player(state, moves):
         if cur_height != move_height:
             return m
     return 0
+
+def chess_human_player(state, moves):
+    inp = input('Your move as uci: \n')
+
+    move = chess.Move.from_uci(inp)
+
+    return state.get_moves().index(move)
