@@ -12,4 +12,4 @@ generate:
 	pdflatex report.tex
 
 clean:
-	rm -f *.aux *.pdf *.log
+	rm -f *.aux *.pdf *.log *.bbl *.blg
