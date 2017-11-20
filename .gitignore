@@ -1,0 +1,8 @@
+src/__pycache__/
+__pycache__/
+.idea/
+report/*.aux
+report/*.log
+report/*.pdf
+report/*.bbl
+report/*.blg
