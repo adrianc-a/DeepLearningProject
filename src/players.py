@@ -48,3 +48,6 @@ def chess_human_player(state, moves):
     move = chess.Move.from_uci(inp)
 
     return state.get_moves().index(move)
+
+def mcts_players(state, moves):
+    
