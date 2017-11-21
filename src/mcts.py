@@ -23,14 +23,17 @@ class Node(object):
         self.parent = parent
         self.state_manager = state_manager
         self.moves = state_manager.get_moves()
-        self.reward = 0
+        # the action parent took to arrive here
+        self.move_in = None
         # initally all moves are untried
         self.untried_actions = list(map(lambda x: x, self.moves))
+        # tried moves
         self.children = []
-        self.q = 0
-        self.n = 0
-        # self.children = list(map(lambda move_index: self.state_manager.make_move(move_index),
-        #     range(0, len(self.moves))))
+        # 
+        self.v = 0
+        self.n = {}
+        self.q = {}
+        self.p = {}
 
     def has_untried_actions(self):
         return not len(self.untried_actions) == 0
@@ -43,37 +46,46 @@ class Node(object):
         return best_child
 
     def expand(self, node):
-        move_index = random.choice(range(0, len(self.moves)))
-        child = Node(self.state_manager.make_move(move_index))
+        move = self.untried_actions[random.choice(range(0, len(self.untried_actions)))]
+        child = Node(state_manager = self.state_manager.make_move(self.moves.index(move)),
+            parent = self, move_in = move)
+        self.n[child] = 0
+        self.q[child] = 0
+        self.p[child] = 0
         self.children.append(child)
         return child
 
+    def update(self, child, v):
+        self.v += v
+        self.n[child] += 1.0
+        self.q[child] = (1 / self.n[child]) * self.v
+
 class MCTS(object):
 
-    def __init__(self, tree_policy, default_policy):
+    def __init__(self, tree_policy):
         self.tree_policy = tree_policy
-        self.default_policy = default_policy
-        self.gamma = 1.0
 
     def __call__(self, state_manager, n = 1500):
         root = Node(state_manager, None)
         for i in range(n):
             node = self.get_next_node(root)
-            node.reward = self.policy(node)
-            self.back_propagate(node)
-        # return rand_max(root.children.values(), key = lambda x: x.q).action
+            self.back_propagate(node, self.evaluate_nn(node))
+        # now that the simulation is done, return some node
+        return root.get_best_child(self.tree_policy).move_in
 
-    def get_next_node(node):
+    def get_next_node(self, node):
         while not node.is_terminal():
             if node.has_untried_actions:
-                return self.expand(node)
+                return node
             else:
                 node = node.get_best_child(self.tree_policy)
         return node
 
-    def back_propagate(node):
-        r = node.reward
+    def back_propagate(self, node, v):
         while node is not None:
-            node.n += 1
-            node.q = ((node.n - 1) / node.n) * node.q + 1 / node.n * r
+            node.parent.update(node, v)
             node = node.parent
+
+    def evaluate_nn(self, node):
+        # get this from the NN
+        return 1.0
