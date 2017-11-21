@@ -1,4 +1,8 @@
+import os
+
 import chess
+import chess.svg
+
 from state_manager import StateManager
 
 DEFAULT_BOARD = chess.Board()
@@ -69,3 +73,8 @@ class ChessManager(StateManager):
 
     def output(self):
         print(self.board)
+
+    def render(self, n):
+        with open(os.path.abspath(os.path.join(os.path.dirname(__file__), '../output', str(n) + '.svg')), 'w+') as svg_file:
+            svg_file.write(chess.svg.board(board = self.board))
+

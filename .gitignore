@@ -8,3 +8,4 @@ report/*.bbl
 report/*.blg
 venv/*
 */venv/*
+output/*.svg
