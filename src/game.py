@@ -34,6 +34,7 @@ class Game:
             self.manager = self.manager.make_move(move_idx)
             self.manager.output()
             turn = not turn
+            print('\n=============\n')
         if self.manager.is_win():
             print(
                 'The winner is: ' +

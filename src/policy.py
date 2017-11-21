@@ -1,6 +1,5 @@
 
-def upper_confidence_bound(node, move):
+def upper_confidence_bound(node):
     for child in node.children:
-        if child.in_move == move:
-            return node.q[child] + (1.0 / (1 + node.n[child]))
+        return node.q[child] + (1.0 / (1 + node.n[child]))
     return -1
