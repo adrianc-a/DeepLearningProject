@@ -24,7 +24,17 @@ def alphago_net(input_shape, # NOTE: Input shape should be the input size withou
 
     RETURNS: a namedtuple containing all values necessary to run inference, or
     to run training (consult neural_models for an example of how this works
+    The elements of the returned namedtuple are as follows:
+
+    input: placeholder op, n the triple (s,pi,z) this would be s
+    policy_label: placeholder op, in the triple (s,pi,z) this would be pi
+    value_label: placeholder op, in the triple (s,pi,z) this would be z
+    policy_output: the output op holding the predicted policy value
+    value_output: the output op holding the predicted value of the state
+    loss: the output op computing the join cross-entropy/l2 loss of the
+        policy and value heads, this is what should be passed into a minimizer
     """
+
 
     inp_placeholder_shape = (None,) + input_shape
 
