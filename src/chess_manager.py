@@ -50,7 +50,8 @@ class ChessManager(StateManager):
 
         outvec[2].fill(self.turn())
 
-        return outvec
+        # make things play nicely with tensorflow batching 
+        return outvec.reshape((1,3,8,8))
 
 
     #presumabely different from checking if a checkmate occured
