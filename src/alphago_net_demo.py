@@ -24,7 +24,7 @@ poly = np.random.uniform(low=0,high=1,size=(3,1))
 
 (inp,valY,polY,pl_out,v_out,loss) = nn.alphago_net((3,8,8), 256, (3,3), 1, 256, (3,3))
 
-train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
+train_step = tf.train.AdamOptimizer(learning_rate=0.001).minimize(loss)
 
 init_op = tf.global_variables_initializer()
 sess.run(init_op)
@@ -36,8 +36,7 @@ with sess.as_default():
         net_out = sess.run((v_out, pl_out), feed_dict={inp:new_vec, K.learning_phase(): 0})
 	
         # this gives you the actual loss 
-        loss_out = sess.run(loss, feed_dict={inp:new_vec, v_out:valy,
-                                             pl_out:poly, K.learning_phase(): 0})
+        loss_out = sess.run(loss, feed_dict={inp:new_vec, valY:valy, polY:poly, K.learning_phase(): 0})
 
 
 k_old = sess.run(tf.trainable_variables()[0])

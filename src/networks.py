@@ -62,12 +62,12 @@ def alphago_net(input_shape, # NOTE: Input shape should be the input size withou
 
     loss = alphago_loss(pol_out, polY, val_out, valY)
 
-    return namedtuple('Network', 'input policy_label value_label policy_output value_output loss')(*(inp,valY,polY,pol_out,val_out,loss))
+    return namedtuple('Network', 'input policy_label value_label policy_output value_output loss')(*(inp,polY,valY,pol_out,val_out,loss))
 
 
 
 def alphago_loss(network_policy, true_policy, network_reward, true_reward):
-    return tf.reduce_mean(-true_policy * tf.log(network_policy) + tf.pow(network_reward - true_reward,2), 0)
+    return tf.reduce_mean(-true_policy * tf.log(network_policy) + tf.pow(network_reward - true_reward, 2), 0)
 
 def convolutional_block(inp, num_filters, filter_size, input_shape, reg=0.001):
 
