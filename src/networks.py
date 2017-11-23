@@ -6,6 +6,49 @@ from collections import namedtuple
 l2_reg = keras.regularizers.l2
 
 
+class NetworkWrapper():
+
+    def __init__(self, network):
+        self.sess = tf.Session()
+        K.set_session(self.sess)
+
+        init_op = tf.global_variables_initializer()
+        self.sess.run(init_op)
+
+        # set all placeholder
+        self.input = network.input
+        self.policy_label = network.policy_label
+        self.value_label = network.value_label
+
+        # get references to policy and value head outputs
+        self.value_head = network.value_output
+        self.policy_head = network.policy_output
+
+        # get a reference to the computed loss function
+        self.loss_function = network.loss
+
+
+    def forward(self, input_batch):
+        """
+        Given a batch of game states return the output of the policy and value head
+
+        Args:
+            input_batch (np.array): batch to run inference on,
+                                    1st dimension should be the batch size
+
+        Returns:
+            A 2-tuple of 1-d arrays where the first elemenf of the tuple
+            corresponds to all the value head outputs, and the second all
+            the policy head outputs for the batch
+        """
+        with self.sess.as_default():
+            net_out = self.sess.run((self.value_head, self.policy_head),
+                                     feed_dict={self.input:input_batch, K.learning_phase(): 0})
+
+
+        return (net_out[0].flatten(), net_out[1].flatten())
+
+
 
 def alphago_net(input_shape, # NOTE: Input shape should be the input size without the resizing for batches
                 conv_block_num_filters, conv_block_filter_size,
