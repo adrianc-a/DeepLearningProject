@@ -2,18 +2,33 @@ from keras.layers import Dense, Activation, Conv2D, Flatten, BatchNormalization
 import keras
 import tensorflow as tf
 from collections import namedtuple
+import keras.backend as K
 
 l2_reg = keras.regularizers.l2
 
+OPTIMIZER_REG = {"adam":tf.train.AdamOptimizer,
+                 "sgd":tf.train.GradientDescentOptimizer,
+                 "momentum":tf.train.MomentumOptimizer,
+                 "rms":tf.train.RMSPropOptimizer}
 
 class NetworkWrapper():
 
-    def __init__(self, network):
+    def __init__(self, network, optimizer):
+        """
+        Utility class to make interacting with networks easier
+
+        Args:
+            network (namedtuple): namedtuple matching the structure of what's
+                                  returned by alphago_net, entries should contain
+                                  references to input nodes, label nodes, and
+                                  the loss function used.
+
+            optimizer (tf.train.Optimizer): a tensorflow optimizer that has
+                                            already been initialized with its
+                                            parameters
+        """
         self.sess = tf.Session()
         K.set_session(self.sess)
-
-        init_op = tf.global_variables_initializer()
-        self.sess.run(init_op)
 
         # set all placeholder
         self.input = network.input
@@ -27,13 +42,44 @@ class NetworkWrapper():
         # get a reference to the computed loss function
         self.loss_function = network.loss
 
+        #self.optimizer = tf.train.AdamOptimizer(lr=learning_rate).minimize(self.loss)
+        self.train_step = optimizer.minimize(self.loss_function)
 
-    def forward(self, input_batch):
+        init_op = tf.global_variables_initializer()
+        self.sess.run(init_op)
+
+    def forward(self, state_batch):
         """
         Given a batch of game states return the output of the policy and value head
 
         Args:
-            input_batch (np.array): batch to run inference on,
+            state_batch (np.array): batch to run inference on,
+                                    1st dimension should be the batch size
+
+        Returns:
+            A 2-tuple of 1-d arrays where the first elemenf of the tuple
+            corresponds to all the policy head outputs, and the second to all
+            the value head outputs for the batch
+        """
+        with self.sess.as_default():
+            net_out = self.sess.run((self.policy_head, self.value_head),
+                                     feed_dict={self.input:state_batch, K.learning_phase(): 0})
+
+
+        return (net_out[0].flatten(), net_out[1].flatten())
+
+    def forward_loss(self, state_batch, policy_batch, value_batch):
+        """
+        Given batches of states, policy labels (pi), and value labels (z)
+        get the loss of the network
+        (this corresponds to the (s,pi,z) triples of the paper)
+
+        Args:
+            state_batch (np.array): input batch to calculate loss on,
+                                    1st dimension should be the batch size
+            policy_batch (np.array): policy batch to calculate loss on,
+                                    1st dimension should be the batch size
+            value_batch (np.array): value batch to calculate loss on,
                                     1st dimension should be the batch size
 
         Returns:
@@ -42,11 +88,32 @@ class NetworkWrapper():
             the policy head outputs for the batch
         """
         with self.sess.as_default():
-            net_out = self.sess.run((self.value_head, self.policy_head),
-                                     feed_dict={self.input:input_batch, K.learning_phase(): 0})
+            loss_val = self.sess.run(self.loss_function, feed_dict={self.input:state_batch,
+                                                 self.value_label:value_batch,
+                                                 self.policy_label:policy_batch,
+                                                 K.learning_phase(): 0})
+        return loss_val
 
+    def training_step(self, state_batch, policy_batch, value_batch):
+        """
+        Perform a single training step
 
-        return (net_out[0].flatten(), net_out[1].flatten())
+        Args:
+            state_batch (np.array): input batch to calculate loss on,
+                                    1st dimension should be the batch size
+            policy_batch (np.array): policy batch to calculate loss on,
+                                    1st dimension should be the batch size
+            value_batch (np.array): value batch to calculate loss on,
+                                    1st dimension should be the batch size
+
+        Returns:
+        """
+        with self.sess.as_default():
+            self.train_step.run(feed_dict={self.input:state_batch,
+                                      self.value_label:value_batch,
+                                      self.policy_label:policy_batch,
+                                      K.learning_phase(): 1})
+
 
 
 
