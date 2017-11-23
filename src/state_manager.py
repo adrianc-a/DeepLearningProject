@@ -56,3 +56,6 @@ class StateManager:
     def output(self):
         pass
 
+    def render(self, n):
+        pass
+

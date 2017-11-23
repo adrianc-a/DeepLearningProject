@@ -1,36 +1,27 @@
 import random
-import numpy as np
+import numpy
 
-def rand_max(iterable, policy = None):
-    if key is None:
-        key = lambda x: x
-
-    max_value = -np.inf
-    candidates = []
-
-    for item, value in zip(iterable, [key(i) for i in iterable]):
-        if value == max_value:
-            candidates.append(item)
-        elif value > max_value:
-            candidates = [item]
-            max_value = value
-
-    return random.choice(candidates)
+# ============================================================================================================================ #
+# Tree
+# ============================================================================================================================ #
 
 class Node(object):
 
-    def __init__(self, state_manager, parent):
+    def __init__(self, state_manager, parent, move_in):
         self.parent = parent
         self.state_manager = state_manager
         self.moves = state_manager.get_moves()
-        self.reward = 0
+        # the action parent took to arrive here
+        self.move_in = move_in
         # initally all moves are untried
         self.untried_actions = list(map(lambda x: x, self.moves))
+        # tried moves
         self.children = []
-        self.q = 0
-        self.n = 0
-        # self.children = list(map(lambda move_index: self.state_manager.make_move(move_index),
-        #     range(0, len(self.moves))))
+        # 
+        self.v = 0
+        self.n = {}
+        self.q = {}
+        self.p = {}
 
     def has_untried_actions(self):
         return not len(self.untried_actions) == 0
@@ -39,41 +30,64 @@ class Node(object):
         return self.state_manager.is_terminal_state()
 
     def get_best_child(self, tree_policy):
-        best_child = utils.rand_max(node.children.values(), policy = self.tree_policy)
+        max_value = - numpy.inf
+        candidates = []
+
+        for key, value in zip(self.children, [tree_policy(child) for child in self.children]):
+            if value == max_value:
+                candidates.append(key)
+            elif value > max_value:
+                candidates = [key]
+                max_value = value
+
+        best_child = random.choice(candidates)
         return best_child
 
-    def expand(self, node):
-        move_index = random.choice(range(0, len(self.moves)))
-        child = Node(self.state_manager.make_move(move_index))
+    def expand(self):
+        move = self.untried_actions[random.choice(range(0, len(self.untried_actions)))]
+        child = Node(state_manager = self.state_manager.make_move(self.moves.index(move)),
+            parent = self, move_in = move)
+        self.n[child] = 0
+        self.q[child] = 0
+        self.p[child] = 0
         self.children.append(child)
         return child
 
+    def update(self, child, v):
+        self.v += v
+        self.n[child] += 1.0
+        self.q[child] = (1 / self.n[child]) * self.v
+
+# ============================================================================================================================ #
+# MCTS
+# ============================================================================================================================ #
+
 class MCTS(object):
 
-    def __init__(self, tree_policy, default_policy):
+    def __init__(self, tree_policy):
         self.tree_policy = tree_policy
-        self.default_policy = default_policy
-        self.gamma = 1.0
 
     def __call__(self, state_manager, n = 1500):
-        root = Node(state_manager, None)
+        root = Node(state_manager = state_manager, parent = None, move_in = None)
         for i in range(n):
             node = self.get_next_node(root)
-            node.reward = self.policy(node)
-            self.back_propagate(node)
-        # return rand_max(root.children.values(), key = lambda x: x.q).action
+            self.back_propagate(node, self.evaluate_nn(node))
+        # now that the simulation is done, return some node
+        return root.get_best_child(self.tree_policy).move_in
 
-    def get_next_node(node):
+    def get_next_node(self, node):
         while not node.is_terminal():
             if node.has_untried_actions:
-                return self.expand(node)
+                return node.expand()
             else:
                 node = node.get_best_child(self.tree_policy)
         return node
 
-    def back_propagate(node):
-        r = node.reward
-        while node is not None:
-            node.n += 1
-            node.q = ((node.n - 1) / node.n) * node.q + 1 / node.n * r
+    def back_propagate(self, node, v):
+        while node.parent is not None:
+            node.parent.update(node, v)
             node = node.parent
+
+    def evaluate_nn(self, node):
+        # get this from the NN
+        return 1.0

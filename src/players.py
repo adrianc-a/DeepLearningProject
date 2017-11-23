@@ -1,6 +1,9 @@
 from random import randint
+
 import chess
 
+import policy
+import mcts
 
 def simple_player(state, moves):
     return 0
@@ -26,7 +29,6 @@ def connect_human_player(state, moves):
 
     board = state.state.state
 
-
     col = lambda b, c: [b[i][c] for i in range(6)]
     height = lambda c: len(list(filter(lambda i: i == ' ', c)))
 
@@ -49,5 +51,7 @@ def chess_human_player(state, moves):
 
     return state.get_moves().index(move)
 
-def mcts_players(state, moves):
-    
+# runs a number of mcts simulations from this state and return the best move
+def mcts_player(state, moves):
+    simulator = mcts.MCTS(tree_policy = policy.upper_confidence_bound)
+    return state.get_moves().index(simulator(state_manager = state))

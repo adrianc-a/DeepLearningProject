@@ -16,6 +16,7 @@ class Game:
         # true means player1's turn, False player2
         turn = True
 
+        n = 0
         while not self.manager.is_terminal_state():
             moves = self.manager.next_states()
 
@@ -33,7 +34,10 @@ class Game:
 
             self.manager = self.manager.make_move(move_idx)
             self.manager.output()
+            self.manager.render(n)
+            n += 1
             turn = not turn
+            print('\n=============\n')
         if self.manager.is_win():
             print(
                 'The winner is: ' +

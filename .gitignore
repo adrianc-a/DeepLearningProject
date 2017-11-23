@@ -6,3 +6,6 @@ report/*.log
 report/*.pdf
 report/*.bbl
 report/*.blg
+venv/*
+*/venv/*
+output/*.svg
