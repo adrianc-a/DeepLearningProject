@@ -34,13 +34,13 @@ class TicTacToeManager(StateManager):
 
         pane 1 has a 1 if player 0 has a mark in that particular location
         pane 2 has a 1 if player 1 has a mark in that particular location
-        pane 3 is either all 0 or all 1 depending on whose turn it is 
+        pane 3 is either all 0 or all 1 depending on whose turn it is
         """
 
-        # one channel for x's one for o's and one 
-        # to denote the whose turn it is 
+        # one channel for x's one for o's and one
+        # to denote the whose turn it is
         outvec = np.zeros((3,3,3))
-        
+
         # fill in whose turn it is
         outvec[2].fill(self.turn())
 
@@ -48,16 +48,16 @@ class TicTacToeManager(StateManager):
         for i in range(3):
             for j in range(3):
                 tile = self.board.board[i * 3 + j]
-                if tile == '.': 
+                if tile == '.':
                     continue
                 else:
                     pane_num = TILE_MAP[tile]
                     outvec[pane_num][i][j] = 1
 
-        return outvec
-                
+        return outvec.reshape((1,3,3,3))
 
-                
+
+
 
 
     def current_state(self):
@@ -102,4 +102,3 @@ def state2vec_singledim(self):
         xs[9] = self.board.turn #0 for player 0, 1 for player 2
 
         return xs
-
