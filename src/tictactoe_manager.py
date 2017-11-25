@@ -57,9 +57,6 @@ class TicTacToeManager(StateManager):
         return outvec.reshape((1,3,3,3))
 
 
-
-
-
     def current_state(self):
         return TicTacToeManager(self.board.copy())
 
@@ -85,11 +82,10 @@ class TicTacToeManager(StateManager):
         return self.board.turn
 
     def num_full_moves(self):
-        return self.num_full_moves()
+        return self.board.move_count
 
     def output(self):
         print(self.board)
-
 
 def state2vec_singledim(self):
         piece_map = {'.': 0, 'X': 1, 'O':2}

@@ -161,7 +161,7 @@ def alphago_net(input_shape, # NOTE: Input shape should be the input size withou
     inp = tf.placeholder(tf.float32, shape=inp_placeholder_shape, name='value_label')
 
     inter_out = convolutional_block(inp,
-                                   conv_block_num_filters,
+                                   num_conv_res_filters,
                                    conv_block_filter_size,
                                    input_shape=input_shape,
                                    reg=regularization)
@@ -169,7 +169,7 @@ def alphago_net(input_shape, # NOTE: Input shape should be the input size withou
 
     for i in range(num_residual_layers):
         inter_out = residual_block(inter_out,
-                                   residual_block_num_filters,
+                                   num_conv_res_filters,
                                    residual_block_filter_size,
                                    reg=regularization)
 
