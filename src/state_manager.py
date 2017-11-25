@@ -1,3 +1,5 @@
+import numpy as np
+
 class StateManager:
     """
     Abstract base class to wrap around actual implementations of games
@@ -22,16 +24,11 @@ class StateManager:
         pass
 
     def next_states(self):
-        states = []
-        for i in range(len(self.get_moves())):
-            states.append(self.make_move(i))
-        return states
+        return [self.make_move(i) for i,_ in enumerate(self.get_moves())]
 
     def moves2vec(self):
-        v_moves = []
-        for state in self.next_states():
-            v_moves.append(state.state2vec())
-        return v_moves
+        "Returns a batch of state tensors for input to the network"
+        return np.concatenate([state.state2vec() for state in self.next_states()])
 
     # each subclass should return a new instance of itself, with the current
     # board state, or a copy
@@ -58,4 +55,3 @@ class StateManager:
 
     def render(self, n):
         pass
-
