@@ -113,9 +113,14 @@ class AlphaGoZeroTrainer:
     def play_move(current_state, next_states):
         # since this is always called, regardless of player, we can keep the
         # states (s, pi, z)
-        move_index = self.player.play_move(current_state, next_state)
+        move_index = self.player.play_move(current_state, next_states)
 
         self.cur_S.append(current_state.state2vec())
+
+        # I assume that the play_move from AlphaGoZero, keeps this, I wish there
+        # was a more clever way of doing this. NOTE: P is the probability which
+        # corresponds to the move which was made, (referring to pi = [...]
+        # which is returned by MCTS.__call__
         self.cur_P.append(self.player.p)
 
         return move_index
