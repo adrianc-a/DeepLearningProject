@@ -33,8 +33,13 @@ class ChessManager(StateManager):
         next_state.push(uci)
         return ChessManager(next_state)
 
-    def state2vec(self):
+    def state2vec(self, for_next=False):
         """ Outputs a 3-d tensor of the board state
+
+        Args:
+            for_next (Boolean): set to true if you're generating moves for the
+            next set of states (makes sure that the color pane of the output
+            vector is properly set)
 
         NOTE: the board orientation is reversed relative to what
         the printed reprentation is (i.e. white starts at the top left of the array)
@@ -53,7 +58,7 @@ class ChessManager(StateManager):
         for idx, p in blacks: black_pane[idx] = p
 
         # return whose move it *WAS*
-        outvec[2].fill((self.turn() + 1) % 2)
+        outvec[2].fill((self.turn() + for_next) % 2)
 
         # make things play nicely with tensorflow batching
         return outvec.reshape((1,3,8,8))

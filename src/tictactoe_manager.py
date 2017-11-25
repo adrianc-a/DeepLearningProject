@@ -27,8 +27,13 @@ class TicTacToeManager(StateManager):
         next_state.push(idx)
         return TicTacToeManager(next_state)
 
-    def state2vec(self):
+    def state2vec(self, for_next=False):
         """Returns the board state represented as a Tensor
+
+        Args:
+            for_next (Boolean): set to true if you're generating moves for the
+            next set of states (makes sure that the color pane of the output
+            vector is properly set)
 
         Returns the state of the tic-tac-toe game as 3-d tensor
 
@@ -42,8 +47,7 @@ class TicTacToeManager(StateManager):
         outvec = np.zeros((3,3,3))
 
         # fill in whose turn it was
-        outvec[2].fill( (self.turn() + 1) % 2)
-
+        outvec[2].fill( (self.turn() + for_next) % 2)
 
         for i in range(3):
             for j in range(3):
