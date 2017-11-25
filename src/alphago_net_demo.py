@@ -62,7 +62,7 @@ optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
 net = nn.NetworkWrapper(network, optimizer)
 
 # get the predicted pi and z values for a batch of data
-policy_out, value_out = net.forward(input_batch)
+out = net.forward(input_batch)
 
 # get the value of the loss function for a batch of data
 loss_val = net.forward_loss(input_batch, poly, valy)
