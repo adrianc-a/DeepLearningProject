@@ -1,10 +1,14 @@
+import policy
+import mcts
+
 class AlphaGoZero:
 
     # nn must be game specific and line up according to a respective
     # state_manager
     def __init__(self, nn):
         self.nn = nn
-
+		self.simulator = mcts.MCTS(tree_policy = policy.upper_confidence_bound)
+   
     def play_move(current_state, next_states):
         """
         here we can explore all next states
@@ -17,7 +21,7 @@ class AlphaGoZero:
         into a nn and get some rating, simply by specificying the type either in
         the nn module/class or here, as a parameter in __init__
         """
-        pass
+        move_vector=state.get_moves().index(simulator(state_manager = state))
 
 # there is a case to be made that the state2vec should be moved out of the
 # state_manager and just put into a separate class/module which converts
