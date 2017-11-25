@@ -1,3 +1,6 @@
+from game import Game, GameResult
+import networks as net
+
 class AlphaGoZero:
 
     # nn must be game specific and line up according to a respective
@@ -27,8 +30,16 @@ class AlphaGoZero:
 class AlphaGoZeroArchitectures:
 
     # return a nn for alpha go zero based on the ttt game
+    # that is, an instance of AlphaGoZero
     @staticmethod
-    def ttt_nn():
+    def ttt():
+        """
+        return AlphaGoZero(
+            net.alphago_net(
+                ...
+            )
+        )
+        """
         pass
 
     # if we want to move the 2vec stuff to this class, so it lines up nicely
@@ -39,26 +50,73 @@ class AlphaGoZeroArchitectures:
 
 
 class AlphaGoZeroTrainer:
-    def __init__(self, manager, nn):
-        self.manager = manager
-        self.player = AlphaGoZero(nn)
-        self.triples = []
+    def __init__(self, alphagozero_player):
+        self.player = alphagozero_player
+        self.S = []
+        self.P = []
+        self.Z = []
 
-    def train(self, iterations=10, games=10):
-        g = Game(manager, self.play_move, self.play_move)
+    def train(self, manager, iterations=10, games=10, sample_pct=0.75):
+        g = Game(
+            manager,
+            self.play_move,
+            self.play_move,
+            self._begin_game,
+            self._end_game
+        )
 
         for i in range(iterations):
             g.play(games)
-            self.update_weights()
+            self.update_weights(sample_pct)
 
-    def update_weights(self):
-        # based on the games and self.triples
+    def _begin_game(self):
+        self.cur_S = []
+        self.cur_P = []
+
+    def _end_game(self, end_type, winner):
+        # I'm not sure what to do if it's a draw/something else
+        if end_type != GameResult.WIN:
+            return
+
+        winner = -1 if winner == 0 else 1
+
+        flip = lambda x: -1 if x == 1 else 1
+
+        # there is probably a more elegant method for adding these
+        # cur_Z is the winner, relative to the current player
+        cur_Z = []
+        for i in range(len(self.cur_S)):
+            cur_Z.append(winner)
+            winner = flip(winner)
+        cur_Z.reverse()
+
+        # add the triple's for the latest game to the total data
+        self.S.extend(self.cur_S)
+        self.P.extend(self.cur_P)
+        self.Z.extend(cur_Z)
+
+
+    def update_weights(self, pct):
+        # based on the games and self.data
         # update the weights of the nn
-        pass
+
+        batch_size = np.floor(pct * len(self.S))
+        ind = np.random.choice(len(self.S) - 1, batch_size, replace=False)
+
+        self.player.nn.training_step(
+            np.array(self.S)[ind],
+            np.array(self.P)[ind],
+            np.array(self.Z)[ind]
+        )
+
 
     def play_move(current_state, next_states):
         # since this is always called, regardless of player, we can keep the
         # states (s, pi, z)
-        self.triples.append((current_state.state2vec(), None, None))
-        self.player.play_move(current_state, next_state)
+        move_index = self.player.play_move(current_state, next_state)
+
+        self.cur_S.append(current_state.state2vec())
+        self.cur_P.append(self.player.p)
+
+        return move_index
 
