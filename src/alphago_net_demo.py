@@ -1,4 +1,4 @@
-input_batchimport chess_manager as cm
+import chess_manager as cm
 from importlib import reload
 import chess
 import timeit
@@ -22,7 +22,7 @@ input_batch = g.moves2vec()
 valy = np.random.uniform(low=-1,high=1,size=(input_batch.shape[0],1))
 poly = np.random.uniform(low=0,high=1,size=(input_batch.shape[0],1))
 
-(inp,valY,polY,pl_out,v_out,loss) = nn.alphago_net((3,8,8), 256, (3,3), 1, 256, (3,3))
+(inp,valY,polY,pl_out,v_out,loss) = nn.alphago_net((3,8,8), 256, (3,3), 1, (3,3))
 
 train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
 
@@ -55,7 +55,7 @@ with sess.as_default():
 ###RUNNING A NETWORK WITH THE SIMPLIFIED INTERFACE
 
 # first you need to get a network and optimizer definition
-network = nn.alphago_net((3,8,8), 256, (3,3), 1, 256, (3,3))
+network = nn.alphago_net((3,8,8), 256, (3,3), 1, (3,3))
 optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
 
 # then create a wrapper object
