@@ -52,9 +52,10 @@ class ChessManager(StateManager):
         for idx, p in whites: white_pane[idx] = p
         for idx, p in blacks: black_pane[idx] = p
 
-        outvec[2].fill(self.turn())
+        # return whose move it *WAS*
+        outvec[2].fill((self.turn() + 1) % 2)
 
-        # make things play nicely with tensorflow batching 
+        # make things play nicely with tensorflow batching
         return outvec.reshape((1,3,8,8))
 
 
@@ -107,4 +108,3 @@ class ChessManager(StateManager):
     def render(self, n):
         with open(os.path.abspath(os.path.join(os.path.dirname(__file__), '../output', str(n) + '.svg')), 'w+') as svg_file:
             svg_file.write(chess.svg.board(board = self.board))
-

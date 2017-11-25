@@ -41,8 +41,8 @@ class TicTacToeManager(StateManager):
         # to denote the whose turn it is
         outvec = np.zeros((3,3,3))
 
-        # fill in whose turn it is
-        outvec[2].fill(self.turn())
+        # fill in whose turn it was
+        outvec[2].fill( (self.turn() + 1) % 2)
 
 
         for i in range(3):
