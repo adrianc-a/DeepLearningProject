@@ -28,7 +28,7 @@ class StateManager:
 
     def moves2vec(self):
         "Returns a batch of state tensors for input to the network"
-        return np.concatenate([state.state2vec(for_next=True) for state in self.next_states()])
+        return np.concatenate([state.state2vec() for state in self.next_states()])
 
     # each subclass should return a new instance of itself, with the current
     # board state, or a copy
