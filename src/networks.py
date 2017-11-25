@@ -118,19 +118,27 @@ class NetworkWrapper():
 
 
 def alphago_net(input_shape, # NOTE: Input shape should be the input size without the resizing for batches
-                conv_block_num_filters, conv_block_filter_size,
-                num_residual_layers, residual_block_num_filters, residual_block_filter_size,
-                policy_head_num_filters=2, policy_head_filter_size=(1,1),
-                value_head_num_filters=1, value_head_filter_size=(1,1), regularization=0.001):
+                num_conv_res_filters,
+                conv_block_filter_size,
+                num_residual_layers,
+                residual_block_filter_size,
+                policy_head_num_filters=2,
+                policy_head_filter_size=(1,1),
+                value_head_num_filters=1,
+                value_head_filter_size=(1,1),
+                regularization=0.001):
     """ Returns a network similar to the one defined in the alphago paper
 
-    conv_block_num_filters: number of filters in the initial conv block
+    ARGS:
+    num_conv_res_filters: number of filters in the initial conv block and residual blocks
     conv_block_filter_size: filter size in the initial conv block
     num_residual_layers: the number of residual layers to use (in the paper it was 19-40)
-    residual_block_num_filters: the number of filters in the residual blocks
     residual_block_filter_size: the size of the filters in the residual block
     regularization: (not required) the l2 regularization strength
-
+    policy_head_num_filters: number of filters in the policy head
+    policy_head_filter_size: size of filters in the policy head
+    value_head_num_filters: number of filters in the value head
+    value_head_filter_size: filter size in the value head
 
     RETURNS: a namedtuple containing all values necessary to run inference, or
     to run training (consult neural_models for an example of how this works
@@ -183,7 +191,7 @@ def convolutional_block(inp, num_filters, filter_size, input_shape, reg=0.001):
 
     inp = tf.identity(inp)
 
-    l1 = Conv2D(256, (3,3), padding='same',
+    l1 = Conv2D(num_filters, filter_size, padding='same',
                 bias_regularizer=l2_reg(reg),
                 kernel_regularizer=l2_reg(reg),
                 input_shape=input_shape,data_format='channels_first')(inp)
