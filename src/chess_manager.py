@@ -4,6 +4,7 @@ import chess
 import chess.svg
 
 from state_manager import StateManager
+import numpy as np
 
 DEFAULT_BOARD = chess.Board()
 
@@ -31,6 +32,31 @@ class ChessManager(StateManager):
 
         next_state.push(uci)
         return ChessManager(next_state)
+
+    def state2vec(self):
+        """ Outputs a 3-d tensor of the board state
+
+        NOTE: the board orientation is reversed relative to what
+        the printed reprentation is (i.e. white starts at the top left of the array)
+        """
+
+        outvec = np.zeros((3,8,8))
+
+        pieces = list(self.board.piece_map().items())
+        whites = ((idx,piece.piece_type) for idx, piece in pieces if piece.color == chess.WHITE)
+        blacks = ((idx,piece.piece_type) for idx, piece in pieces if piece.color == chess.BLACK)
+
+        white_pane = outvec[0].reshape((64,))
+        black_pane = outvec[1].reshape((64,))
+
+        for idx, p in whites: white_pane[idx] = p
+        for idx, p in blacks: black_pane[idx] = p
+
+        outvec[2].fill(self.turn())
+
+        # make things play nicely with tensorflow batching 
+        return outvec.reshape((1,3,8,8))
+
 
     #presumabely different from checking if a checkmate occured
     def is_terminal_state(self):
@@ -70,6 +96,10 @@ class ChessManager(StateManager):
         """Returns number of full moves played
            (i.e. for each pair of moves by white and black)"""
         return int(self.fen()[-1])
+
+    # allays the need for call to output()
+    def __str__(self):
+        return self.board.__str__()
 
     def output(self):
         print(self.board)

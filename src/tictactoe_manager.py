@@ -1,7 +1,10 @@
 import tictactoe as ttt
 from state_manager import StateManager
+import numpy as np
 
 DEFAULT_BOARD = ttt.TTT()
+
+TILE_MAP = {'X': 0, 'O': 1}
 
 class TicTacToeManager(StateManager):
 
@@ -25,8 +28,37 @@ class TicTacToeManager(StateManager):
         return TicTacToeManager(next_state)
 
     def state2vec(self):
-        piece_map = {'.': 0, 'X': 1, 'O':2}
-        return [piece_map[self.board[p]] for p in range(9)]
+        """Returns the board state represented as a Tensor
+
+        Returns the state of the tic-tac-toe game as 3-d tensor
+
+        pane 1 has a 1 if player 0 has a mark in that particular location
+        pane 2 has a 1 if player 1 has a mark in that particular location
+        pane 3 is either all 0 or all 1 depending on whose turn it is 
+        """
+
+        # one channel for x's one for o's and one 
+        # to denote the whose turn it is 
+        outvec = np.zeros((3,3,3))
+        
+        # fill in whose turn it is
+        outvec[2].fill(self.turn())
+
+
+        for i in range(3):
+            for j in range(3):
+                tile = self.board.board[i * 3 + j]
+                if tile == '.': 
+                    continue
+                else:
+                    pane_num = TILE_MAP[tile]
+                    outvec[pane_num][i][j] = 1
+
+        return outvec
+                
+
+                
+
 
     def current_state(self):
         return TicTacToeManager(self.board.copy())
@@ -57,3 +89,17 @@ class TicTacToeManager(StateManager):
 
     def output(self):
         print(self.board)
+
+
+def state2vec_singledim(self):
+        piece_map = {'.': 0, 'X': 1, 'O':2}
+
+        # one extra element in vector to denote whose turn
+        xs = np.zeros((10,))
+        for i in range(9):
+            xs[i] = piece_map[self.board.board[i]]
+
+        xs[9] = self.board.turn #0 for player 0, 1 for player 2
+
+        return xs
+
