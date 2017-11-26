@@ -1,5 +1,8 @@
 from game import Game, GameResult
 import networks as net
+import policy
+from math import floor
+from numpy import argmax
 
 class AlphaGoZero:
 
@@ -7,6 +10,8 @@ class AlphaGoZero:
     # state_manager
     def __init__(self, nn):
         self.nn = nn
+        # the nn should be a param to the MCTS constructor
+        self.mcts = MCTS(policy.upper_confidence_bound)
 
     def play_move(current_state, next_states):
         """
@@ -20,7 +25,16 @@ class AlphaGoZero:
         into a nn and get some rating, simply by specificying the type either in
         the nn module/class or here, as a parameter in __init__
         """
-        pass
+
+        # number of moves should not be a param, mcts should infer it
+        # since not implemented i expect a normal python array of floats
+        pi = self.mcts(current_state, floor(current_state.num_full_moves / 2))
+
+        ind = argmax(pi)
+        self.pi = pi[ind]
+
+        return ind
+
 
 # there is a case to be made that the state2vec should be moved out of the
 # state_manager and just put into a separate class/module which converts
@@ -121,7 +135,7 @@ class AlphaGoZeroTrainer:
         # was a more clever way of doing this. NOTE: P is the probability which
         # corresponds to the move which was made, (referring to pi = [...]
         # which is returned by MCTS.__call__
-        self.cur_P.append(self.player.p)
+        self.cur_P.append(self.player.pi)
 
         return move_index
 

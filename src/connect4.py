@@ -9,6 +9,11 @@ class Connect4:
         self.state = board
         self.turn = turn
 
+        # turn == True ==> white = x
+        self.white_moves = 0
+        # turn == False ==> black = o
+        self.black_moves = 0
+
     def copy(self):
         return Connect4([row[:] for row in self.state], self.turn)
 
@@ -34,6 +39,11 @@ class Connect4:
         print()
 
     def apply_move(self, move):
+        if self.turn:
+            self.white_moves += 1
+        else:
+            self.black_moves += 1
+
         for row in reversed(self.state):
             if row[move] == self.empty:
                 row[move] = 'x' if self.turn else 'o'
@@ -111,3 +121,6 @@ class Connect4Manager(StateManager):
 
     def output(self):
         self.state.output()
+
+    def num_full_moves(self):
+        return self.white_moves + self.black_moves

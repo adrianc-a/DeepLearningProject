@@ -55,3 +55,7 @@ class StateManager:
 
     def render(self, n):
         pass
+
+    # number of moves (white & black)
+    def num_full_moves(self):
+        pass
