@@ -57,16 +57,16 @@ class NetworkWrapper():
                                     1st dimension should be the batch size
 
         Returns:
-            A 2-tuple of 1-d arrays where the first elemenf of the tuple
-            corresponds to all the policy head outputs, and the second to all
-            the value head outputs for the batch
+            A list of tuples (one for each state in the batch) the first
+            element of the tuples is the the p value and the second the v value
+            (i.e. tuples are (p,v))
         """
         with self.sess.as_default():
             net_out = self.sess.run((self.policy_head, self.value_head),
                                      feed_dict={self.input:state_batch, K.learning_phase(): 0})
 
 
-        return (net_out[0].flatten(), net_out[1].flatten())
+        return list(zip(net_out[0].flatten(), net_out[1].flatten()))
 
     def forward_loss(self, state_batch, policy_batch, value_batch):
         """
@@ -118,19 +118,27 @@ class NetworkWrapper():
 
 
 def alphago_net(input_shape, # NOTE: Input shape should be the input size without the resizing for batches
-                conv_block_num_filters, conv_block_filter_size,
-                num_residual_layers, residual_block_num_filters, residual_block_filter_size,
-                policy_head_num_filters=2, policy_head_filter_size=(1,1),
-                value_head_num_filters=1, value_head_filter_size=(1,1), regularization=0.001):
+                num_conv_res_filters,
+                conv_block_filter_size,
+                num_residual_layers,
+                residual_block_filter_size,
+                policy_head_num_filters=2,
+                policy_head_filter_size=(1,1),
+                value_head_num_filters=1,
+                value_head_filter_size=(1,1),
+                regularization=0.001):
     """ Returns a network similar to the one defined in the alphago paper
 
-    conv_block_num_filters: number of filters in the initial conv block
+    ARGS:
+    num_conv_res_filters: number of filters in the initial conv block and residual blocks
     conv_block_filter_size: filter size in the initial conv block
     num_residual_layers: the number of residual layers to use (in the paper it was 19-40)
-    residual_block_num_filters: the number of filters in the residual blocks
     residual_block_filter_size: the size of the filters in the residual block
     regularization: (not required) the l2 regularization strength
-
+    policy_head_num_filters: number of filters in the policy head
+    policy_head_filter_size: size of filters in the policy head
+    value_head_num_filters: number of filters in the value head
+    value_head_filter_size: filter size in the value head
 
     RETURNS: a namedtuple containing all values necessary to run inference, or
     to run training (consult neural_models for an example of how this works
@@ -153,7 +161,7 @@ def alphago_net(input_shape, # NOTE: Input shape should be the input size withou
     inp = tf.placeholder(tf.float32, shape=inp_placeholder_shape, name='value_label')
 
     inter_out = convolutional_block(inp,
-                                   conv_block_num_filters,
+                                   num_conv_res_filters,
                                    conv_block_filter_size,
                                    input_shape=input_shape,
                                    reg=regularization)
@@ -161,7 +169,7 @@ def alphago_net(input_shape, # NOTE: Input shape should be the input size withou
 
     for i in range(num_residual_layers):
         inter_out = residual_block(inter_out,
-                                   residual_block_num_filters,
+                                   num_conv_res_filters,
                                    residual_block_filter_size,
                                    reg=regularization)
 
@@ -183,7 +191,7 @@ def convolutional_block(inp, num_filters, filter_size, input_shape, reg=0.001):
 
     inp = tf.identity(inp)
 
-    l1 = Conv2D(256, (3,3), padding='same',
+    l1 = Conv2D(num_filters, filter_size, padding='same',
                 bias_regularizer=l2_reg(reg),
                 kernel_regularizer=l2_reg(reg),
                 input_shape=input_shape,data_format='channels_first')(inp)
