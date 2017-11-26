@@ -1,5 +1,5 @@
 import random
-import numpy
+import numpy as np
 
 # ============================================================================================================================ #
 # Tree
@@ -20,9 +20,10 @@ class Node(object):
         #
         self.n = {}
         self.p = {}
-        self.v = {}
+        self.v = {} # ??
         self.q = {}
         self.u = {}
+        self.w = {}
 
     def is_leaf(self):
         return len(self.children) == 0
@@ -31,9 +32,10 @@ class Node(object):
         return self.state_manager.is_terminal_state()
 
     def get_best_child(self, tree_policy):
-        max_value = - numpy.inf
+        max_value = - np.inf
         candidates = []
 
+        # this produces a key_error
         for key, value in zip(self.children, [tree_policy(self, child) for child in self.children]):
             if value == max_value:
                 candidates.append(key)
@@ -49,10 +51,21 @@ class Node(object):
         for move in self.moves:
             child = Node(state_manager = self.state_manager.make_move(self.moves.index(move)),
                 parent = self, move_in = move)
-            (p, v) = network_wrapper.forward(np.array[child.state_manager])
+            # this call is wrong
+            #(p, v) = network_wrapper.forward(np.array[child.state_manager])
+
+            # this works, but we can do better...
+            inp = child.state_manager.state2vec()
+            out = network_wrapper.forward(inp)
+            (p, v) = out[0]
+
+            ##
             self.v[child] = v
             self.p[child] = p
-            self.n[child] = 0.0
+            self.w[child] = 0
+            self.n[child] = 0
+            self.q[child] = 0
+            self.u[child] = 0
             self.children.append(child)
         return self
 
@@ -66,8 +79,10 @@ class Node(object):
 
     def export_pi(self, move_number):
         temperature = (1.0 if move_number < 30 else 0.05) 
-        s = sum(list(map(lambda x: self.n[x], self.children)))
-        return list(map(lambda x: self.n[x] ** (1.0 / temperature)))
+        # does this do anything?
+        #s = sum(list(map(lambda x: self.n[x], self.children)))
+        # what are we mapping over?
+        return list(map(lambda x: self.n[x] ** (1.0 / temperature), self.children))
 
 # ============================================================================================================================ #
 # MCTS
@@ -79,7 +94,7 @@ class MCTS(object):
         self.tree_policy = tree_policy
         self.network_wrapper = network_wrapper
 
-    def __call__(self, state_manager, move_number, n = 1500):
+    def __call__(self, state_manager, move_number, n = 5):
         root = Node(state_manager = state_manager, parent = None, move_in = None)
         for i in range(n):
             node = self.traverse(root)

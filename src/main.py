@@ -3,17 +3,12 @@ from game import Game
 from tictactoe_manager import TicTacToeManager
 from connect4 import Connect4Manager
 from chess_manager import ChessManager
+import alphago as ag
 
-# g = Game(ChessManager(), players.chess_human_player, players.random_player)
-g = Game(ChessManager(), players.mcts_player, players.mcts_player)
+
+ag_player = ag.AlphaGoZeroArchitectures.ttt()
+ag_trainer = ag.AlphaGoZeroTrainer(ag_player)
+ag_trainer.train(TicTacToeManager())
+
+g = Game(TicTacToeManager(), players.ttt_human_player, ag_player.play_move)
 g.play()
-
-
-
-
-# This is how I think the flow should be
-# ag = AlphaGoZeroArchitectures.chess()
-# trainer = AlphaGoTrainer(ag)
-# trainer.train(...)
-# g = Game(ChessManager(), players.chess_human_player, ag.play_move)
-# g.play()

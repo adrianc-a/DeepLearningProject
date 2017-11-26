@@ -13,12 +13,14 @@ class GameResult(Enum):
 class Game:
 
     def __init__(self, manager, player1, player2, begin_game=lambda: None,
-            end_game=lambda t, w: None):
+            end_game=lambda t, w: None, log=True, render=True):
         self.manager = manager
         self.player1 = player1
         self.player2 = player2
         self.end_game = end_game
         self.begin_game = begin_game
+        self.log = log
+        self.render = render
 
     def play(self, num_games=1):
         for i in range(num_games):
@@ -27,7 +29,8 @@ class Game:
 
     def _play_game(self):
         self.manager.new_game()
-        self.manager.output()
+        if self.log:
+            self.manager.output()
 
         # true means player1's turn, False player2
         turn = True
@@ -42,29 +45,34 @@ class Game:
 
             player = self.player1 if turn else self.player2
 
-            move_idx = player(self.manager.current_state(), moves, n)
+            move_idx = player(self.manager.current_state(), moves)
 
             if move_idx < 0 or move_idx >= len(moves):
                 print('illegal move made')
                 return
 
             self.manager = self.manager.make_move(move_idx)
-            self.manager.output()
-            self.manager.render(n)
+            if self.log:
+                self.manager.output()
+                print('\n=============\n')
+            if self.render:
+                self.manager.render(n)
             n += 1
             turn = not turn
-            print('\n=============\n')
         if self.manager.is_win():
             winner = 0 if self.manager.zero_is_winner() else 1
-            print(
-                'The winner is: ' +
-                    ('player1' if winner == 0 else 'player2')
-            )
+            if self.log:
+                print(
+                    'The winner is: ' +
+                        ('player1' if winner == 0 else 'player2')
+                )
             return GameResult.WIN, winner
         elif self.manager.is_draw():
-            print('Draw')
+            if self.log:
+                print('Draw')
             return GameResult.DRAW, 0
         else:
-            print('Game ended')
+            if self.log:
+                print('Game ended')
             return GameResult.END, 0
 

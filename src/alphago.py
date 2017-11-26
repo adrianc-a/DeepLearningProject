@@ -1,8 +1,11 @@
 from game import Game, GameResult
-import networks as net
+import networks
 import policy
 from math import floor
 from numpy import argmax
+from numpy import random
+from numpy import array
+from mcts import MCTS
 
 class AlphaGoZero:
 
@@ -10,10 +13,9 @@ class AlphaGoZero:
     # state_manager
     def __init__(self, nn):
         self.nn = nn
-        # the nn should be a param to the MCTS constructor
-        self.mcts = MCTS(policy.upper_confidence_bound)
+        self.mcts = MCTS(policy.upper_confidence_bound, nn)
 
-    def play_move(current_state, next_states):
+    def play_move(self, current_state, next_states):
         """
         here we can explore all next states
         vectorize each state
@@ -28,7 +30,7 @@ class AlphaGoZero:
 
         # number of moves should not be a param, mcts should infer it
         # since not implemented i expect a normal python array of floats
-        pi = self.mcts(current_state, floor(current_state.num_full_moves / 2))
+        pi = self.mcts(current_state, floor(current_state.num_full_moves() / 2))
 
         ind = argmax(pi)
         self.pi = pi[ind]
@@ -43,18 +45,19 @@ class AlphaGoZero:
 # maybe this should be a module
 class AlphaGoZeroArchitectures:
 
+
+    @staticmethod
+    def create_player(nn, opt):
+        return AlphaGoZero(networks.NetworkWrapper(nn, opt))
+
     # return a nn for alpha go zero based on the ttt game
     # that is, an instance of AlphaGoZero
     @staticmethod
     def ttt():
-        """
-        return AlphaGoZero(
-            net.alphago_net(
-                ...
-            )
+        return AlphaGoZeroArchitectures.create_player(
+            networks.alphago_net((3,3,3), 2, (2,2), 2, (1,1)),
+            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
         )
-        """
-        pass
 
     # if we want to move the 2vec stuff to this class, so it lines up nicely
     # with the architectures
@@ -76,12 +79,15 @@ class AlphaGoZeroTrainer:
             self.play_move,
             self.play_move,
             self._begin_game,
-            self._end_game
+            self._end_game,
+            False,
+            False
         )
 
         for i in range(iterations):
             g.play(games)
             self.update_weights(sample_pct)
+            print('Finished iteration ' + str(i))
 
     def _begin_game(self):
         self.cur_S = []
@@ -114,22 +120,23 @@ class AlphaGoZeroTrainer:
         # based on the games and self.data
         # update the weights of the nn
 
-        batch_size = np.floor(pct * len(self.S))
-        ind = np.random.choice(len(self.S) - 1, batch_size, replace=False)
+        batch_size = floor(pct * len(self.S))
+        ind = random.choice(len(self.S) - 1, batch_size, replace=False)
 
         self.player.nn.training_step(
-            np.array(self.S)[ind],
-            np.array(self.P)[ind],
-            np.array(self.Z)[ind]
+            array(self.S)[ind],
+            array(self.P)[ind],
+            array(self.Z)[ind]
         )
 
 
-    def play_move(current_state, next_states):
+    def play_move(self, current_state, next_states):
         # since this is always called, regardless of player, we can keep the
         # states (s, pi, z)
         move_index = self.player.play_move(current_state, next_states)
 
-        self.cur_S.append(current_state.state2vec())
+        state_vec = current_state.state2vec()
+        self.cur_S.append(state_vec.reshape(state_vec.shape[1:]))
 
         # I assume that the play_move from AlphaGoZero, keeps this, I wish there
         # was a more clever way of doing this. NOTE: P is the probability which
