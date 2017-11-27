@@ -114,6 +114,24 @@ class NetworkWrapper():
                                       self.policy_label:policy_batch,
                                       K.learning_phase(): 1})
 
+    def save(self, path):
+        builder = tf.saved_model.builder.SavedModelBuilder(path)
+        builder.add_meta_graph_and_variables(self.sess, [tf.saved_model.tag_constants.TRAINING])
+        builder.save()
+
+    @staticmethod
+    def restore(path):
+        sess = tf.Session()
+        tf.saved_model.loader.load(sess, [tf.saved_model.tag_constants.TRAINING], path)
+        pl_out = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)[40]
+        v_out = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)[36]
+        inp = tf.placeholder(tf.float32, shape=(None,)+(3,3,3), name='value_label')
+        valY=tf.placeholder(tf.float32, name='input')
+        polY=tf.placeholder(tf.float32, name='policy_label')
+        loss = alphago_loss(pl_out, polY, v_out, valY)
+        nn = namedtuple('Network','input policy_label value_label policy_output value_output loss')(*(inp,polY,valY,pl_out,v_out,loss))
+
+        return NetworkWrapper(nn, OPTIMIZER_REG['sgd'](learning_rate=0.01))
 
 
 

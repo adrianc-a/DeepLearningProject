@@ -9,3 +9,4 @@ report/*.blg
 venv/*
 */venv/*
 output/
+models/
