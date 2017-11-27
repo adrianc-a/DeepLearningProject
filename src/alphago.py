@@ -50,12 +50,17 @@ class AlphaGoZeroArchitectures:
     def create_player(nn, opt):
         return AlphaGoZero(networks.NetworkWrapper(nn, opt))
 
+    # can we have this use state2vec.shape somehow?
+    @staticmethod
+    def ttt_input_shape():
+        return (3,3,3)
+
     # return a nn for alpha go zero based on the ttt game
     # that is, an instance of AlphaGoZero
     @staticmethod
     def ttt():
         return AlphaGoZeroArchitectures.create_player(
-            networks.alphago_net((3,3,3), 2, (2,2), 2, (1,1)),
+            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 2, (2,2), 2, (1,1)),
             networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
         )
 

@@ -120,18 +120,24 @@ class NetworkWrapper():
         builder.save()
 
     @staticmethod
-    def restore(path):
+    def restore(path, input_shape, opt):
         sess = tf.Session()
         tf.saved_model.loader.load(sess, [tf.saved_model.tag_constants.TRAINING], path)
-        pl_out = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)[40]
-        v_out = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)[36]
-        inp = tf.placeholder(tf.float32, shape=(None,)+(3,3,3), name='value_label')
+
+        tensors = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+        tensor_names = [t.name for t in tensors]
+        pl_out = tensors[tensor_names.index('policy_head/kernel:0')]
+        v_out  = tensors[tensor_names.index('value_head/kernel:0')]
+
+
+
+        inp = tf.placeholder(tf.float32, shape=(None,)+input_shape, name='value_label')
         valY=tf.placeholder(tf.float32, name='input')
         polY=tf.placeholder(tf.float32, name='policy_label')
-        loss = alphago_loss(pl_out, polY, v_out, valY)
+        loss = alphago_loss(pl_out, polY, v_out, valY) 
         nn = namedtuple('Network','input policy_label value_label policy_output value_output loss')(*(inp,polY,valY,pl_out,v_out,loss))
 
-        return NetworkWrapper(nn, OPTIMIZER_REG['sgd'](learning_rate=0.01))
+        return NetworkWrapper(nn, opt)
 
 
 
@@ -259,7 +265,7 @@ def policy_head(inp, num_filters=2, filter_size=(1,1), reg=0.001):
     pl3 = Activation('relu')(pl2)
     pl_out = Dense(1, activation='sigmoid',
                    bias_regularizer=l2_reg(reg),
-                   kernel_regularizer=l2_reg(reg))( Flatten()(pl3) )
+                   kernel_regularizer=l2_reg(reg), name='policy_head')( Flatten()(pl3) )
 
     return pl_out
 
@@ -274,6 +280,6 @@ def value_head(inp, num_filters=1, filter_size=(1,1), reg=0.001):
     v2 = Activation('relu')(v1)
     v_out =  Dense(1,activation='tanh',
                    bias_regularizer=l2_reg(reg),
-                   kernel_regularizer=l2_reg(reg))(Flatten()(v2))
+                   kernel_regularizer=l2_reg(reg), name='value_head')(Flatten()(v2))
 
     return v_out
