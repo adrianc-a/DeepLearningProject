@@ -48,18 +48,17 @@ class Node(object):
 
     def expand(self, network_wrapper):
         self.value = 0.0
-        for move in self.moves:
-            child = Node(state_manager = self.state_manager.make_move(self.moves.index(move)),
-                parent = self, move_in = move)
-            # this call is wrong
-            #(p, v) = network_wrapper.forward(np.array[child.state_manager])
 
-            # this works, but we can do better...
-            inp = child.state_manager.state2vec()
-            out = network_wrapper.forward(inp)
-            (p, v) = out[0]
+        # get the children state managers and their vec representations
+        state_vecs, state_mans = self.moves2vec()
 
-            ##
+        #get the predicted p and v values for all the children
+        p, v = network_wrapper.forward(state_vecs)
+
+        for p, v, next_state, move_in in zip(p, v, state_mans, self.moves):
+            child = Node(state_manager = next_state,
+                         parent = self, move_in = move_in)
+
             self.v[child] = v
             self.p[child] = p
             self.w[child] = 0
@@ -78,7 +77,7 @@ class Node(object):
             self.u[child] = self.p[child] * ((sum(list(map(lambda x: self.n[x], self.children))) ** 0.5) / (1 + self.n[child]))
 
     def export_pi(self, move_number):
-        temperature = (1.0 if move_number < 30 else 0.05) 
+        temperature = (1.0 if move_number < 30 else 0.05)
         # does this do anything?
         #s = sum(list(map(lambda x: self.n[x], self.children)))
         # what are we mapping over?
@@ -103,7 +102,7 @@ class MCTS(object):
         return root.export_pi(move_number)
 
     def traverse(self, node):
-        # either expand 
+        # either expand
         while not node.is_terminal():
             if node.is_leaf():
                 return node.expand(self.network_wrapper)

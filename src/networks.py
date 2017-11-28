@@ -62,9 +62,8 @@ class NetworkWrapper():
                                     1st dimension should be the batch size
 
         Returns:
-            A list of tuples (one for each state in the batch) the first
-            element of the tuples is the the p value and the second the v value
-            (i.e. tuples are (p,v))
+            A tuple where the first array of values are the p values
+            and the second array of values are the v values
         """
         with self.sess.as_default():
             net_out = self.sess.run((self.policy_head, self.value_head),
@@ -72,7 +71,7 @@ class NetworkWrapper():
                                         self.learning_phase: 0})
 
 
-        return list(zip(net_out[0].flatten(), net_out[1].flatten()))
+        return net_out[0].flatten(), net_out[1].flatten()
 
     def forward_loss(self, state_batch, policy_batch, value_batch):
         """
