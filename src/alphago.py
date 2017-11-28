@@ -29,7 +29,7 @@ class AlphaGoZero:
 
         # number of moves should not be a param, mcts should infer it
         # since not implemented i expect a normal python array of floats
-        pi = self.mcts(current_state, 10)
+        pi = self.mcts(current_state)
         print(pi)
 
         ind = argmax(pi)

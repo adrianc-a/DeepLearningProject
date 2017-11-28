@@ -84,18 +84,15 @@ class MCTS(object):
     def __init__(self, network_wrapper):
         self.network_wrapper = network_wrapper
 
-    def __call__(self, state_manager, n = 5):
+    def __call__(self, state_manager, n = 1500):
         root = Node(state_manager = state_manager, parent = None)
         print('root:', root)
-        # print('doing', n, 'iterations')
-        for i in range(0, n):
-            # print('iteration', i)
+        for i in range(0, 1500):
             node = self.traverse(root)
             self.back_propagate(node)
         return root.export_pi(state_manager.num_full_moves())
 
     def traverse(self, node):
-        # print('traversing game tree ... ')
         while not node.is_terminal():
             if node.is_leaf():
                 return node.expand(self.network_wrapper)
