@@ -55,6 +55,7 @@ class Game:
             if self.log:
                 self.manager.output()
                 print('\n=============\n')
+            self.manager.output()
             if self.render:
                 self.manager.render(n)
             n += 1

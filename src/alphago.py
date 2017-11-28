@@ -1,6 +1,5 @@
 from game import Game, GameResult
 import networks
-import policy
 from math import floor
 from numpy import argmax
 from numpy import random
@@ -13,7 +12,7 @@ class AlphaGoZero:
     # state_manager
     def __init__(self, nn):
         self.nn = nn
-        self.mcts = MCTS(policy.upper_confidence_bound, nn)
+        self.mcts = MCTS(network_wrapper = nn)
 
     def play_move(self, current_state, next_states):
         """
@@ -30,13 +29,13 @@ class AlphaGoZero:
 
         # number of moves should not be a param, mcts should infer it
         # since not implemented i expect a normal python array of floats
-        pi = self.mcts(current_state, floor(current_state.num_full_moves() / 2))
+        pi = self.mcts(current_state, 10)
+        print(pi)
 
         ind = argmax(pi)
         self.pi = pi[ind]
 
         return ind
-
 
 # there is a case to be made that the state2vec should be moved out of the
 # state_manager and just put into a separate class/module which converts
@@ -45,7 +44,7 @@ class AlphaGoZero:
 # maybe this should be a module
 class AlphaGoZeroArchitectures:
 
-
+    # this is unnecessarily convoluted
     @staticmethod
     def create_player(nn, opt):
         return AlphaGoZero(networks.NetworkWrapper(nn, opt))
@@ -74,6 +73,7 @@ class AlphaGoZeroTrainer:
         self.Z = []
 
     def train(self, manager, iterations=10, games=10, sample_pct=0.75):
+        print('training ... ')
         g = Game(
             manager,
             self.play_move,
@@ -88,6 +88,7 @@ class AlphaGoZeroTrainer:
             g.play(games)
             self.update_weights(sample_pct)
             print('Finished iteration ' + str(i))
+        print('finished training.')
 
     def _begin_game(self):
         self.cur_S = []
