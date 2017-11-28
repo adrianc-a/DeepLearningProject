@@ -114,8 +114,6 @@ class NetworkWrapper():
         Returns:
         """
 
-
-
         with self.sess.as_default() as sess:
             self.train_step.run(feed_dict={self.input:state_batch,
                                       self.value_label:value_batch,

@@ -133,7 +133,7 @@ def run_mode(args):
         ag_player = load_model(args.game, args.save_file, opt)
 
     #show_graph(tf.get_default_graph().as_graph_def())
-    print(ag_player.nn.forward(TicTacToeManager().state2vec()))
+    print(ag_player.nn.forward(TicTacToeManager().moves2vec()[0]))
     #print(ag_player.nn.sess.graph.get_tensor_by_name('conv2d_1/kernel:0').eval(session=ag_player.nn.sess))
     #print(ag_player.nn.sess.graph.get_tensor_by_name('batch_normalization_1/keras_learning_phase').eval(session=ag_player.nn.sess))
     if args.play_game:
