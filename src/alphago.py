@@ -53,7 +53,7 @@ class AlphaGoZeroArchitectures:
     # can we have this use state2vec.shape somehow?
     @staticmethod
     def ttt_input_shape():
-        return (3,3,3)
+        return (5,3,3)
 
     # return a nn for alpha go zero based on the ttt game
     # that is, an instance of AlphaGoZero
@@ -150,4 +150,3 @@ class AlphaGoZeroTrainer:
         self.cur_P.append(self.player.pi)
 
         return move_index
-
