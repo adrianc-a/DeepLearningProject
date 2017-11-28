@@ -62,7 +62,7 @@ class TicTacToeManager(StateManager):
         return outvec
 
     def state2vec(self, for_next=False):
-        """Returns the board state represented as a Tensor
+        """DEPRECATED: Returns the board state represented as a Tensor
 
         Args:
             for_next (Boolean): set to true if you're generating moves for the
@@ -75,7 +75,7 @@ class TicTacToeManager(StateManager):
         pane 2 has a 1 if player 1 has a mark in that particular location
         pane 3 is either all 0 or all 1 depending on whose turn it is
         """
-
+        '''
         # one channel for x's one for o's and one
         # to denote the whose turn it is
         outvec = np.zeros((3,3,3))
@@ -93,7 +93,8 @@ class TicTacToeManager(StateManager):
                     outvec[pane_num][i][j] = 1
 
         return outvec.reshape((1,3,3,3))
-
+        '''
+        raise NotImplementedError
 
     def current_state(self):
         return TicTacToeManager(self.board.copy())

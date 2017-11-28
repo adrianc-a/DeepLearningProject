@@ -68,7 +68,9 @@ class ChessManager(StateManager):
 
 
     def state2vec(self, for_next=False):
-        """ Outputs a 3-d tensor of the board state
+
+
+        """ DEPRECATED: Outputs a 3-d tensor of the board state
 
         Args:
             for_next (Boolean): set to true if you're generating moves for the
@@ -78,7 +80,7 @@ class ChessManager(StateManager):
         NOTE: the board orientation is reversed relative to what
         the printed reprentation is (i.e. white starts at the top left of the array)
         """
-
+        '''
         outvec = np.zeros((3,8,8))
 
         pieces = list(self.board.piece_map().items())
@@ -96,6 +98,8 @@ class ChessManager(StateManager):
 
         # make things play nicely with tensorflow batching
         return outvec.reshape((1,3,8,8))
+        '''
+        raise NotImplementedError
 
 
     #presumabely different from checking if a checkmate occured
