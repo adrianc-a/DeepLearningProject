@@ -60,7 +60,7 @@ class AlphaGoZeroArchitectures:
     @staticmethod
     def ttt():
         return AlphaGoZeroArchitectures.create_player(
-            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 2, (2,2), 2, (1,1)),
+            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 1, (2,2), 1, (1,1)),
             networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
         )
 

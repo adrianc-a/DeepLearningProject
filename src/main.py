@@ -7,7 +7,45 @@ from connect4 import Connect4Manager
 from chess_manager import ChessManager
 from networks import NetworkWrapper, OPTIMIZER_REG
 from sys import argv
+import tensorflow as tf
+import numpy as np
 
+from IPython.display import clear_output, Image, display, HTML
+
+def strip_consts(graph_def, max_const_size=32):
+    """Strip large constant values from graph_def."""
+    strip_def = tf.GraphDef()
+    for n0 in graph_def.node:
+        n = strip_def.node.add() 
+        n.MergeFrom(n0)
+        if n.op == 'Const':
+            tensor = n.attr['value'].tensor
+            size = len(tensor.tensor_content)
+            if size > max_const_size:
+                tensor.tensor_content = "<stripped %d bytes>"%size
+    return strip_def
+
+def show_graph(graph_def, max_const_size=32):
+    """Visualize TensorFlow graph."""
+    if hasattr(graph_def, 'as_graph_def'):
+        graph_def = graph_def.as_graph_def()
+    strip_def = strip_consts(graph_def, max_const_size=max_const_size)
+    code = """
+        <script>
+          function load() {{
+            document.getElementById("{id}").pbtxt = {data};
+          }}
+        </script>
+        <link rel="import" href="https://tensorboard.appspot.com/tf-graph-basic.build.html" onload=load()>
+        <div style="height:600px">
+          <tf-graph-basic id="{id}"></tf-graph-basic>
+        </div>
+    """.format(data=repr(str(strip_def)), id='graph'+str(np.random.rand()))
+
+    iframe = """
+        <iframe seamless style="width:1200px;height:620px;border:0" srcdoc="{}"></iframe>
+    """.format(code.replace('"', '&quot;'))
+    display(HTML(iframe))
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -24,6 +62,7 @@ def parse_args():
     parser.add_argument('-p', '--play-game', choices=['alphago', 'human', 'simple', 'random'], nargs=2)
     parser.add_argument('-s', '--save-model', action='store_true')
     parser.add_argument('-f', '--save-file', type=str)
+    parser.add_argument('-o', '--optimizer', choices=['sgd', 'adam'])
 
     return parser.parse_args(argv[1:])
 
@@ -90,9 +129,13 @@ def run_mode(args):
     if args.train_model:
         ag_player = train_model(args.game, args.iterations, args.num_games)
     elif args.load_model:
-        opt = OPTIMIZER_REG[args.opt](learning_rate=args.learning_rate)
+        opt = OPTIMIZER_REG[args.optimizer](learning_rate=args.learning_rate)
         ag_player = load_model(args.game, args.save_file, opt)
 
+    #show_graph(tf.get_default_graph().as_graph_def())
+    print(ag_player.nn.forward(TicTacToeManager().state2vec()))
+    #print(ag_player.nn.sess.graph.get_tensor_by_name('conv2d_1/kernel:0').eval(session=ag_player.nn.sess))
+    #print(ag_player.nn.sess.graph.get_tensor_by_name('batch_normalization_1/keras_learning_phase').eval(session=ag_player.nn.sess))
     if args.play_game:
         p1 = get_players(args.game, args.play_game[0], ag_player)
         p2 = get_players(args.game, args.play_game[1], ag_player)

@@ -13,7 +13,7 @@ OPTIMIZER_REG = {"adam":tf.train.AdamOptimizer,
 
 class NetworkWrapper():
 
-    def __init__(self, network, optimizer):
+    def __init__(self, network, optimizer, sess=tf.Session(), new_sess=True):
         """
         Utility class to make interacting with networks easier
 
@@ -27,7 +27,7 @@ class NetworkWrapper():
                                             already been initialized with its
                                             parameters
         """
-        self.sess = tf.Session()
+        self.sess = sess
         K.set_session(self.sess)
 
         # set all placeholder
@@ -45,8 +45,9 @@ class NetworkWrapper():
         #self.optimizer = tf.train.AdamOptimizer(lr=learning_rate).minimize(self.loss)
         self.train_step = optimizer.minimize(self.loss_function)
 
-        init_op = tf.global_variables_initializer()
-        self.sess.run(init_op)
+        if new_sess:
+            init_op = tf.global_variables_initializer()
+            self.sess.run(init_op)
 
     def forward(self, state_batch):
         """
@@ -116,28 +117,67 @@ class NetworkWrapper():
 
     def save(self, path):
         builder = tf.saved_model.builder.SavedModelBuilder(path)
-        builder.add_meta_graph_and_variables(self.sess, [tf.saved_model.tag_constants.TRAINING])
+        sig = (
+            tf.saved_model.signature_def_utils.build_signature_def(
+                outputs={
+                    'value_head':
+                        tf.saved_model.utils.build_tensor_info(self.value_head),
+                    'policy_head':
+                        tf.saved_model.utils.build_tensor_info(self.policy_head)
+                },
+                method_name=tf.saved_model.signature_constants.PREDICT_METHOD_NAME
+            )
+        )
+        builder.add_meta_graph_and_variables(
+                self.sess,
+                [
+                    tf.saved_model.tag_constants.SERVING,
+                    tf.saved_model.tag_constants.TRAINING
+                ],
+                signature_def_map={
+                    tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY:
+                        sig
+                }
+
+        )
         builder.save()
 
     @staticmethod
     def restore(path, input_shape, opt):
         sess = tf.Session()
-        tf.saved_model.loader.load(sess, [tf.saved_model.tag_constants.TRAINING], path)
+        sig_key = tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY
 
-        tensors = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-        tensor_names = [t.name for t in tensors]
-        pl_out = tensors[tensor_names.index('policy_head/kernel:0')]
-        v_out  = tensors[tensor_names.index('value_head/kernel:0')]
+        meta_graph = tf.saved_model.loader.load(
+                sess,
+                [
+                    tf.saved_model.tag_constants.SERVING,
+                    tf.saved_model.tag_constants.TRAINING
+                ],
+                path
+        )
+
+        signature = meta_graph.signature_def
+
+        pl_name = signature[sig_key].outputs['policy_head'].name
+        v_name = signature[sig_key].outputs['value_head'].name
+
+        #tensors = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+        #tensor_names = [t.name for t in tensors]
+        #pl_out = tensors[tensor_names.index('policy_head/Sigmoid:0')]
+        #v_out  = tensors[tensor_names.index('value_head/Tanh:0')]
+        pl_out = sess.graph.get_tensor_by_name(pl_name)
+        v_out  = sess.graph.get_tensor_by_name(v_name)
+
 
 
 
         inp = tf.placeholder(tf.float32, shape=(None,)+input_shape, name='value_label')
         valY=tf.placeholder(tf.float32, name='input')
         polY=tf.placeholder(tf.float32, name='policy_label')
-        loss = alphago_loss(pl_out, polY, v_out, valY) 
+        loss = alphago_loss(pl_out, polY, v_out, valY)
         nn = namedtuple('Network','input policy_label value_label policy_output value_output loss')(*(inp,polY,valY,pl_out,v_out,loss))
 
-        return NetworkWrapper(nn, opt)
+        return NetworkWrapper(nn, opt, sess, False)
 
 
 
@@ -267,6 +307,7 @@ def policy_head(inp, num_filters=2, filter_size=(1,1), reg=0.001):
                    bias_regularizer=l2_reg(reg),
                    kernel_regularizer=l2_reg(reg), name='policy_head')( Flatten()(pl3) )
 
+
     return pl_out
 
 
@@ -282,4 +323,5 @@ def value_head(inp, num_filters=1, filter_size=(1,1), reg=0.001):
                    bias_regularizer=l2_reg(reg),
                    kernel_regularizer=l2_reg(reg), name='value_head')(Flatten()(v2))
 
+    print(v_out.name)
     return v_out
