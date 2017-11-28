@@ -40,7 +40,7 @@ class StateManager:
 
         return np.stack(
                  [np.concatenate([next_vec,cur_state_vec])
-                 for next_vec in next_vecs]), next_states()
+                 for next_vec in next_vecs]), next_states
 
     # each subclass should return a new instance of itself, with the current
     # board state, or a copy
