@@ -1,6 +1,5 @@
 from game import Game, GameResult
 import networks
-import policy
 from math import floor
 from numpy import argmax
 from numpy import random
@@ -13,7 +12,7 @@ class AlphaGoZero:
     # state_manager
     def __init__(self, nn):
         self.nn = nn
-        self.mcts = MCTS(policy.upper_confidence_bound, nn)
+        self.mcts = MCTS(network_wrapper = nn)
 
     def play_move(self, current_state, next_states):
         """
@@ -30,13 +29,12 @@ class AlphaGoZero:
 
         # number of moves should not be a param, mcts should infer it
         # since not implemented i expect a normal python array of floats
-        pi = self.mcts(current_state, floor(current_state.num_full_moves() / 2))
+        pi = self.mcts(current_state, n = 5)
 
         ind = argmax(pi)
-        self.pi = pi[ind]
+        self.pi = pi
 
         return ind
-
 
 # there is a case to be made that the state2vec should be moved out of the
 # state_manager and just put into a separate class/module which converts
@@ -44,7 +42,6 @@ class AlphaGoZero:
 # is the only player that requires these vectorizations
 # maybe this should be a module
 class AlphaGoZeroArchitectures:
-
 
     @staticmethod
     def create_player(nn, opt):
@@ -64,12 +61,6 @@ class AlphaGoZeroArchitectures:
             networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
         )
 
-    # if we want to move the 2vec stuff to this class, so it lines up nicely
-    # with the architectures
-    @staticmethod
-    def ttt_state2vec(state):
-        pass
-
 
 class AlphaGoZeroTrainer:
     def __init__(self, alphagozero_player):
@@ -78,7 +69,7 @@ class AlphaGoZeroTrainer:
         self.P = []
         self.Z = []
 
-    def train(self, manager, iterations=10, games=10, sample_pct=0.75):
+    def train(self, manager, iterations=10, games=10, sample_pct=0.85):
         g = Game(
             manager,
             self.play_move,
@@ -128,10 +119,27 @@ class AlphaGoZeroTrainer:
         batch_size = floor(pct * len(self.S))
         ind = random.choice(len(self.S) - 1, batch_size, replace=False)
 
+
+        self.S = array(self.S)[ind].tolist()
+        self.P = array(self.P)[ind].tolist()
+        self.Z = array(self.Z)[ind].tolist()
+
+        batch_S = []
+        batch_P = []
+        batch_Z = []
+
+        for i in range(len(self.S)):
+            for j in range(len(self.S[i])):
+                batch_S.append(self.S[i][j])
+                batch_P.append(self.P[i][j])
+                batch_Z.append(self.Z[i])
+
+
+
         self.player.nn.training_step(
-            array(self.S)[ind],
-            array(self.P)[ind],
-            array(self.Z)[ind]
+            array(batch_S),
+            array(batch_P),
+            array(batch_Z)
         )
 
 
@@ -140,8 +148,8 @@ class AlphaGoZeroTrainer:
         # states (s, pi, z)
         move_index = self.player.play_move(current_state, next_states)
 
-        state_vec = current_state.state2vec()
-        self.cur_S.append(state_vec.reshape(state_vec.shape[1:]))
+        state_vec, managers = current_state.moves2vec()
+        self.cur_S.append(state_vec)
 
         # I assume that the play_move from AlphaGoZero, keeps this, I wish there
         # was a more clever way of doing this. NOTE: P is the probability which
