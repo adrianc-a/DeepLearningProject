@@ -5,6 +5,9 @@ from numpy import argmax
 from numpy import random
 from numpy import array
 from mcts import MCTS
+import chess_manager
+import tictactoe_manager
+import connect4
 
 class AlphaGoZero:
 
@@ -47,19 +50,49 @@ class AlphaGoZeroArchitectures:
     def create_player(nn, opt):
         return AlphaGoZero(networks.NetworkWrapper(nn, opt))
 
+
     # can we have this use state2vec.shape somehow?
     @staticmethod
     def ttt_input_shape():
-        return (5,3,3)
+        return tictactoe_manager.INPUT_SHAPE
 
     # return a nn for alpha go zero based on the ttt game
     # that is, an instance of AlphaGoZero
     @staticmethod
     def ttt():
         return AlphaGoZeroArchitectures.create_player(
-            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 1, (2,2), 1, (1,1)),
+
+            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 64, (1,1), 5, (2,2)),
+
             networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
         )
+
+    @staticmethod
+    def chess_input_shape():
+        return chess_manager.INPUT_SHAPE
+
+    @staticmethod
+    def chess_net():
+        return AlphaGoZeroArchitectures.create_player(
+            #the residual and conv blocks have 256 layers and there are 10 conv blocks
+            networks.alphago_net(AlphaGoZeroArchitectures.chess_input_shape(), 256, (3,3), 10, (3,3)),
+            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
+        )
+
+
+    @staticmethod
+    def connect4_net():
+        return AlphaGoZeroArchitectures.create_player(
+            #networks.alphago_net(AlphaGoZeroArchitectures.chess_input_shape(), 128, (3,3), 10, (3,3)),
+            #networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
+            networks.alphago_net(AlphaGoZeroArchitectures.connect4_input_shape(), 256, (3,3), 10, (3,3)),
+            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
+        )
+
+    @staticmethod
+    def connect4_input_shape():
+        return connect4.INPUT_SHAPE
+
 
 
 class AlphaGoZeroTrainer:

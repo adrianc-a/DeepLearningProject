@@ -3,6 +3,8 @@ import numpy as np
 
 PIECE_MAP = {'x': 0, 'o': 1}
 
+INPUT_SHAPE = (5, 6, 7)
+
 class Connect4:
     def __init__(self, board=None, turn=True):
         self.rows = 6
