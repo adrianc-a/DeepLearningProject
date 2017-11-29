@@ -65,15 +65,22 @@ class Node(object):
         self.n[child] += 1.0
         self.w[child] += v
         self.q[child] = (1 / self.n[child]) * self.w[child]
+        s = sum(list(map(lambda x: self.n[x], self.children)))
         for child in self.children:
             # u will change for all children due to change in the summation of n[child]
             c_puct = 1.0
             # maybe some actual value for this constant?
-            self.u[child] = c_puct * self.p[child] * ((sum(list(map(lambda x: self.n[x], self.children))) ** 0.5) / (1 + self.n[child]))
+            self.u[child] = c_puct * self.p[child] * (s ** 0.5) / (1 + self.n[child])
 
     def export_pi(self, move_number):
         temperature = (1.0 if move_number < 30 else 0.05) 
         return list(map(lambda x: self.n[x] ** (1.0 / temperature), self.children))
+
+    def calc_value(self):
+        v = 0.0
+        for child in self.children:
+            v += self.v[child]
+        return v / len(self.children)
 
 # ============================================================================================================================ #
 # MCTS
@@ -83,26 +90,70 @@ class MCTS(object):
 
     def __init__(self, network_wrapper):
         self.network_wrapper = network_wrapper
+        self.root = None
 
     def __call__(self, state_manager, n = 1500):
-        root = Node(state_manager = state_manager, parent = None)
-        print('root:', root)
+        if not self.root:
+            # print('starting mcts simulation ...')
+            self.root = Node(state_manager = state_manager, parent = None)
+            # print('root is:', self.root)
+        else:
+            # state_manager.output()
+            self.update_root(state_manager)
         for i in range(0, 1500):
-            node = self.traverse(root)
-            self.back_propagate(node)
-        return root.export_pi(state_manager.num_full_moves())
+            (node, terminal) = self.traverse(self.root)
+            if not terminal:
+                self.back_propagate(node)
+        # print('root: ', self.root)
+        # print('children: ', self.root.children)
+        return self.root.export_pi(state_manager.num_full_moves())
+
+    def update_root(self, state_manager):
+        if not str(state_manager.board) == str(self.root.state_manager.board):
+            for child in self.root.children:
+                if str(child.state_manager.board) == str(state_manager.board):
+                    return child
+        else:
+            return self.root
+        print('PROBLEM')
+        root = self.root
+        while root.parent:
+            root = root.parent
+        return root
+        # print('updating root')
+        # go all the way to the tree root
+        # root = self.root
+        # while root.parent:
+        #     root = root.parent
+        # search for a state equal to this
+        # self.root = self.search(root, state_manager)
+
+    def search(self, root, state_manager):
+        frontier = [root]
+        while True:
+            node = frontier.pop(0)
+            if str(node.state_manager.board) == str(state_manager.board):
+                return node
+            for child in node.children:
+                frontier.append(child)
+            if not len(frontier):
+                return None
+
+    def make_move(self, move_index):
+        self.root = self.root.children[move_index] 
+        # print('root now at', self.root)
 
     def traverse(self, node):
         while not node.is_terminal():
             if node.is_leaf():
-                return node.expand(self.network_wrapper)
+                return (node.expand(self.network_wrapper), False)
             else:
                 node = node.get_best_child()
-        return node
+        return (node, True)
 
     def back_propagate(self, node):
         # this is the value predicted for the edge leading to this node by the NN
-        v = node.parent.v[node] if node.parent else 0
+        v = node.calc_value()
         while node.parent is not None:
             node.parent.update(child = node, v = v)
             node = node.parent

@@ -33,6 +33,8 @@ class AlphaGoZero:
         print(pi)
 
         ind = argmax(pi)
+        # update root node in mcts tree
+        # self.mcts.make_move(ind)
         self.pi = pi[ind]
 
         return ind
