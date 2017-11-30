@@ -148,6 +148,13 @@ class ChessManager(StateManager):
     def output(self):
         print(self.board)
 
+    @classmethod
+    def cl_name():
+        return 'chess'
+
+    def name(self):
+        return ChessManager.cl_name()
+
     def render(self, n):
         with open(os.path.abspath(os.path.join(os.path.dirname(__file__), '../output', str(n) + '.svg')), 'w+') as svg_file:
             svg_file.write(chess.svg.board(board = self.board))

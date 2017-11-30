@@ -38,12 +38,14 @@ class NetworkWrapper():
         # get references to policy and value head outputs
         self.value_head = network.value_output
         self.policy_head = network.policy_output
+        self.optimizer = optimizer
 
 
         # get a reference to the computed loss function
         self.loss_function = network.loss
 
         #self.optimizer = tf.train.AdamOptimizer(lr=learning_rate).minimize(self.loss)
+        self.optimizer = optimizer
         self.train_step = optimizer.minimize(self.loss_function)
 
         if new_sess:
@@ -155,7 +157,7 @@ class NetworkWrapper():
 
     @staticmethod
     def restore(path, input_shape, opt):
-        sess = tf.Session()
+        sess = tf.Session(graph=tf.Graph())
         sig_key = tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY
 
         meta_graph = tf.saved_model.loader.load(
