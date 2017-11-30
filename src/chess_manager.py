@@ -8,6 +8,8 @@ import numpy as np
 
 DEFAULT_BOARD = chess.Board()
 
+INPUT_SHAPE = (5,8,8)
+
 class ChessManager(StateManager):
 
     def __init__(self, board=DEFAULT_BOARD):
@@ -33,8 +35,42 @@ class ChessManager(StateManager):
         next_state.push(uci)
         return ChessManager(next_state)
 
+    def single_state2vec(self, include_player_pane=False):
+        """Returns the board state represented as a Tensor
+
+        Args:
+            include_player_pane (Boolean): set to true to include a pane
+            where all entries are set to the numeric value of the current
+            player this pane is appended as the final pane of the output
+
+        Returns the state of the tic-tac-toe game as 3-d tensor
+
+        NOTE: the board orientation is reversed relative to what
+        the printed reprentation is (i.e. white starts at the top left of the array)
+        """
+        outvec = np.zeros((2 + include_player_pane,8,8))
+
+        if include_player_pane: outvec[2].fill(self.turn())
+
+        pieces = list(self.board.piece_map().items())
+        whites = ((idx,piece.piece_type) for idx, piece in pieces if piece.color == chess.WHITE)
+        blacks = ((idx,piece.piece_type) for idx, piece in pieces if piece.color == chess.BLACK)
+
+        white_pane = outvec[0].reshape((64,))
+        black_pane = outvec[1].reshape((64,))
+
+        for idx, p in whites: white_pane[idx] = p
+        for idx, p in blacks: black_pane[idx] = p
+
+        # make things play nicely with tensorflow batching
+        return outvec
+
+
+
     def state2vec(self, for_next=False):
-        """ Outputs a 3-d tensor of the board state
+
+
+        """ DEPRECATED: Outputs a 3-d tensor of the board state
 
         Args:
             for_next (Boolean): set to true if you're generating moves for the
@@ -44,7 +80,7 @@ class ChessManager(StateManager):
         NOTE: the board orientation is reversed relative to what
         the printed reprentation is (i.e. white starts at the top left of the array)
         """
-
+        '''
         outvec = np.zeros((3,8,8))
 
         pieces = list(self.board.piece_map().items())
@@ -62,6 +98,8 @@ class ChessManager(StateManager):
 
         # make things play nicely with tensorflow batching
         return outvec.reshape((1,3,8,8))
+        '''
+        raise NotImplementedError
 
 
     #presumabely different from checking if a checkmate occured

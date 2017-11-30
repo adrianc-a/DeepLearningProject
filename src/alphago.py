@@ -5,6 +5,9 @@ from numpy import argmax
 from numpy import random
 from numpy import array
 from mcts import MCTS
+import chess_manager
+import tictactoe_manager
+import connect4
 
 class AlphaGoZero:
 
@@ -29,8 +32,7 @@ class AlphaGoZero:
 
         # number of moves should not be a param, mcts should infer it
         # since not implemented i expect a normal python array of floats
-        pi = self.mcts(current_state)
-        print(pi)
+        pi = self.mcts(current_state, n = 5)
 
         ind = argmax(pi)
         # update root node in mcts tree
@@ -46,25 +48,53 @@ class AlphaGoZero:
 # maybe this should be a module
 class AlphaGoZeroArchitectures:
 
-    # this is unnecessarily convoluted
     @staticmethod
     def create_player(nn, opt):
         return AlphaGoZero(networks.NetworkWrapper(nn, opt))
+
+
+    # can we have this use state2vec.shape somehow?
+    @staticmethod
+    def ttt_input_shape():
+        return tictactoe_manager.INPUT_SHAPE
 
     # return a nn for alpha go zero based on the ttt game
     # that is, an instance of AlphaGoZero
     @staticmethod
     def ttt():
         return AlphaGoZeroArchitectures.create_player(
-            networks.alphago_net((3,3,3), 2, (2,2), 2, (1,1)),
+
+            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 64, (1,1), 5, (2,2)),
+
             networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
         )
 
-    # if we want to move the 2vec stuff to this class, so it lines up nicely
-    # with the architectures
     @staticmethod
-    def ttt_state2vec(state):
-        pass
+    def chess_input_shape():
+        return chess_manager.INPUT_SHAPE
+
+    @staticmethod
+    def chess_net():
+        return AlphaGoZeroArchitectures.create_player(
+            #the residual and conv blocks have 256 layers and there are 10 conv blocks
+            networks.alphago_net(AlphaGoZeroArchitectures.chess_input_shape(), 256, (3,3), 10, (3,3)),
+            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
+        )
+
+
+    @staticmethod
+    def connect4_net():
+        return AlphaGoZeroArchitectures.create_player(
+            #networks.alphago_net(AlphaGoZeroArchitectures.chess_input_shape(), 128, (3,3), 10, (3,3)),
+            #networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
+            networks.alphago_net(AlphaGoZeroArchitectures.connect4_input_shape(), 256, (3,3), 10, (3,3)),
+            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
+        )
+
+    @staticmethod
+    def connect4_input_shape():
+        return connect4.INPUT_SHAPE
+
 
 
 class AlphaGoZeroTrainer:
@@ -74,8 +104,7 @@ class AlphaGoZeroTrainer:
         self.P = []
         self.Z = []
 
-    def train(self, manager, iterations=10, games=10, sample_pct=0.75):
-        print('training ... ')
+    def train(self, manager, iterations=10, games=10, sample_pct=0.85):
         g = Game(
             manager,
             self.play_move,
@@ -90,7 +119,6 @@ class AlphaGoZeroTrainer:
             g.play(games)
             self.update_weights(sample_pct)
             print('Finished iteration ' + str(i))
-        print('finished training.')
 
     def _begin_game(self):
         self.cur_S = []
@@ -126,10 +154,27 @@ class AlphaGoZeroTrainer:
         batch_size = floor(pct * len(self.S))
         ind = random.choice(len(self.S) - 1, batch_size, replace=False)
 
+
+        self.S = array(self.S)[ind].tolist()
+        self.P = array(self.P)[ind].tolist()
+        self.Z = array(self.Z)[ind].tolist()
+
+        batch_S = []
+        batch_P = []
+        batch_Z = []
+
+        for i in range(len(self.S)):
+            for j in range(len(self.S[i])):
+                batch_S.append(self.S[i][j])
+                batch_P.append(self.P[i][j])
+                batch_Z.append(self.Z[i])
+
+
+
         self.player.nn.training_step(
-            array(self.S)[ind],
-            array(self.P)[ind],
-            array(self.Z)[ind]
+            array(batch_S),
+            array(batch_P),
+            array(batch_Z)
         )
 
 
@@ -138,8 +183,8 @@ class AlphaGoZeroTrainer:
         # states (s, pi, z)
         move_index = self.player.play_move(current_state, next_states)
 
-        state_vec = current_state.state2vec()
-        self.cur_S.append(state_vec.reshape(state_vec.shape[1:]))
+        state_vec, managers = current_state.moves2vec()
+        self.cur_S.append(state_vec)
 
         # I assume that the play_move from AlphaGoZero, keeps this, I wish there
         # was a more clever way of doing this. NOTE: P is the probability which
@@ -148,4 +193,3 @@ class AlphaGoZeroTrainer:
         self.cur_P.append(self.player.pi)
 
         return move_index
-

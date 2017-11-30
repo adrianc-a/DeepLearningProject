@@ -6,6 +6,7 @@ ICONS = ['X', 'O']
 
 STARTING_MOVES = []
 
+INPUT_SHAPE = (5,3,3)
 
 class TTT:
     def __init__(self, board_rep=STARTING_CONFIG, move_stack=STARTING_MOVES):
@@ -83,4 +84,3 @@ class TTT:
         self.board[10] -= 1
         self.player = (self.board[9] + 1) % 2
         self.board[self.move_stack.pop()] = '.'
-

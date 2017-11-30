@@ -10,3 +10,6 @@ venv/*
 */venv/*
 output/
 models/
+src/models/
+logs/
+src/logs

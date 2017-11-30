@@ -1,10 +1,6 @@
 import random
 import numpy as np
 
-# ============================================================================================================================ #
-# Tree
-# ============================================================================================================================ #
-
 class Node(object):
 
     def __init__(self, state_manager, parent):
@@ -45,21 +41,26 @@ class Node(object):
         return best_child
 
     def expand(self, network_wrapper):
-        for move in self.moves:
-            child = Node(state_manager = self.state_manager.make_move(self.moves.index(move)),
-                parent = self)
+        self.value = 0.0
 
-            # this works, but we can do better...
-            (p, v) = network_wrapper.forward(child.state_manager.state2vec())[0]
+        # get the children state managers and their vec representations
+        state_vecs, state_mans = self.state_manager.moves2vec()
 
-            self.v[child] = v
+        #get the predicted p and v values for all the children
+        p, v = network_wrapper.forward(state_vecs)
+        avg_v = np.mean(v)
+
+        for p, next_state in zip(p, state_mans):
+            child = Node(state_manager = next_state,
+                         parent = self)
+            self.v[child] = 0
             self.p[child] = p
             self.w[child] = 0
             self.n[child] = 0
             self.q[child] = 0
             self.u[child] = 0
             self.children.append(child)
-        return self
+        return avg_v
 
     def update(self, child, v):
         self.n[child] += 1.0
@@ -73,7 +74,7 @@ class Node(object):
             self.u[child] = c_puct * self.p[child] * (s ** 0.5) / (1 + self.n[child])
 
     def export_pi(self, move_number):
-        temperature = (1.0 if move_number < 30 else 0.05) 
+        temperature = (1.0 if move_number < 30 else 0.05)
         return list(map(lambda x: self.n[x] ** (1.0 / temperature), self.children))
 
     def calc_value(self):
@@ -151,7 +152,7 @@ class MCTS(object):
                 node = node.get_best_child()
         return (node, True)
 
-    def back_propagate(self, node):
+    def back_propagate(self, node, v):
         # this is the value predicted for the edge leading to this node by the NN
         v = node.calc_value()
         while node.parent is not None:

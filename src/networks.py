@@ -13,7 +13,7 @@ OPTIMIZER_REG = {"adam":tf.train.AdamOptimizer,
 
 class NetworkWrapper():
 
-    def __init__(self, network, optimizer):
+    def __init__(self, network, optimizer, sess=tf.Session(), new_sess=True):
         """
         Utility class to make interacting with networks easier
 
@@ -27,7 +27,7 @@ class NetworkWrapper():
                                             already been initialized with its
                                             parameters
         """
-        self.sess = tf.Session()
+        self.sess = sess
         K.set_session(self.sess)
 
         # set all placeholder
@@ -39,14 +39,19 @@ class NetworkWrapper():
         self.value_head = network.value_output
         self.policy_head = network.policy_output
 
+
         # get a reference to the computed loss function
         self.loss_function = network.loss
 
         #self.optimizer = tf.train.AdamOptimizer(lr=learning_rate).minimize(self.loss)
         self.train_step = optimizer.minimize(self.loss_function)
 
-        init_op = tf.global_variables_initializer()
-        self.sess.run(init_op)
+        if new_sess:
+            self.learning_phase = K.learning_phase()
+            init_op = tf.global_variables_initializer()
+            self.sess.run(init_op)
+        else:
+            self.learning_phase = network.learning_phase
 
     def forward(self, state_batch):
         """
@@ -57,16 +62,16 @@ class NetworkWrapper():
                                     1st dimension should be the batch size
 
         Returns:
-            A list of tuples (one for each state in the batch) the first
-            element of the tuples is the the p value and the second the v value
-            (i.e. tuples are (p,v))
+            A tuple where the first array of values are the p values
+            and the second array of values are the v values
         """
         with self.sess.as_default():
             net_out = self.sess.run((self.policy_head, self.value_head),
-                                     feed_dict={self.input:state_batch, K.learning_phase(): 0})
+                                     feed_dict={self.input:state_batch,
+                                        self.learning_phase: 0})
 
 
-        return list(zip(net_out[0].flatten(), net_out[1].flatten()))
+        return net_out[0].flatten(), net_out[1].flatten()
 
     def forward_loss(self, state_batch, policy_batch, value_batch):
         """
@@ -108,30 +113,91 @@ class NetworkWrapper():
 
         Returns:
         """
-        with self.sess.as_default():
+
+        with self.sess.as_default() as sess:
             self.train_step.run(feed_dict={self.input:state_batch,
                                       self.value_label:value_batch,
                                       self.policy_label:policy_batch,
-                                      K.learning_phase(): 1})
+                                      self.learning_phase: 1})
 
     def save(self, path):
         builder = tf.saved_model.builder.SavedModelBuilder(path)
-        builder.add_meta_graph_and_variables(self.sess, [tf.saved_model.tag_constants.TRAINING])
+        sig = (
+            tf.saved_model.signature_def_utils.build_signature_def(
+                inputs={
+                    'input':tf.saved_model.utils.build_tensor_info(self.input),
+                    'value_label':tf.saved_model.utils.build_tensor_info(self.value_label),
+                    'policy_label':tf.saved_model.utils.build_tensor_info(self.policy_label),
+                    'learning_phase':tf.saved_model.utils.build_tensor_info(self.learning_phase)
+                },
+                outputs={
+                    'value_head':
+                        tf.saved_model.utils.build_tensor_info(self.value_head),
+                    'policy_head':
+                        tf.saved_model.utils.build_tensor_info(self.policy_head)
+                },
+                method_name=tf.saved_model.signature_constants.PREDICT_METHOD_NAME
+            )
+        )
+        builder.add_meta_graph_and_variables(
+                self.sess,
+                [
+                    tf.saved_model.tag_constants.SERVING,
+                    tf.saved_model.tag_constants.TRAINING
+                ],
+                signature_def_map={
+                    tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY:
+                        sig
+                }
+
+        )
         builder.save()
 
     @staticmethod
-    def restore(path):
+    def restore(path, input_shape, opt):
         sess = tf.Session()
-        tf.saved_model.loader.load(sess, [tf.saved_model.tag_constants.TRAINING], path)
-        pl_out = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)[40]
-        v_out = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)[36]
-        inp = tf.placeholder(tf.float32, shape=(None,)+(3,3,3), name='value_label')
-        valY=tf.placeholder(tf.float32, name='input')
-        polY=tf.placeholder(tf.float32, name='policy_label')
-        loss = alphago_loss(pl_out, polY, v_out, valY)
-        nn = namedtuple('Network','input policy_label value_label policy_output value_output loss')(*(inp,polY,valY,pl_out,v_out,loss))
+        sig_key = tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY
 
-        return NetworkWrapper(nn, OPTIMIZER_REG['sgd'](learning_rate=0.01))
+        meta_graph = tf.saved_model.loader.load(
+                sess,
+                [
+                    tf.saved_model.tag_constants.SERVING,
+                    tf.saved_model.tag_constants.TRAINING
+                ],
+                path
+        )
+
+        signature = meta_graph.signature_def
+
+        pl_name = signature[sig_key].outputs['policy_head'].name
+        v_name = signature[sig_key].outputs['value_head'].name
+        i_name = signature[sig_key].inputs['input'].name
+        v_label_name = signature[sig_key].inputs['value_label'].name
+        p_label_name = signature[sig_key].inputs['policy_label'].name
+        learning_phase_name = signature[sig_key].inputs['learning_phase'].name
+
+        #tensors = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+        #tensor_names = [t.name for t in tensors]
+        #print(tensor_names)
+        #pl_out = tensors[tensor_names.index('policy_head/Sigmoid:0')]
+        #v_out  = tensors[tensor_names.index('value_head/Tanh:0')]
+        pl_out = sess.graph.get_tensor_by_name(pl_name)
+        v_out  = sess.graph.get_tensor_by_name(v_name)
+
+        inp = sess.graph.get_tensor_by_name(i_name)
+        valY = sess.graph.get_tensor_by_name(v_label_name)
+        polY = sess.graph.get_tensor_by_name(p_label_name)
+        learning_phase = sess.graph.get_tensor_by_name(learning_phase_name)
+
+
+
+        #inp = tf.placeholder(tf.float32, shape=(None,)+input_shape, name='input')
+        #valY=tf.placeholder(tf.float32, name='value_label')
+        #polY=tf.placeholder(tf.float32, name='policy_label')
+        loss = alphago_loss(pl_out, polY, v_out, valY)
+        nn = namedtuple('Network','input policy_label value_label policy_output value_output loss learning_phase')(*(inp,polY,valY,pl_out,v_out,loss,learning_phase))
+
+        return NetworkWrapper(nn, opt, sess, False)
 
 
 
@@ -174,9 +240,9 @@ def alphago_net(input_shape, # NOTE: Input shape should be the input size withou
 
     inp_placeholder_shape = (None,) + input_shape
 
-    valY = tf.placeholder(tf.float32, name='input')
+    valY = tf.placeholder(tf.float32, name='value_label')
     polY = tf.placeholder(tf.float32, name='policy_label')
-    inp = tf.placeholder(tf.float32, shape=inp_placeholder_shape, name='value_label')
+    inp = tf.placeholder(tf.float32, shape=inp_placeholder_shape, name='input')
 
     inter_out = convolutional_block(inp,
                                    num_conv_res_filters,
@@ -216,6 +282,7 @@ def convolutional_block(inp, num_filters, filter_size, input_shape, reg=0.001):
 
     l2 = BatchNormalization(axis=1)(l1)
     l3 = Activation('relu')(l2)
+
 
     return l3
 
@@ -259,7 +326,8 @@ def policy_head(inp, num_filters=2, filter_size=(1,1), reg=0.001):
     pl3 = Activation('relu')(pl2)
     pl_out = Dense(1, activation='sigmoid',
                    bias_regularizer=l2_reg(reg),
-                   kernel_regularizer=l2_reg(reg))( Flatten()(pl3) )
+                   kernel_regularizer=l2_reg(reg), name='policy_head')( Flatten()(pl3) )
+
 
     return pl_out
 
@@ -274,6 +342,7 @@ def value_head(inp, num_filters=1, filter_size=(1,1), reg=0.001):
     v2 = Activation('relu')(v1)
     v_out =  Dense(1,activation='tanh',
                    bias_regularizer=l2_reg(reg),
-                   kernel_regularizer=l2_reg(reg))(Flatten()(v2))
+                   kernel_regularizer=l2_reg(reg), name='value_head')(Flatten()(v2))
 
+    print(v_out.name)
     return v_out

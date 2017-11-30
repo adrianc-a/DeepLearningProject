@@ -26,9 +26,30 @@ class StateManager:
     def next_states(self):
         return [self.make_move(i) for i,_ in enumerate(self.get_moves())]
 
+    '''
     def moves2vec(self):
         "Returns a batch of state tensors for input to the network"
         return np.concatenate([state.state2vec() for state in self.next_states()])
+    '''
+
+    def moves2vec(self):
+        """
+        Returns a two-tuple of next play board represntations and state managers
+
+        The first element of the tuple is a 4-d numpy array where the first axis
+        associates to a single next board state
+
+        The second element of the tuple is all the state managers for the next states
+        of the current state
+        """
+        cur_state_vec = self.single_state2vec(include_player_pane=True)
+
+        next_states = self.next_states()
+        next_vecs = [next_state.single_state2vec() for next_state in next_states]
+
+        return np.stack(
+                 [np.concatenate([next_vec,cur_state_vec])
+                 for next_vec in next_vecs]), next_states
 
     # each subclass should return a new instance of itself, with the current
     # board state, or a copy

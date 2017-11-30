@@ -1,4 +1,9 @@
 from state_manager import StateManager
+import numpy as np
+
+PIECE_MAP = {'x': 0, 'o': 1}
+
+INPUT_SHAPE = (5, 6, 7)
 
 class Connect4:
     def __init__(self, board=None, turn=True):
@@ -6,9 +11,13 @@ class Connect4:
         self.cols = 7
         self.win_len = 4
         self.empty = ' '
-        self.state = board
-        self.turn = turn
 
+        if board == None:
+            self.new_game()
+        else:
+            self.state = board
+
+        self.turn = turn
         # turn == True ==> white = x
         self.white_moves = 0
         # turn == False ==> black = o
@@ -26,6 +35,7 @@ class Connect4:
                 row.append(self.empty)
             self.state.append(row)
 
+    @property
     def legal_moves(self):
         moves = []
         for i in range(self.cols):
@@ -37,6 +47,12 @@ class Connect4:
         for row in self.state:
             print(row)
         print()
+
+    def __repr__(self):
+        s = ""
+        for row in self.state:
+            s += str(row) + '\n'
+        return s
 
     def apply_move(self, move):
         if self.turn:
@@ -82,24 +98,52 @@ class Connect4:
 class Connect4Manager(StateManager):
     def __init__(self, state=None):
         super().__init__()
-        self.state=state
+
+        if state == None:
+            self.new_game()
+        else:
+            self.state = state
 
     def new_game(self):
         self.state = Connect4()
         self.state.new_game()
 
     def get_moves(self):
-        self.moves = self.state.legal_moves()
+        self.moves = self.state.legal_moves
         return self.moves
 
     def make_move(self, move_index):
         copy = self.state.copy()
 
         copy.apply_move(self.moves[move_index])
+        print(copy)
         return Connect4Manager(copy)
 
     def state2vec(self):
-        return [j for i in self.state.state for j in i]
+        #return [j for i in self.state.state for j in i]
+        raise NotImplementedError
+
+    def single_state2vec(self, include_player_pane=False):
+        state = self.state
+
+        outvec = np.zeros((2 + include_player_pane, state.rows, state.cols))
+
+        if include_player_pane: outvec[2].fill(not self.turn())
+
+        for i in range(state.rows):
+            for j in range(state.cols):
+                piece = state.state[i][j]
+                if piece != ' ':
+                    pane = PIECE_MAP[piece]
+                    outvec[pane][i][j] = 1
+
+        return outvec
+
+    def turn(self):
+        return self.state.turn
+
+    def __repr__(self):
+        return self.state.__repr__()
 
     def current_state(self):
         return Connect4Manager(self.state.copy())
