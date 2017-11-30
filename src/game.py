@@ -8,8 +8,8 @@ class Evaluator:
             manager, player1, player2, end_game=self._end_game, log=False,
             render=False
         )
-        self.player1_wins = 0
-        self.player2_wins = 0
+        self.player1_wins = 1
+        self.player2_wins = 1
 
     def _end_game(self, res, winner):
         if res == GameResult.WIN:
@@ -17,6 +17,10 @@ class Evaluator:
                 self.player1_wins += 1
             else:
                 self.player2_wins += 1
+        elif res == GameResult.DRAW:
+            self.player1_wins += .1
+            self.player2_wins += .1
+
 
 
     def evaluate(self, num_games=5):
