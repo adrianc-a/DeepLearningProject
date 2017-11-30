@@ -36,7 +36,6 @@ class AlphaGoZero:
 
         ind = argmax(pi)
         self.pi = pi
-
         return ind
 
 # there is a case to be made that the state2vec should be moved out of the
@@ -128,12 +127,12 @@ class AlphaGoZeroTrainer:
         self.game = manager.name()
         g = Game(
             manager,
-            self.play_move,
-            self.play_move,
-            self._begin_game,
-            self._end_game,
-            False,
-            False
+            player1=self.play_move,
+            player2=self.play_move,
+            begin_play=self._begin_play,
+            end_game=self._end_game,
+            log=False,
+            render=False
         )
 
         for i in range(1, iterations + 1):
@@ -171,7 +170,7 @@ class AlphaGoZeroTrainer:
             return self.player
 
 
-    def _begin_game(self):
+    def _begin_play(self):
         self.cur_S = []
         self.cur_P = []
 
