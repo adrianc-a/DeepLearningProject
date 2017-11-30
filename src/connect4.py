@@ -166,5 +166,12 @@ class Connect4Manager(StateManager):
     def output(self):
         self.state.output()
 
+    @classmethod
+    def cl_name():
+        return 'c4'
+
+    def name(self):
+        return Connect4Manager.cl_name()
+
     def num_full_moves(self):
         return self.white_moves + self.black_moves

@@ -126,6 +126,13 @@ class TicTacToeManager(StateManager):
     def output(self):
         print(self.board)
 
+    @staticmethod
+    def cl_name():
+        return 'ttt'
+
+    def name(self):
+        return TicTacToeManager.cl_name()
+
 def state2vec_singledim(self):
         piece_map = {'.': 0, 'X': 1, 'O':2}
 

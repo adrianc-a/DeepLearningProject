@@ -1,6 +1,39 @@
 from enum import Enum
 
 
+
+class Evaluator:
+    def __init__(self, manager, player1, player2):
+        self.game = Game(
+            manager, player1, player2, end_game=self._end_game, log=False,
+            render=False
+        )
+        self.player1_wins = 1
+        self.player2_wins = 1
+
+    def _end_game(self, res, winner):
+        if res == GameResult.WIN:
+            if winner == 0:
+                self.player1_wins += 1
+            else:
+                self.player2_wins += 1
+        elif res == GameResult.DRAW:
+            self.player1_wins += .1
+            self.player2_wins += .1
+
+
+
+    def evaluate(self, num_games=5):
+        self.game.play(num_games)
+
+        player1_to_2 = self.player1_wins / (self.player2_wins + self.player1_wins)
+
+        if player1_to_2 >= 0.55:
+            return 0, self.game.player1
+        else:
+            return 1, self.game.player2
+
+
 class GameResult(Enum):
     WIN  = 0
     DRAW = 1

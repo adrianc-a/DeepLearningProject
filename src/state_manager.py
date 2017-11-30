@@ -17,8 +17,7 @@ class StateManager:
     def get_moves(self):
         pass
 
-    def make_move(self, move_index):
-        pass
+    def make_move(self, move_index): pass
 
     def state2vec(self):
         pass
@@ -79,4 +78,7 @@ class StateManager:
 
     # number of moves (white & black)
     def num_full_moves(self):
+        pass
+
+    def name(self):
         pass

@@ -1,4 +1,4 @@
-from game import Game, GameResult
+from game import Game, GameResult, Evaluator
 import networks
 from math import floor
 from numpy import argmax
@@ -63,9 +63,7 @@ class AlphaGoZeroArchitectures:
     @staticmethod
     def ttt():
         return AlphaGoZeroArchitectures.create_player(
-
             networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 64, (1,1), 5, (2,2)),
-
             networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
         )
 
@@ -95,16 +93,41 @@ class AlphaGoZeroArchitectures:
     def connect4_input_shape():
         return connect4.INPUT_SHAPE
 
+    @staticmethod
+    def from_checkpoint(path, shape, opt):
+        return AlphaGoZero(networks.NetworkWrapper.restore(path, shape, opt))
+
+    @staticmethod
+    def shape(game):
+        if game == 'ttt':
+            return AlphaGoZeroArchitectures.ttt_input_shape()
+        elif game == 'c4':
+            return AlphaGoZeroArchitectures.connect4_input_shape()
+        else:
+            return AlphaGoZeroArchitectures.chess_input_shape()
+
+    @staticmethod
+    def get_manager(game):
+        if game == 'ttt':
+            return tictactoe_manager.TicTacToeManager()
+        elif game == 'c4':
+            return connect4.Connect4Manager()
+        else:
+            return chess_manager.ChessManager()
 
 
 class AlphaGoZeroTrainer:
-    def __init__(self, alphagozero_player):
+    def __init__(self, alphagozero_player, name=''):
         self.player = alphagozero_player
         self.S = []
         self.P = []
         self.Z = []
+        self.path = 'models/'
+        self.name = name
 
-    def train(self, manager, iterations=10, games=10, sample_pct=0.85):
+    def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=5):
+        self.path += manager.name() + '_' + self.name
+        self.game = manager.name()
         g = Game(
             manager,
             self.play_move,
@@ -115,10 +138,40 @@ class AlphaGoZeroTrainer:
             False
         )
 
-        for i in range(iterations):
+        for i in range(1, iterations + 1):
             g.play(games)
             self.update_weights(sample_pct)
             print('Finished iteration ' + str(i))
+
+            if i % ckpt == 0:
+                self.player.nn.save(self.path + '_' + str(i))
+                # check it's not the 1st checkpoint
+                if i - ckpt > 0:
+                    self.player = self._evaluate_cur_player(i - ckpt, i)
+
+    def _evaluate_cur_player(self, prev_i, cur_i):
+        prev_player = AlphaGoZeroArchitectures.from_checkpoint(
+            self.path + '_' + str(prev_i),
+            AlphaGoZeroArchitectures.shape(self.game),
+            #networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
+            self.player.nn.optimizer
+        )
+
+        winner, _ = Evaluator(
+            AlphaGoZeroArchitectures.get_manager(self.game),
+            prev_player.play_move,
+            self.player.play_move
+        ).evaluate()
+
+        if winner == 0:
+            print('checkpoint using previous')
+            self.player.nn.sess.close()
+            return prev_player
+        else:
+            print('checkpoint using current')
+            prev_player.nn.sess.close()
+            return self.player
+
 
     def _begin_game(self):
         self.cur_S = []
