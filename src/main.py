@@ -25,7 +25,7 @@ def parse_args():
     parser.add_argument('-i', '--iterations', type=int)
     parser.add_argument('-n', '--num_games', type=int)
     parser.add_argument('-a', '--learning_rate', type=float)
-    parser.add_argument('-p', '--play-game')
+    parser.add_argument('-p', '--play-game', action='store_true')
     parser.add_argument('-q', '--players',
             choices=['alphago', 'human','simple', 'random'], nargs=2)
     parser.add_argument('-s', '--save-model', action='store_true')
@@ -64,7 +64,7 @@ def load_model(game, path, opt):
         shape = ag.AlphaGoZeroArchitectures.chess_input_shape()
 
     return ag.AlphaGoZero(
-        NetworkWrapper.restore(path, shape, opt)
+        NetworkWrapper.restore(path, shape, opt), get_manager(game)
     )
 
 
