@@ -13,9 +13,9 @@ class AlphaGoZero:
 
     # nn must be game specific and line up according to a respective
     # state_manager
-    def __init__(self, nn):
+    def __init__(self, nn, man):
         self.nn = nn
-        self.mcts = MCTS(network_wrapper = nn)
+        self.mcts = MCTS(nn, man)
 
     def notify_move(self, move_idx):
         self.mcts.set_root(move_idx)
@@ -39,9 +39,9 @@ class AlphaGoZero:
         pi = self.mcts(current_state, n = 5)
 
         if is_train:
-            ind = np.random.choice(len(pi), p=pi)
+            ind = random.choice(len(pi), p=pi)
         else:
-            ind = np.argmax(pi)
+            ind = argmax(pi)
 
         self.mcts.set_root(ind)
 
@@ -56,8 +56,8 @@ class AlphaGoZero:
 class AlphaGoZeroArchitectures:
 
     @staticmethod
-    def create_player(nn, opt):
-        return AlphaGoZero(networks.NetworkWrapper(nn, opt))
+    def create_player(nn, opt, man):
+        return AlphaGoZero(networks.NetworkWrapper(nn, opt), man)
 
 
     # can we have this use state2vec.shape somehow?
@@ -71,7 +71,8 @@ class AlphaGoZeroArchitectures:
     def ttt():
         return AlphaGoZeroArchitectures.create_player(
             networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 64, (1,1), 5, (2,2)),
-            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
+            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01),
+            tictactoe_manager.TicTacToeManager()
         )
 
     @staticmethod
@@ -101,8 +102,8 @@ class AlphaGoZeroArchitectures:
         return connect4.INPUT_SHAPE
 
     @staticmethod
-    def from_checkpoint(path, shape, opt):
-        return AlphaGoZero(networks.NetworkWrapper.restore(path, shape, opt))
+    def from_checkpoint(path, shape, opt, man):
+        return AlphaGoZero(networks.NetworkWrapper.restore(path, shape, opt), man)
 
     @staticmethod
     def shape(game):
@@ -140,6 +141,7 @@ class AlphaGoZeroTrainer:
             player1=self.play_move,
             player2=self.play_move,
             begin_play=self._begin_play,
+            begin_game=self.player.mcts._begin_game,
             end_game=self._end_game,
             log=False,
             render=False
@@ -155,19 +157,27 @@ class AlphaGoZeroTrainer:
                 # check it's not the 1st checkpoint
                 if i - ckpt > 0:
                     self.player = self._evaluate_cur_player(i - ckpt, i)
+                    self.player.mcts._begin_game()
+
+    def _eval_begin_game(self, prev, cur):
+        print('ok')
+        prev.mcts._begin_game()
+        cur.mcts._begin_game()
 
     def _evaluate_cur_player(self, prev_i, cur_i):
         prev_player = AlphaGoZeroArchitectures.from_checkpoint(
             self.path + '_' + str(prev_i),
             AlphaGoZeroArchitectures.shape(self.game),
             #networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
-            self.player.nn.optimizer
+            self.player.nn.optimizer,
+            AlphaGoZeroArchitectures.get_manager(self.game)
         )
 
         winner, _ = Evaluator(
             AlphaGoZeroArchitectures.get_manager(self.game),
             prev_player.play_move,
-            self.player.play_move
+            self.player.play_move,
+            begin_game=lambda: self._eval_begin_game(prev_player, self.player)
         ).evaluate()
 
         if winner == 0:
@@ -178,6 +188,7 @@ class AlphaGoZeroTrainer:
             print('checkpoint using current')
             prev_player.nn.sess.close()
             return self.player
+
 
 
     def _begin_play(self):

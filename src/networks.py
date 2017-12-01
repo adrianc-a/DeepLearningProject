@@ -355,5 +355,4 @@ def value_head(inp, num_filters=1, filter_size=(1,1), reg=0.001):
                    bias_regularizer=l2_reg(reg),
                    kernel_regularizer=l2_reg(reg), name='value_head')(Flatten()(v2))
 
-    print(v_out.name)
     return v_out
