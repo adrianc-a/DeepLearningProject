@@ -3,19 +3,23 @@ import numpy as np
 
 class Node(object):
 
-    def __init__(self, state_manager, parent):
+    def __init__(self, state_manager, parent, idx = -1):
         self.parent = parent
         self.state_manager = state_manager
         self.moves = state_manager.get_moves()
-        #
+
+
+        self.num_children = len(moves)
+
         self.children = []
-        #
-        self.n = {}
-        self.p = {}
-        self.v = {}
-        self.q = {}
-        self.u = {}
-        self.w = {}
+
+        self.n = np.zeros(num_children)
+        self.p = np.zeros(num_children)
+        self.v = 0
+        self.q = np.zeros(num_children)
+        self.u = np.zeros(num_children)
+        self.w = np.zeros(num_children)
+        self.idx = idx
 
     def is_leaf(self):
         return len(self.children) == 0
@@ -41,59 +45,71 @@ class Node(object):
         return best_child
 
     def expand(self, network_wrapper):
-        self.value = 0.0
+        #self.value = 0.0
 
         # get the children state managers and their vec representations
         state_vecs, state_mans = self.state_manager.moves2vec()
 
         #get the predicted p and v values for all the children
         p, v = network_wrapper.forward(state_vecs)
-        avg_v = np.mean(v)
+        self.v = np.mean(v)
 
-        for p, next_state in zip(p, state_mans):
+        for i, (p, next_state) in enumerate(zip(p, state_mans)):
             child = Node(state_manager = next_state,
-                         parent = self)
-            self.v[child] = avg_v
-            self.p[child] = p
-            self.w[child] = 0
-            self.n[child] = 0
-            self.q[child] = 0
-            self.u[child] = 0
+                         parent = self, idx = i)
+            #child.idx = i
+            #self.v[i] = 0
+            self.p[i] = p
+            self.w[i] = 0
+            self.n[i] = 0
+            self.q[i] = 0
+            self.u[i] = 0
             self.children.append(child)
         return self
 
-    def update(self, child, v):
-        self.n[child] += 1.0
-        self.w[child] += v
-        self.q[child] = (1 / self.n[child]) * self.w[child]
-        s = sum(list(map(lambda x: self.n[x], self.children)))
-        for child in self.children:
+    def update(self, child_idx, v):
+        self.n[child_idx] += 1.0
+        self.w[child_idx] += v
+        self.q[child_idx] = (1 / self.n[child_idx]) * self.w[child_idx]
+        #s = #sum(list(map(lambda x: self.n[x], self.children)))
+        children_visits = np.sum(self.n)
+        c_puct = 1.0
+        for i,_ in enumerate(self.children):
             # u will change for all children due to change in the summation of n[child]
-            c_puct = 1.0
             # maybe some actual value for this constant?
-            self.u[child] = c_puct * self.p[child] * (s ** 0.5) / (1 + self.n[child])
+            self.u[i] = c_puct * self.p[i] * np.sqrt(s) / (1 + self.n[child_idx])
 
-    def export_pi(self, move_number):
-        temperature = (1.0 if move_number < 30 else 0.05)
-        return list(map(lambda x: self.n[x] ** (1.0 / temperature), self.children))
+    def export_pi(self, move_number, temp_change_iter, temp_early, temp_late):
+        temperature = temp_early if move_number < temp_change_iter else temp_late
+        #return list(map(lambda x: self.n[x] ** (1.0 / temperature), self.children))
+        temp_vals = np.power(self.n, 1 / temperature)
 
+        return temp_vals / np.sum(temp_vals)
+
+
+    '''
     def calc_value(self):
         v = 0.0
         for child in self.children:
             v += self.v[child]
         return v / len(self.children)
-
+    '''
 # ============================================================================================================================ #
 # MCTS
 # ============================================================================================================================ #
 
 class MCTS(object):
 
-    def __init__(self, network_wrapper):
+    def __init__(self, network_wrapper, temp_change_iter=30, temp_early=1, temp_late = 0.33):
         self.network_wrapper = network_wrapper
         self.root = None
+        self.root = Node(state_manager = state_manager, parent = None)
+        self.temp_change_iter = temp_change_iter
+        self.temp_early = temp_early
+        self.temp_late = temp_late
 
     def __call__(self, state_manager, n = 1500):
+        '''
         if not self.root:
             # print('starting mcts simulation ...')
             self.root = Node(state_manager = state_manager, parent = None)
@@ -101,13 +117,20 @@ class MCTS(object):
         else:
             # state_manager.output()
             self.update_root(state_manager)
+        '''
         for i in range(n):
             (node, terminal) = self.traverse(self.root)
             if not terminal:
                 self.back_propagate(node)
         # print('root: ', self.root)
         # print('children: ', self.root.children)
-        return self.root.export_pi(state_manager.num_full_moves())
+        return self.root.export_pi(state_manager.num_full_moves(),
+                                  self.temp_change_iter,
+                                  self.temp_early,
+                                  self.temp_late)
+
+    def set_root(self, move_idx):
+        self.root = self.root.children[move_idx]
 
     def update_root(self, state_manager):
         if not str(state_manager.board) == str(self.root.state_manager.board):
@@ -154,7 +177,7 @@ class MCTS(object):
 
     def back_propagate(self, node):
         # this is the value predicted for the edge leading to this node by the NN
-        v = node.calc_value()
+        #v = node.calc_value()
         while node.parent is not None:
-            node.parent.update(child = node, v = v)
+            node.parent.update(child_idx = node.idx, v = self.v)
             node = node.parent

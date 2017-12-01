@@ -17,7 +17,7 @@ class AlphaGoZero:
         self.nn = nn
         self.mcts = MCTS(network_wrapper = nn)
 
-    def play_move(self, current_state, next_states):
+    def play_move(self, current_state, next_states, is_train=True):
         """
         here we can explore all next states
         vectorize each state
@@ -32,9 +32,15 @@ class AlphaGoZero:
 
         # number of moves should not be a param, mcts should infer it
         # since not implemented i expect a normal python array of floats
+
         pi = self.mcts(current_state, n = 5)
 
-        ind = argmax(pi)
+        if is_train:
+            ind = np.random.choice(len(pi), p=pi)
+        else:
+            ind = np.argmax(pi)
+
+        #ind = argmax(pi)
         self.pi = pi
         return ind
 
