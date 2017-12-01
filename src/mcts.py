@@ -1,5 +1,6 @@
 import random
 import numpy as np
+from main import argss
 
 class Node(object):
 
@@ -84,7 +85,7 @@ class MCTS(object):
     def _begin_game(self):
         self.root = Node(state_manager = self.manager.current_state(), parent = None)
 
-    def __call__(self, state_manager, n = 1500):
+    def __call__(self, state_manager, n = main.argss.num_mctsrun):  
         for i in range(n):
             (node, terminal) = self.traverse(self.root)
             if not terminal:

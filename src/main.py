@@ -30,11 +30,14 @@ def parse_args():
             choices=['alphago', 'human','simple', 'random'], nargs=2)
     parser.add_argument('-s', '--save-model', action='store_true')
     parser.add_argument('-f', '--save-file', type=str)
-    parser.add_argument('-o', '--optimizer', choices=['sgd', 'adam'])
+    parser.add_argument('-o', '--optimizer', choices=list(networks.OPTIMIZER_REG.keys()))
     parser.add_argument('-e', '--eval', action='store_true')
+	parser.add_argument('-m', '--num-mctsrun', type=int)
 
     return parser.parse_args(argv[1:])
 
+
+		
 
 def train_model(game, iterations, num_games):
     if game == 'ttt':
@@ -93,8 +96,11 @@ def get_players(game, player, ag_player):
     elif player == 'random':
         return players.random_player
 
-
+		
+		
 def run_mode(args):
+	global argss
+	argss=args
     if args.train_model:
         ag_player = train_model(args.game, args.iterations, args.num_games)
     elif args.load_model:
