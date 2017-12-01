@@ -4,12 +4,14 @@ import os
 import json
 
 class Evaluator:
-    def __init__(self, manager, player1, player2, player1_name = 'player 1', player2_name = 'player 2', rate_players = False):
+    def __init__(self, manager, player1, player2,
+        player1_name = 'player 1', player2_name = 'player 2', rate_players = False, evaluation_output = 'ratings'):
         self.game = Game(
             manager, player1, player2, end_game=self._end_game, log=False,
             render=False
         )
         self.should_rate = rate_players
+        self.evaluation_output = evaluation_output
         self.player1_wins = 1
         self.player2_wins = 1
 
@@ -60,7 +62,7 @@ class Evaluator:
 
     def import_ratings(self):
         if self.should_rate:
-            path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/ratings.json'))
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + self.evaluation_output + '.json'))
             # create the ratings file with a valid empty json structure
             if not os.path.isfile(path):
                 with open(path, 'w+') as json_file:
@@ -82,7 +84,7 @@ class Evaluator:
 
     def export_ratings(self):
         if self.should_rate:
-            path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/ratings.json'))
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + self.evaluation_output + '.json'))
             with open(path, 'w') as json_file:
                 json.dump(self.ratings, json_file)
 
