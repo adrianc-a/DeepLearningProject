@@ -36,11 +36,12 @@ class AlphaGoZero:
         # number of moves should not be a param, mcts should infer it
         # since not implemented i expect a normal python array of floats
 
-        pi = self.mcts(current_state, n = 20)
+        pi = self.mcts(current_state, n = 10)
 
         if is_train:
             ind = random.choice(len(pi), p=pi)
         else:
+            print(pi)
             ind = argmax(pi)
 
         self.mcts.set_root(ind)
