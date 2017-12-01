@@ -46,7 +46,8 @@ class GameResult(Enum):
 class Game:
 
     def __init__(self, manager, player1, player2, begin_play=lambda: None, begin_game=lambda: None,
-            end_game=lambda t, w: None, log=True, render=True):
+            end_game=lambda t, w: None, log=True, render=True,
+            player1_notify=lambda i: None, player2_notify = lambda i: None):
         self.manager = manager
         self.player1 = player1
         self.player2 = player2
@@ -55,6 +56,8 @@ class Game:
         self.begin_game = begin_game
         self.log = True
         self.render = render
+        self.player1_notify = player1_notify
+        self.player2_notify = player2_notify
 
     def play(self, num_games=1):
         self.begin_play()
@@ -90,6 +93,11 @@ class Game:
                 return
 
             self.manager = self.manager.make_move(move_idx)
+
+            player_notifier = self.player1_notify if turn else self.player2_notify
+
+            player_notifier(move_idx)
+
             if self.log:
                 self.manager.output()
             if self.render:

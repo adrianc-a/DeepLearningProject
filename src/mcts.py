@@ -132,6 +132,7 @@ class MCTS(object):
     def set_root(self, move_idx):
         self.root = self.root.children[move_idx]
 
+    '''
     def update_root(self, state_manager):
         if not str(state_manager.board) == str(self.root.state_manager.board):
             for child in self.root.children:
@@ -151,6 +152,7 @@ class MCTS(object):
         #     root = root.parent
         # search for a state equal to this
         # self.root = self.search(root, state_manager)
+    '''
 
     def search(self, root, state_manager):
         frontier = [root]

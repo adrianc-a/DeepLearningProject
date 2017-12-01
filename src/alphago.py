@@ -17,7 +17,10 @@ class AlphaGoZero:
         self.nn = nn
         self.mcts = MCTS(network_wrapper = nn)
 
-    def play_move(self, current_state, next_states, is_train=True):
+    def notify_move(self, move_idx):
+        self.mcts.set_root(move_idx)
+
+    def play_move(self, current_state, next_states, is_train=False):
         """
         here we can explore all next states
         vectorize each state
@@ -40,7 +43,8 @@ class AlphaGoZero:
         else:
             ind = np.argmax(pi)
 
-        #ind = argmax(pi)
+        self.mcts.set_root(ind)
+
         self.pi = pi
         return ind
 
@@ -237,7 +241,10 @@ class AlphaGoZeroTrainer:
     def play_move(self, current_state, next_states):
         # since this is always called, regardless of player, we can keep the
         # states (s, pi, z)
-        move_index = self.player.play_move(current_state, next_states)
+        move_index = self.player.play_move(
+            current_state, next_states,
+            is_train=True
+        )
 
         state_vec, managers = current_state.moves2vec()
         self.cur_S.append(state_vec)
