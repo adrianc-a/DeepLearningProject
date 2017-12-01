@@ -74,7 +74,7 @@ class Node(object):
 
 class MCTS(object):
 
-    def __init__(self, network_wrapper, manager, temp_change_iter=30, temp_early=1, temp_late = 0.33):
+    def __init__(self, network_wrapper, manager, temp_change_iter=main.argss.temp_change_iter, temp_early=1, temp_late = 0.33):
         self.network_wrapper = network_wrapper
         self.manager = manager
         self.temp_change_iter = temp_change_iter

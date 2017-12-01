@@ -32,7 +32,9 @@ def parse_args():
     parser.add_argument('-f', '--save-file', type=str)
     parser.add_argument('-o', '--optimizer', choices=list(networks.OPTIMIZER_REG.keys()))
     parser.add_argument('-e', '--eval', action='store_true')
-	parser.add_argument('-m', '--num-mctsrun', type=int)
+	parser.add_argument('-m', '--num_mctsrun', type=int)
+	parser.add_argument('-t', '--temp_change_iter', type=int)
+	
 
     return parser.parse_args(argv[1:])
 
