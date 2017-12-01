@@ -136,18 +136,18 @@ class AlphaGoZeroTrainer:
     def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=5):
         self.path += manager.name() + '_' + self.name
         self.game = manager.name()
-        g = Game(
-            manager,
-            player1=self.play_move,
-            player2=self.play_move,
-            begin_play=self._begin_play,
-            begin_game=self.player.mcts._begin_game,
-            end_game=self._end_game,
-            log=False,
-            render=False
-        )
 
         for i in range(1, iterations + 1):
+            g = Game(
+                manager,
+                player1=self.play_move,
+                player2=self.play_move,
+                begin_play=self._begin_play,
+                begin_game=self.player.mcts._begin_game,
+                end_game=self._end_game,
+                log=False,
+                render=False
+            )
             g.play(games)
             self.update_weights(sample_pct)
             print('Finished iteration ' + str(i))
@@ -157,7 +157,7 @@ class AlphaGoZeroTrainer:
                 # check it's not the 1st checkpoint
                 if i - ckpt > 0:
                     self.player = self._evaluate_cur_player(i - ckpt, i)
-                    self.player.mcts._begin_game()
+                    #self.player.mcts._begin_game()
 
     def _eval_begin_game(self, prev, cur):
         print('ok')
