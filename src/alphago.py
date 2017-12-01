@@ -36,11 +36,12 @@ class AlphaGoZero:
         # number of moves should not be a param, mcts should infer it
         # since not implemented i expect a normal python array of floats
 
-        pi = self.mcts(current_state, n = 5)
+        pi = self.mcts(current_state, n = 10)
 
         if is_train:
             ind = random.choice(len(pi), p=pi)
         else:
+            print(pi)
             ind = argmax(pi)
 
         self.mcts.set_root(ind)
@@ -70,7 +71,7 @@ class AlphaGoZeroArchitectures:
     @staticmethod
     def ttt():
         return AlphaGoZeroArchitectures.create_player(
-            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 64, (1,1), 5, (2,2)),
+            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 4, (1,1), 5, (2,2)),
             networks.OPTIMIZER_REG['sgd'](learning_rate=0.01),
             tictactoe_manager.TicTacToeManager()
         )
@@ -133,7 +134,7 @@ class AlphaGoZeroTrainer:
         self.path = 'models/'
         self.name = name
 
-    def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=5):
+    def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=15):
         self.path += manager.name() + '_' + self.name
         self.game = manager.name()
 

@@ -34,7 +34,7 @@ class Node(object):
     def get_best_child(self):
         ind = np.argmax(self.u + self.q)
 
-        return self.children[ind]
+        return self.children[ind], ind
 
     def expand(self, network_wrapper):
         #self.value = 0.0
@@ -46,18 +46,22 @@ class Node(object):
         p, v = network_wrapper.forward(state_vecs)
         self.v = np.mean(v)
 
+        print(p)
+        print(v)
         self.p = p
         for i, (_, next_state) in enumerate(zip(p, state_mans)):
             child = Node(state_manager = next_state,
                          parent = self, idx = i)
+            self.w[i] = self.v
+            self.n[i] = 1
+            self.q[i] = self.w[i]
             self.children.append(child)
         return self
 
     def update(self, child_idx, v):
         self.n[child_idx] += 1.0
         self.w[child_idx] += v
-        self.q[child_idx] = (1 / self.n[child_idx]) * self.w[child_idx]
-        #s = #sum(list(map(lambda x: self.n[x], self.children)))
+        self.q[child_idx] = self.w[child_idx]/ self.n[child_idx]
         children_visits = np.sum(self.n)
         c_puct = 1.0
         for i,_ in enumerate(self.children):
@@ -90,6 +94,7 @@ class MCTS(object):
             (node, terminal) = self.traverse(self.root)
             if not terminal:
                 self.back_propagate(node)
+
         # print('root: ', self.root)
         # print('children: ', self.root.children)
         return self.root.export_pi(state_manager.num_full_moves(),
@@ -100,23 +105,14 @@ class MCTS(object):
     def set_root(self, move_idx):
         self.root = self.root.children[move_idx]
 
-    def search(self, root, state_manager):
-        frontier = [root]
-        while True:
-            node = frontier.pop(0)
-            if str(node.state_manager.board) == str(state_manager.board):
-                return node
-            for child in node.children:
-                frontier.append(child)
-            if not len(frontier):
-                return None
-
     def traverse(self, node):
         while not node.is_terminal():
             if node.is_leaf():
                 return (node.expand(self.network_wrapper), False)
             else:
-                node = node.get_best_child()
+                node, ind = node.get_best_child()
+                node.parent.update(ind, 0)
+
         return (node, True)
 
     def back_propagate(self, node):
