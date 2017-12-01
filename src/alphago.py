@@ -200,7 +200,7 @@ class AlphaGoZeroTrainer:
         if end_type != GameResult.WIN:
             return
 
-        winner = -1 if winner == 0 else 1
+        winner = 1 if winner == 0 else -1
 
         flip = lambda x: -1 if x == 1 else 1
 
