@@ -3,19 +3,20 @@ import numpy as np
 
 class Node(object):
 
-    def __init__(self, state_manager, parent):
+    def __init__(self, state_manager, parent, index):
         self.parent = parent
         self.state_manager = state_manager
         self.moves = state_manager.get_moves()
+        self.index = index
         #
         self.children = []
         #
-        self.n = {}
-        self.p = {}
-        self.v = {}
-        self.q = {}
-        self.u = {}
-        self.w = {}
+        self.n = []
+        self.p = []
+        self.v = []
+        self.q = []
+        self.u = []
+        self.w = []
 
     def is_leaf(self):
         return len(self.children) == 0
@@ -30,7 +31,7 @@ class Node(object):
         max_value = - np.inf
         candidates = []
 
-        for child, value in zip(self.children, [self.tree_policy(child) for child in self.children]):
+        for child, value in zip(range(0, len(self.children)), [self.tree_policy(child) for child in range(0, len(self.children))]):
             if value == max_value:
                 candidates.append(child)
             elif value > max_value:
@@ -38,7 +39,7 @@ class Node(object):
                 max_value = value
 
         best_child = random.choice(candidates)
-        return best_child
+        return self.children[best_child]
 
     def expand(self, network_wrapper):
         self.value = 0.0
@@ -48,39 +49,38 @@ class Node(object):
 
         #get the predicted p and v values for all the children
         p, v = network_wrapper.forward(state_vecs)
-        avg_v = np.mean(v)
 
         for p, next_state in zip(p, state_mans):
             child = Node(state_manager = next_state,
-                         parent = self)
-            self.v[child] = 0
-            self.p[child] = p
-            self.w[child] = 0
-            self.n[child] = 0
-            self.q[child] = 0
-            self.u[child] = 0
+                         parent = self, index = len(self.children))
+            self.v.append(0)
+            self.p.append(p)
+            self.w.append(0)
+            self.n.append(0)
+            self.q.append(0)
+            self.u.append(0)
             self.children.append(child)
-        return avg_v
+        return self
 
     def update(self, child, v):
-        self.n[child] += 1.0
-        self.w[child] += v
-        self.q[child] = (1 / self.n[child]) * self.w[child]
-        s = sum(list(map(lambda x: self.n[x], self.children)))
-        for child in self.children:
+        self.n[child.index] += 1.0
+        self.w[child.index] += v
+        self.q[child.index] = (1 / self.n[child.index]) * self.w[child.index]
+        s = sum(list(map(lambda x: self.n[x], range(0, len(self.children)))))
+        for i in range(0, len(self.children)):
             # u will change for all children due to change in the summation of n[child]
             c_puct = 1.0
             # maybe some actual value for this constant?
-            self.u[child] = c_puct * self.p[child] * (s ** 0.5) / (1 + self.n[child])
+            self.u[i] = c_puct * self.p[i] * (s ** 0.5) / (1 + self.n[i])
 
     def export_pi(self, move_number):
         temperature = (1.0 if move_number < 30 else 0.05)
-        return list(map(lambda x: self.n[x] ** (1.0 / temperature), self.children))
+        return list(map(lambda x: self.n[x] ** (1.0 / temperature), range(0, len(self.children))))
 
     def calc_value(self):
         v = 0.0
-        for child in self.children:
-            v += self.v[child]
+        for i in range(0, len(self.children)):
+            v += self.v[i]
         return v / len(self.children)
 
 # ============================================================================================================================ #
@@ -94,13 +94,14 @@ class MCTS(object):
         self.root = None
 
     def __call__(self, state_manager, n = 1500):
-        if not self.root:
+        self.root = Node(state_manager = state_manager, parent = None, index = 0)
+        # if not self.root:
             # print('starting mcts simulation ...')
-            self.root = Node(state_manager = state_manager, parent = None)
+            # self.root = Node(state_manager = state_manager, parent = None)
             # print('root is:', self.root)
-        else:
+        # else:
             # state_manager.output()
-            self.update_root(state_manager)
+            # self.update_root(state_manager)
         for i in range(0, 1500):
             (node, terminal) = self.traverse(self.root)
             if not terminal:
@@ -152,7 +153,7 @@ class MCTS(object):
                 node = node.get_best_child()
         return (node, True)
 
-    def back_propagate(self, node, v):
+    def back_propagate(self, node):
         # this is the value predicted for the edge leading to this node by the NN
         v = node.calc_value()
         while node.parent is not None:

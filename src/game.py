@@ -1,7 +1,5 @@
 from enum import Enum
 
-
-
 class Evaluator:
     def __init__(self, manager, player1, player2):
         self.game = Game(
@@ -69,6 +67,7 @@ class Game:
         turn = True
 
         n = 0
+        move_idx = -1
         while not self.manager.is_terminal_state():
             moves = self.manager.next_states()
 
@@ -81,7 +80,7 @@ class Game:
 
             player = self.player1 if turn else self.player2
 
-            move_idx = player(self.manager.current_state(), moves)
+            move_idx = player(self.manager.current_state(), moves, move_idx)
 
             if move_idx < 0 or move_idx >= len(moves):
                 print('illegal move made')

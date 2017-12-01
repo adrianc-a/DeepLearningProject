@@ -16,8 +16,9 @@ class AlphaGoZero:
     def __init__(self, nn):
         self.nn = nn
         self.mcts = MCTS(network_wrapper = nn)
+        self.training = True
 
-    def play_move(self, current_state, next_states):
+    def play_move(self, current_state, next_states, previous_move):
         """
         here we can explore all next states
         vectorize each state
@@ -29,14 +30,18 @@ class AlphaGoZero:
         into a nn and get some rating, simply by specificying the type either in
         the nn module/class or here, as a parameter in __init__
         """
+        if previous_move != -1:
+            self.mcts.make_move(previous_move)
 
         # number of moves should not be a param, mcts should infer it
         # since not implemented i expect a normal python array of floats
         pi = self.mcts(current_state, n = 5)
 
         ind = argmax(pi)
-        # update root node in mcts tree
-        # self.mcts.make_move(ind)
+        # if we are training, playing against ourselves, then this should be avoided
+        if not self.training:
+            # update root node in mcts tree
+            self.mcts.make_move(ind)
         self.pi = pi[ind]
 
         return ind
@@ -231,10 +236,10 @@ class AlphaGoZeroTrainer:
         )
 
 
-    def play_move(self, current_state, next_states):
+    def play_move(self, current_state, next_states, previous_move):
         # since this is always called, regardless of player, we can keep the
         # states (s, pi, z)
-        move_index = self.player.play_move(current_state, next_states)
+        move_index = self.player.play_move(current_state, next_states, previous_move)
 
         state_vec, managers = current_state.moves2vec()
         self.cur_S.append(state_vec)
