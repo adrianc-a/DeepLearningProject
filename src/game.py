@@ -1,38 +1,90 @@
 from enum import Enum
 
-
+import os
+import json
 
 class Evaluator:
-    def __init__(self, manager, player1, player2):
+    def __init__(self, manager, player1, player2, player1_name = 'player 1', player2_name = 'player 2', rate_players = False):
         self.game = Game(
             manager, player1, player2, end_game=self._end_game, log=False,
             render=False
         )
+        self.should_rate = rate_players
         self.player1_wins = 1
         self.player2_wins = 1
 
     def _end_game(self, res, winner):
+        e = [0, 0]
+        p = [0, 0]
+        e[0] = 1.0 / (1.0 + 10.0 ** ((self.ratings[player2_name]['elo'] - self.ratings[player1_name]['elo']) / 400.0))
+        e[1] = 1.0 / (1.0 + 10.0 ** ((self.ratings[player1_name]['elo'] - self.ratings[player2_name]['elo']) / 400.0))
         if res == GameResult.WIN:
             if winner == 0:
                 self.player1_wins += 1
+                if should_rate:
+                    p[0] = self.ratings[1] + 400.0
+                    p[1] = self.ratings[0] - 400.0
+                    self.ratings[player_1]['wins'] += 1
             else:
                 self.player2_wins += 1
+                if should_rate:
+                    p[0] = self.ratings[1] - 400.0
+                    p[1] = self.ratings[0] + 400.0
+                    self.ratings[player_2]['wins'] += 1
         elif res == GameResult.DRAW:
             self.player1_wins += .1
             self.player2_wins += .1
-
-
+            if should_rate:
+                self.ratings[player_1]['draws'] += 1
+                self.ratings[player_2]['draws'] += 1
+        if should_rate:
+            self.ratings[player_1]['games'] += 1
+            self.ratings[player_2]['games'] += 1
+            k = 800.0 / (self.ratings[player1_name]['games'])
+            self.ratings[player1_name]['elo'] = self.ratings[player1_name]['elo'] + k * (p[0] - e[0])
+            k = 800.0 / (self.ratings[player2_name]['games'])
+            self.ratings[player2_name]['elo'] = self.ratings[player2_name]['elo'] + k * (p[1] - e[1])
 
     def evaluate(self, num_games=5):
+        self.import_ratings()
         self.game.play(num_games)
-
+        #
         player1_to_2 = self.player1_wins / (self.player2_wins + self.player1_wins)
 
         if player1_to_2 >= 0.55:
             return 0, self.game.player1
         else:
             return 1, self.game.player2
+        #
+        self.export_ratings()
 
+    def import_ratings(self):
+        if self.should_rate:
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/ratings.json'))
+            # create the ratings file with a valid empty json structure
+            if not os.path.isfile(path):
+                with open(path, 'w+') as json_file:
+                    json.dump({}, json_file)
+            # import the ratings
+            with open(path, 'r') as json_file:
+                self.ratings = json.load(json_file)
+            add_player_to_ratings(player1_name)
+            add_player_to_ratings(player2_name)
+
+    def add_player_to_ratings(self, player):
+        if not player in self.ratings:
+            self.ratings[player] = {
+                'elo': 1300,
+                'wins':  0,
+                'games': 0,
+                'draws': 0,
+            }
+
+    def export_ratings(self):
+        if self.should_rate:
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/ratings.json'))
+            with open(path, 'w') as json_file:
+                json.dump(self.ratings, json_file)
 
 class GameResult(Enum):
     WIN  = 0

@@ -94,7 +94,7 @@ def get_players(game, player, ag_player):
         return players.random_player
 
 
-def run_mode(args):
+def run_model(args):
     if args.train_model:
         ag_player = train_model(args.game, args.iterations, args.num_games)
     elif args.load_model:
@@ -112,7 +112,7 @@ def run_mode(args):
         Game(get_manager(args.game), p1, p2).play()
 
     if args.eval:
-        print(Evaluator(get_manager(args.game), p1, p2).evaluate())
+        print(Evaluator(get_manager(args.game), p1, p2, args.players[0], args.players[1], True).evaluate())
 
 
     if args.save_model:
@@ -120,4 +120,4 @@ def run_mode(args):
 
 
 if __name__ == '__main__':
-    run_mode(parse_args())
+    run_model(parse_args())
