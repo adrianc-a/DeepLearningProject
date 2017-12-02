@@ -75,7 +75,7 @@ class AlphaGoZeroArchitectures:
     @staticmethod
     def ttt():
         return AlphaGoZeroArchitectures.create_player(
-            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 10, (3,3), 5, (3,3)),
+            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 15, (3,3), 4, (3,3), regularization=0.01),
             networks.OPTIMIZER_REG['sgd'](learning_rate=0.001),
             tictactoe_manager.TicTacToeManager()
         )
@@ -144,7 +144,7 @@ class AlphaGoZeroTrainer:
         self.P = []
         self.Z = []
 
-    def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=10):
+    def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=5):
         self.path += manager.name() + '_' + self.name
         self.game = manager.name()
 

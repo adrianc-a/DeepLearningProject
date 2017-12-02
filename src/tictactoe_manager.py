@@ -6,7 +6,7 @@ DEFAULT_BOARD = ttt.TTT()
 
 TILE_MAP = {'X': 0, 'O': 1}
 
-INPUT_SHAPE = (5,3,3)
+INPUT_SHAPE = (3,3,5)
 
 class TicTacToeManager(StateManager):
 

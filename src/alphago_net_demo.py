@@ -7,23 +7,34 @@ import numpy as np
 from keras import backend as K
 from keras.layers import Dense, Activation,Conv2D,MaxPooling2D,Flatten,Dropout, BatchNormalization
 import networks as nn
+import tictactoe_manager as tm
+import state_manager
+import connect4 as c4
+import alphago as ag
+import networks 
+from alphago import AlphaGoZeroArchitectures
+reload(ag)
+reload(state_manager)
 reload(nn)
 reload(cm)
-
+reload(tm)
+reload(c4)
 sess = tf.Session()
 K.set_session(sess)
+tic_game = tm.TicTacToeManager()
+chess_game = cm.ChessManager()
+connect_game = c4.Connect4Manager()
 
-g = cm.ChessManager()
+net, opt = ag.AlphaGoZeroArchitectures.connect4_net()
 
 # create a 'batch' of the input data
-input_batch = g.moves2vec()
+input_batch,state_mans = chess_game.moves2vec()
 
 # create a batch of 'label' data
 valy = np.random.uniform(low=-1,high=1,size=(input_batch.shape[0],1))
 poly = np.random.uniform(low=0,high=1,size=(input_batch.shape[0],1))
 
-(inp,valY,polY,pl_out,v_out,loss) = nn.alphago_net((3,8,8), 256, (3,3), 1, (3,3))
-
+(inp,valY,polY,pl_out,v_out,loss) = nn.alphago_net((5,8,8), 256, (3,3), 10, (3,3))
 train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
 
 init_op = tf.global_variables_initializer()
@@ -55,14 +66,11 @@ with sess.as_default():
 ###RUNNING A NETWORK WITH THE SIMPLIFIED INTERFACE
 
 # first you need to get a network and optimizer definition
-network = nn.alphago_net((3,8,8), 256, (3,3), 1, (3,3))
+network = nn.alphago_net((5,8,8), 256, (3,3), 1, (3,3))
 optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
-
-# then create a wrapper object
 net = nn.NetworkWrapper(network, optimizer)
 
-# get the predicted pi and z values for a batch of data
-out = net.forward(input_batch)
+p,v= net.forward(input_batch)
 
 # get the value of the loss function for a batch of data
 loss_val = net.forward_loss(input_batch, poly, valy)

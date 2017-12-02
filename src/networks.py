@@ -11,6 +11,8 @@ OPTIMIZER_REG = {"adam":tf.train.AdamOptimizer,
                  "momentum":tf.train.MomentumOptimizer,
                  "rms":tf.train.RMSPropOptimizer}
 
+CHANNELS = 'channels_last'
+
 class NetworkWrapper():
 
     def __init__(self, network, optimizer, new_sess=True):
@@ -291,7 +293,7 @@ def convolutional_block(inp, num_filters, filter_size, input_shape, reg=0.001):
     l1 = Conv2D(num_filters, filter_size, padding='same',
                 bias_regularizer=l2_reg(reg),
                 kernel_regularizer=l2_reg(reg),
-                input_shape=input_shape,data_format='channels_first')(inp)
+                input_shape=input_shape,data_format=CHANNELS)(inp)
 
     l2 = BatchNormalization(axis=1)(l1)
     l3 = Activation('relu')(l2)
@@ -312,15 +314,15 @@ def residual_block(inp, num_filters, filter_size, reg=0.001):
     nl1 = Conv2D(num_filters, filter_size, padding='same',
                 bias_regularizer=l2_reg(reg),
                 kernel_regularizer=l2_reg(reg),
-                data_format='channels_first')(new_in)
+                data_format=CHANNELS)(new_in)
 
     nl2 = BatchNormalization(axis=1)(nl1)
     nl3 = Activation('relu')(nl2)
-    #nl4 = Conv2D(256, (3,3), padding='same',data_format='channels_first')(nl3)
+    #nl4 = Conv2D(256, (3,3), padding='same',data_format=CHANNELS)(nl3)
     nl4 = Conv2D(num_filters, filter_size, padding='same',
                 bias_regularizer=l2_reg(reg),
                 kernel_regularizer=l2_reg(reg),
-                data_format='channels_first')(nl3)
+                data_format=CHANNELS)(nl3)
 
     nl5 = BatchNormalization(axis=1)(nl4)
     nl6 = Activation('relu')(nl5 + new_in)
@@ -334,7 +336,7 @@ def policy_head(inp, num_filters=2, filter_size=(1,1), reg=0.001):
     pl1 = Conv2D(num_filters, filter_size, padding='same',
                  bias_regularizer=l2_reg(reg),
                  kernel_regularizer=l2_reg(reg),
-                 data_format='channels_first')(pl_in)
+                 data_format=CHANNELS)(pl_in)
     pl2 = BatchNormalization(axis=1)(pl1)
     pl3 = Activation('relu')(pl2)
     pl_out = Dense(1, activation='sigmoid',
@@ -351,7 +353,7 @@ def value_head(inp, num_filters=1, filter_size=(1,1), reg=0.001):
     v1 = Conv2D(num_filters, filter_size, padding='same',
                 bias_regularizer=l2_reg(reg),
                 kernel_regularizer=l2_reg(reg),
-                data_format='channels_first')(v_in)
+                data_format=CHANNELS)(v_in)
     v2 = Activation('relu')(v1)
     v_out =  Dense(1,activation='tanh',
                    bias_regularizer=l2_reg(reg),

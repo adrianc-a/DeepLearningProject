@@ -47,9 +47,10 @@ class StateManager:
         next_vecs = [next_state.single_state2vec() for next_state in next_states]
 
         try:
-            return np.stack(
-                 [np.concatenate([next_vec,cur_state_vec])
-                 for next_vec in next_vecs]), next_states
+            state_vecs = np.stack([np.concatenate([next_vec,cur_state_vec])
+                                   for next_vec in next_vecs])
+            state_vecs = state_vecs.swapaxes(1,3)
+            return state_vecs, next_states
         except ValueError as e:
             print(next_vecs)
             print(state_vecs)
