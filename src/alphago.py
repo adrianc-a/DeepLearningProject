@@ -8,6 +8,8 @@ from mcts import MCTS
 import chess_manager
 import tictactoe_manager
 import connect4
+import pickle
+import numpy as np
 
 class AlphaGoZero:
 
@@ -126,13 +128,17 @@ class AlphaGoZeroArchitectures:
 
 
 class AlphaGoZeroTrainer:
-    def __init__(self, alphagozero_player, name=''):
+    def __init__(self, alphagozero_player, name='',
+                 states_to_sample=2048, batch_size=32, num_epochs=5):
         self.player = alphagozero_player
         self.S = []
         self.P = []
         self.Z = []
         self.path = 'models/'
         self.name = name
+        self.states_to_sample = states_to_sample
+        self.batch_size = 32
+        self.num_epochs = num_epochs
 
     def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=15):
         self.path += manager.name() + '_' + self.name
@@ -150,7 +156,7 @@ class AlphaGoZeroTrainer:
                 render=False
             )
             g.play(games)
-            self.update_weights(sample_pct)
+            self.update_weights()
             print('Finished iteration ' + str(i))
 
             if i % ckpt == 0:
@@ -198,62 +204,70 @@ class AlphaGoZeroTrainer:
     def _end_game(self, end_type, winner):
         # I'm not sure what to do if it's a draw/something else
         if end_type != GameResult.WIN:
-            return
+            winner = 0
+        else:
+            winner = 1 if winner == 0 else -1
 
-        winner = 1 if winner == 0 else -1
-
-        flip = lambda x: -1 if x == 1 else 1
+        flip = lambda x: x * -1
 
         # there is probably a more elegant method for adding these
         # cur_Z is the winner, relative to the current player
         cur_Z = []
         for i in range(len(self.cur_S)):
-            cur_Z.append(winner)
+            cur_Z.append(np.ones(self.cur_S[i].shape[0]) * winner)
             winner = flip(winner)
         cur_Z.reverse()
 
         # add the triple's for the latest game to the total data
-        self.S.extend(self.cur_S)
-        self.P.extend(self.cur_P)
-        self.Z.extend(cur_Z)
+
+        S = np.concatenate(self.cur_S)
+        P = np.concatenate(self.cur_P)
+        Z = np.concatenate(cur_Z)
+
+        Z = Z.reshape((Z.shape[0],1))
+        P = P.reshape((P.shape[0],1))
+
+        self.S.append(S)
+        self.P.append(P)
+        self.Z.append(Z)
+
+        #self.S = np.concatenate([self.S, S])
+        #self.P = np.concatenate([self.P, P])
+        #self.Z = np.concatenate([self.Z, Z])
 
 
-    def update_weights(self, pct):
-        # based on the games and self.data
-        # update the weights of the nn
-
-        batch_size = floor(pct * len(self.S))
-        ind = random.choice(len(self.S) - 1, batch_size, replace=False)
-
-
-        self.S = array(self.S)[ind].tolist()
-        self.P = array(self.P)[ind].tolist()
-        self.Z = array(self.Z)[ind].tolist()
-
-        batch_S = []
-        batch_P = []
-        batch_Z = []
-
-        for i in range(len(self.S)):
-            for j in range(len(self.S[i])):
-                batch_S.append(self.S[i][j])
-                batch_P.append(self.P[i][j])
-                batch_Z.append(self.Z[i])
-
-
-        with open('training_step.txt', 'w+') as f:
+        with open('small_stuff.pl', 'wb') as f:
+            '''
             f.write('S')
             f.write(str(batch_S) + '\n')
             f.write('P')
             f.write(str(batch_P) + '\n')
             f.write('Z')
             f.write(str(batch_Z) + '\n')
+            '''
+            pickle.dump((self.cur_S,self.cur_P,cur_Z), f)
 
-        self.player.nn.training_step(
-            array(batch_S),
-            array(batch_P),
-            array(batch_Z)
-        )
+
+    def update_weights(self):
+        # based on the games and self.data
+        # update the weights of the nn
+
+        S = np.concatenate(self.S)
+        P = np.concatenate(self.P)
+        Z = np.concatenate(self.Z)
+
+        total_states = min(self.states_to_sample, S.shape[0])
+
+        #batch_size = floor(pct * len(self.S))
+        #ind = random.choice(len(self.S) - 1, batch_size, replace=False)
+
+        with open('training_step.pl', 'wb') as f:
+            #idek anymore man
+            pickle.dump((S,P,Z), f)
+
+        for _ in range(self.num_epochs):
+            for s, p, z in make_SPZ_batches(self.batch_size,S,P,Z):
+                self.player.nn.training_step(s,p,z)
 
 
     def play_move(self, current_state, next_states):
@@ -274,3 +288,13 @@ class AlphaGoZeroTrainer:
         self.cur_P.append(self.player.pi)
 
         return move_index
+
+
+def make_SPZ_batches(batch_size, S, P, Z):
+    n = S.shape[0]
+    indexes = np.arange(n)
+    np.random.shuffle(indexes)
+
+    for i in range(0, n, batch_size):
+        batch_indices = indexes[i:i+32]
+        yield S[batch_indices], P[batch_indices], Z[batch_indices]
