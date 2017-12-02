@@ -8,7 +8,6 @@ class Node(object):
         self.state_manager = state_manager
         self.moves = state_manager.get_moves()
 
-
         num_children = len(self.moves)
 
         self.children = []

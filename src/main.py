@@ -11,8 +11,8 @@ from sys import argv
 import tensorflow as tf
 import numpy as np
 
-# import plotly.plotly as plotly
-# import plotly.graph_objs as graph_objs
+import plotly.plotly as plotly
+import plotly.graph_objs as graph_objs
 
 from IPython.display import clear_output, Image, display, HTML
 
@@ -113,7 +113,6 @@ def run_model(args):
         p1 = get_players(args.game, args.players[0], ag_player)
         p2 = get_players(args.game, args.players[1], ag_player)
 
-
     if args.play_game:
         player1_notify=lambda x: None
         player2_notify=lambda x: None
@@ -136,7 +135,6 @@ def run_model(args):
         ag_player.nn.save(args.save_file)
 
 def evaluate_over_time(args):
-    # 
     player = get_players(args.game, args.players[0], ag_player)
     # 
     model_directory = os.path.asbpath(os.path.join(os.path.dirname(__file__), '../model'))
@@ -144,30 +142,80 @@ def evaluate_over_time(args):
     checkpoints = []
     for directory in os.listdir(model_directory):
         if os.path.isdir(os.path.join(model_directory, directory)):
-            if directory.startsWith(args.game + '_' + args.model_name + '_'):
-                checkpoints.add(os.path.join(model_directory, directory))
+            if directory.startswith(args.game + '_' + args.model_name + '_'):
+                checkpoints.append(os.path.join(model_directory, directory))
     # 
-    evaluation_file = args.game + '_' + args.model_name + '_' + args.players[0]
+    evaluation_output_file = args.game + '_' + 'alphago' + '_' + 'checkpoints'
     # sort lexicographically
     checkpoints = sorted(checkpoints)
+    notifiers = []
+    players = []
+    stats = {}
+    opt = OPTIMIZER_REG[args.optimizer](learning_rate = args.learning_rate)
+    #
     for checkpoint in checkpoints:
         checkpoint_number = checkpoint.split('_')[-1]
-        opt = OPTIMIZER_REG[args.optimizer](learning_rate=args.learning_rate)
         ag_player = load_model(args.game, checkpoint, opt)
+        players.append(ag_player)
+        notifiers.append(ag_player.notify_move)
+        stats.append({
+            'e': 0,
+            'p': 0,
+            'elo': 750,
+            'wins': 0,
+            'draws': 0,
+            'games': 0,
+        })
         # 
-        Evaluator(get_manager(args.game), ag_player, player,
-            player1_notify = player1_notify, player2_notify = player2_notify,
-            player1_name = args.game + '_' + args.model_name + '_' + checkpoint_number, player2_name = args.players[0],
-            should_rate = True, rate_after_each_game = False, evaluation_output = evaluation_file).evaluate()
-    path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + evaluation_output + '.json'))
-    rating = {}
+    num_games = 10
+    for iteration in range(args.iterations):
+        for i in range(len(checkpoints)):
+            for j in range(i + 1, len(checkpoints)):
+                iteration_stats = {
+                    'r' = [stats[i]['elo'], stats[j]['elo']],
+                    'e' = [0, 0],
+                    'p' = [0, 0],
+                }
+                Evaluator(get_manager(args.game), players[i], players[j],
+                    player1_notify = notifiers[i],
+                    player2_notify = notifiers[j],
+                    player1_name = 'checkpoint_' + str(iteration) + '_' + str(i),
+                    player2_name = 'checkpoint_' + str(iteration) + '_' + str(j),
+                    should_rate = True, rate_after_each_game = False, should_import_export_ratings = False,
+                    game_stats = iteration_stats, update_ratings = update_ratings).evaluate(num_games = num_games)
+                stats[i]['p'] += iteration_stats[0]['p']
+                stats[i]['e'] += iteration_stats[0]['e']
+                stats[i]['p'] += iteration_stats[1]['p']
+                stats[i]['e'] += iteration_stats[1]['e']
+        for player in range(len(players)):
+            update_player_ratings(num_games, stats, player)
+    # 
+    plot_elo_ratings(args, stats, evaluation_output_file)
+
+def update_player_ratings(num_games, stats, player):
+    stats[player]['games'] += num_games
+    # effective number of games
+    n_star = int(50.0 / ((0.662 + 0.00000739 * ((2569 - stats[player]['elo']) ** 2)) ** 0.5))\
+        if stats[player]['elo'] <= 2355 else 50.0
+    # 
+    effective_n = min(stats[player]['games'], n_star)
+    #
+    k = 800.0 / (effective_n + num_games)
+    stats[player_name]['elo'] = stats[player][player_index] + k * (stats[player]['p'] - stats[player]['e'])
+
+def plot_elo_ratings(args, stats, evaluation_output_file):
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + evaluation_output_file + '.json'))
     with open(path, 'r') as json_file:
         ratings = json.load(json_file)
-    for checkpoint in ratings:
-        checkpoint_number = checkpoint.split('_')[-1]
-        print(checkpoint, ratings[args.game + '_' + args.model_name + '_' + checkpoint_number]['elo'])
-    #TODO: plot this later
-
+    evaluation_file = args.game + '_' + 'alphago' + '_' + 'checkpoints'
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + evaluation_output_file + '.html'))
+    data = []
+    for player in ratings:
+        print(player, ':', ratings[player]['elo'])
+        data.append(ratings[player]['elo'])
+        # Create traces
+    plotly.offline.plot(data, filename = path)
+    
 def evaluate_against_each_other(args):
     if args.train_model:
         ag_player = train_model(args.game, args.iterations, args.num_games)

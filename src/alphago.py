@@ -184,7 +184,7 @@ class AlphaGoZeroTrainer:
             prev_player.play_move,
             self.player.play_move,
             player1_notify=prev_player.notify_move,
-            player2_notify=self.player1.notify_move,
+            player2_notify=self.player.notify_move,
             begin_game=lambda: self._eval_begin_game(prev_player, self.player)
         ).evaluate()
 
@@ -196,8 +196,6 @@ class AlphaGoZeroTrainer:
             print('checkpoint using current')
             prev_player.nn.sess.close()
             return self.player
-
-
 
     def _begin_play(self):
         self.cur_S = []
@@ -275,7 +273,7 @@ class AlphaGoZeroTrainer:
             pickle.dump((S,P,Z), f)
 
         for _ in range(self.num_epochs):
-            for s, p, z in make_SPZ_batches(total_states, self.batch_size,S,P,Z):
+            for s, p, z in make_SPZ_batches(self.batch_size,S,P,Z):
                 self.player.nn.training_step(s,p,z)
 
 
