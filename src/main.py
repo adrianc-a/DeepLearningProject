@@ -14,32 +14,25 @@ import numpy as np
 from IPython.display import clear_output, Image, display, HTML
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description='Train/play games with alphago techniques'
-    )
-
-    parser.add_argument('-t', '--train-model', action='store_true')
-    parser.add_argument('-l', '--load-model', action='store_true')
-
-    parser.add_argument('-g', '--game', choices=['ttt', 'c4', 'chess'], required=True)
-    parser.add_argument('-i', '--iterations', type=int)
-    parser.add_argument('-n', '--num_games', type=int)
-    parser.add_argument('-a', '--learning_rate', type=float)
-    parser.add_argument('-p', '--play-game', action='store_true')
-    parser.add_argument('-q', '--players',
-            choices=['alphago', 'human','simple', 'random'], nargs=2)
-    parser.add_argument('-s', '--save-model', action='store_true')
-    parser.add_argument('-f', '--save-file', type=str)
-    parser.add_argument('-o', '--optimizer', choices=list(networks.OPTIMIZER_REG.keys()))
-    parser.add_argument('-e', '--eval', action='store_true')
+	parser = argparse.ArgumentParser(description='Train/play games with alphago techniques')
+	parser.add_argument('-t', '--train-model', action='store_true')
+	parser.add_argument('-l', '--load-model', action='store_true')
+	parser.add_argument('-g', '--game', choices=['ttt', 'c4', 'chess'], required=True)
+	parser.add_argument('-i', '--iterations', type=int)
+	parser.add_argument('-n', '--num_games', type=int)
+	parser.add_argument('-a', '--learning_rate', type=float)
+	parser.add_argument('-p', '--play-game', action='store_true')
+	parser.add_argument('-q', '--players', choices=['alphago', 'human','simple', 'random'], nargs=2)
+	parser.add_argument('-s', '--save-model', action='store_true')
+	parser.add_argument('-f', '--save-file', type=str)
+	parser.add_argument('-o', '--optimizer', choices=list(networks.OPTIMIZER_REG.keys()))
+	parser.add_argument('-e', '--eval', action='store_true')
 	parser.add_argument('-m', '--num_mctsrun', type=int)
-	parser.add_argument('-t', '--temp_change_iter', type=int)
-	
-
-    return parser.parse_args(argv[1:])
-
-
-		
+	parser.add_argument('-tc', '--temp_change_iter', type=int)
+	parser.add_argument('-te', '--temp_early', type=int)
+	parser.add_argument('-tl', '--temp_late', type=float)
+	parser.add_argument('-b', '--num_train_step_batch', type=int)
+	return parser.parse_args(argv[1:])
 
 def train_model(game, iterations, num_games):
     if game == 'ttt':
@@ -100,9 +93,9 @@ def get_players(game, player, ag_player):
 
 		
 		
-def run_mode(args):
-	global argss
-	argss=args
+def run_mode(argss):
+    global args
+    args=argss
     if args.train_model:
         ag_player = train_model(args.game, args.iterations, args.num_games)
     elif args.load_model:

@@ -7,6 +7,7 @@ import numpy as np
 from keras import backend as K
 from keras.layers import Dense, Activation,Conv2D,MaxPooling2D,Flatten,Dropout, BatchNormalization
 import networks as nn
+from main import args
 reload(nn)
 reload(cm)
 
@@ -46,7 +47,7 @@ k_old = sess.run(tf.trainable_variables()[0])
 #notice when I'm running training steps K.learning_phase: 1
 with sess.as_default():
 	batch = vec
-	for i in range(100):
+	for i in range(num_train_step_batch):
             train_step.run(feed_dict={inp: input_batch, valY:valy, polY:poly, K.learning_phase(): 1})
             k = sess.run(tf.trainable_variables()[0])
 
@@ -67,6 +68,6 @@ out = net.forward(input_batch)
 # get the value of the loss function for a batch of data
 loss_val = net.forward_loss(input_batch, poly, valy)
 
-# running 100 training steps given a batch
-for i in range(100):
+# running num_train_step_batch training steps given a batch
+for i in range(num_train_step_batch):
     net.training_step(input_batch, poly, valy)
