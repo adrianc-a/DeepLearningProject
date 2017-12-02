@@ -14,38 +14,31 @@ class Evaluator:
         self.evaluation_output = evaluation_output
         self.player1_wins = 1
         self.player2_wins = 1
+        self.elo_e = [0, 0]
+        self.elo_p = [0, 0]
 
     def _end_game(self, res, winner):
-        e = [0, 0]
-        p = [0, 0]
-        e[0] = 1.0 / (1.0 + 10.0 ** ((self.ratings[player2_name]['elo'] - self.ratings[player1_name]['elo']) / 400.0))
-        e[1] = 1.0 / (1.0 + 10.0 ** ((self.ratings[player1_name]['elo'] - self.ratings[player2_name]['elo']) / 400.0))
+        self.elo_e[0] += 1.0 / (1.0 + 10.0 ** ((self.r[1] - self.r[0]) / 400.0))
+        self.elo_e[1] += 1.0 / (1.0 + 10.0 ** ((self.r[0] - self.r[1]) / 400.0))
         if res == GameResult.WIN:
             if winner == 0:
                 self.player1_wins += 1
                 if should_rate:
-                    p[0] = self.ratings[1] + 400.0
-                    p[1] = self.ratings[0] - 400.0
-                    self.ratings[player_1]['wins'] += 1
+                    self.elo_p[0] += self.r[1] + 400.0
+                    self.elo_p[1] += self.r[0] - 400.0
+                    self.ratings[self.player1_name]['wins'] += 1
             else:
                 self.player2_wins += 1
                 if should_rate:
-                    p[0] = self.ratings[1] - 400.0
-                    p[1] = self.ratings[0] + 400.0
-                    self.ratings[player_2]['wins'] += 1
+                    self.elo_p[0] += self.r[1] - 400.0
+                    self.elo_p[1] += self.r[0] + 400.0
+                    self.ratings[self.player2_name]['wins'] += 1
         elif res == GameResult.DRAW:
             self.player1_wins += .1
             self.player2_wins += .1
             if should_rate:
-                self.ratings[player_1]['draws'] += 1
-                self.ratings[player_2]['draws'] += 1
-        if should_rate:
-            self.ratings[player_1]['games'] += 1
-            self.ratings[player_2]['games'] += 1
-            k = 800.0 / (self.ratings[player1_name]['games'])
-            self.ratings[player1_name]['elo'] = self.ratings[player1_name]['elo'] + k * (p[0] - e[0])
-            k = 800.0 / (self.ratings[player2_name]['games'])
-            self.ratings[player2_name]['elo'] = self.ratings[player2_name]['elo'] + k * (p[1] - e[1])
+                self.ratings[self.player1_name]['draws'] += 1
+                self.ratings[self.player2_name]['draws'] += 1
 
     def evaluate(self, num_games=5):
         self.import_ratings()
@@ -58,7 +51,23 @@ class Evaluator:
         else:
             return 1, self.game.player2
         #
-        self.export_ratings()
+        self.export_ratings(num_games)
+
+    def update_ratings(self, num_games):
+        if should_rate:
+            self.elo_p[0] = self.elo_p[0] / num_games
+            self.elo_p[1] = self.elo_p[1] / num_games
+            # 
+            self.ratings[self.player1_name]['games'] += num_games
+            self.ratings[self.player2_name]['games'] += num_games
+            # effective number of games
+            n[0] = 50.0 / ((0.662 + 0.00000739((2569 - r[0]) ** 2)) ** 0.5) if r[0] <= 2355 else 50.0
+            n[1] = 50.0 / ((0.662 + 0.00000739((2569 - r[1]) ** 2)) ** 0.5) if r[1] <= 2355 else 50.0
+            #
+            k = 800.0 / (n[0] + self.num_games)
+            self.ratings[self.player1_name]['elo'] = r[0] + k * (p[0] - e[0])
+            k = 800.0 / (n[1] + self.num_games)
+            self.ratings[self.player2_name]['elo'] = r[1] + k * (p[1] - e[1])
 
     def import_ratings(self):
         if self.should_rate:
@@ -72,6 +81,8 @@ class Evaluator:
                 self.ratings = json.load(json_file)
             add_player_to_ratings(player1_name)
             add_player_to_ratings(player2_name)
+            # to make it more concise
+            self.r = [self.ratings[self.player1_name]['elo'], self.ratings[self.player2_name]['elo']]
 
     def add_player_to_ratings(self, player):
         if not player in self.ratings:
