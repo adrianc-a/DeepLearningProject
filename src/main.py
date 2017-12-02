@@ -11,8 +11,8 @@ from sys import argv
 import tensorflow as tf
 import numpy as np
 
-import plotly.plotly as plotly
-import plotly.graph_objs as graph_objs
+# import plotly.plotly as plotly
+# import plotly.graph_objs as graph_objs
 
 from IPython.display import clear_output, Image, display, HTML
 
@@ -23,15 +23,13 @@ def parse_args():
 
     parser.add_argument('-t', '--train-model', action='store_true')
     parser.add_argument('-l', '--load-model', action='store_true')
-    parser.add_argument('-l', '--model-name', action='store_true')
+    parser.add_argument('-m', '--model-name', action='store_true')
 
     parser.add_argument('-g', '--game', choices=['ttt', 'c4', 'chess'], required=True)
     parser.add_argument('-i', '--iterations', type=int)
     parser.add_argument('-n', '--num_games', type=int)
     parser.add_argument('-a', '--learning_rate', type=float)
     parser.add_argument('-p', '--play-game')
-    parser.add_argument('-q', '--players',
-            choices=['alphago', 'human','simple', 'random'], nargs=2)
     parser.add_argument('-q', '--players',
         choices=['alphago', 'human','simple', 'random'], nargs='+')
     parser.add_argument('-s', '--save-model', action='store_true')
@@ -118,8 +116,7 @@ def run_model(args):
         Game(get_manager(args.game), p1, p2).play()
 
     if args.eval:
-        print(Evaluator(get_manager(args.game), p1, p2, args.players[0], args.players[1], True, 'ratings').evaluate())
-
+        print(Evaluator(get_manager(args.game), p1, p2, args.players[0], args.players[1], True, False, 'ratings').evaluate())
 
     if args.save_model:
         ag_player.nn.save(args.save_file)
@@ -144,7 +141,7 @@ def evaluate_over_time(args):
         opt = OPTIMIZER_REG[args.optimizer](learning_rate=args.learning_rate)
         ag_player = load_model(args.game, checkpoint, opt)
         Evaluator(get_manager(args.game), ag_player, player, args.game + '_' + args.model_name + '_' + checkpoint_number,
-            args.players[0], True, evaluation_file).evaluate()
+            args.players[0], True, False, evaluation_file).evaluate()
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + evaluation_output + '.json'))
     rating = {}
     with open(path, 'r') as json_file:
@@ -154,5 +151,22 @@ def evaluate_over_time(args):
         print(checkpoint, ratings[args.game + '_' + args.model_name + '_' + checkpoint_number]['elo'])
     #TODO: plot this later
 
+def evaluate_against_each_other(args):
+    if args.train_model:
+        ag_player = train_model(args.game, args.iterations, args.num_games)
+    elif args.load_model:
+        opt = OPTIMIZER_REG[args.optimizer](learning_rate=args.learning_rate)
+        ag_player = load_model(args.game, args.save_file, opt)
+    else:
+        ag_player = None
+    p1 = get_players(args.game, args.players[0], ag_player)
+    p2 = get_players(args.game, args.players[1], ag_player)
+    # 
+    evaluation_file = args.players[0] + '_vs_' + args.players[1]
+    # 
+    Evaluator(get_manager(args.game), p1, p2,
+        args.players[0], args.players[1], True, True, evaluation_file).evaluate()
+
 if __name__ == '__main__':
-    run_model(parse_args())
+    # run_model(parse_args())
+    evaluate_against_each_other(parse_args())

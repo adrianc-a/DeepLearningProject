@@ -2,47 +2,65 @@ from enum import Enum
 
 import os
 import json
+import math
 
 class Evaluator:
     def __init__(self, manager, player1, player2,
-        player1_name = 'player 1', player2_name = 'player 2', rate_players = False, evaluation_output = 'ratings'):
+        player1_name = 'player 1', player2_name = 'player 2', should_rate = False, rate_after_each_game = False, evaluation_output = 'ratings'):
         self.game = Game(
             manager, player1, player2, end_game=self._end_game, log=False,
             render=False
         )
-        self.should_rate = rate_players
+        self.should_rate = should_rate
+        self.rate_after_each_game = rate_after_each_game
         self.evaluation_output = evaluation_output
         self.player1_wins = 1
         self.player2_wins = 1
+        self.player1_name = player1_name
+        self.player2_name = player2_name
         self.elo_e = [0, 0]
         self.elo_p = [0, 0]
+        print('evaluating', self.player1_name, 'vs', self.player2_name)
 
     def _end_game(self, res, winner):
-        self.elo_e[0] += 1.0 / (1.0 + 10.0 ** ((self.r[1] - self.r[0]) / 400.0))
-        self.elo_e[1] += 1.0 / (1.0 + 10.0 ** ((self.r[0] - self.r[1]) / 400.0))
+        if self.should_rate:
+            self.elo_e[0] += 1.0 / (1.0 + 10.0 ** ((self.r[1] - self.r[0]) / 400.0))
+            self.elo_e[1] += 1.0 / (1.0 + 10.0 ** ((self.r[0] - self.r[1]) / 400.0))
         if res == GameResult.WIN:
             if winner == 0:
                 self.player1_wins += 1
-                if should_rate:
-                    self.elo_p[0] += self.r[1] + 400.0
-                    self.elo_p[1] += self.r[0] - 400.0
+                if self.should_rate:
+                    self.elo_p[0] += 1.0
                     self.ratings[self.player1_name]['wins'] += 1
             else:
                 self.player2_wins += 1
-                if should_rate:
-                    self.elo_p[0] += self.r[1] - 400.0
-                    self.elo_p[1] += self.r[0] + 400.0
+                if self.should_rate:
+                    self.elo_p[1] += 1.0
                     self.ratings[self.player2_name]['wins'] += 1
         elif res == GameResult.DRAW:
             self.player1_wins += .1
             self.player2_wins += .1
-            if should_rate:
+            if self.should_rate:
+                self.elo_p[0] += 0.5
+                self.elo_p[1] += 0.5
                 self.ratings[self.player1_name]['draws'] += 1
                 self.ratings[self.player2_name]['draws'] += 1
+        if self.should_rate and self.rate_after_each_game:
+            # if yout want to update ratings after each game
+            self.update_ratings(1, self.player1_name, 0)
+            self.update_ratings(1, self.player2_name, 1)
 
     def evaluate(self, num_games=5):
-        self.import_ratings()
+        if self.should_rate:
+            self.import_ratings()
         self.game.play(num_games)
+        if self.should_rate:
+            # if yout want to update ratings after each game
+            if not self.rate_after_each_game:
+                self.update_ratings(num_games, self.player1_name, 0)
+                self.update_ratings(num_games, self.player2_name, 1)
+            print('exporting ratings')
+            self.export_ratings()
         #
         player1_to_2 = self.player1_wins / (self.player2_wins + self.player1_wins)
 
@@ -51,53 +69,52 @@ class Evaluator:
         else:
             return 1, self.game.player2
         #
-        self.export_ratings(num_games)
 
-    def update_ratings(self, num_games):
-        if should_rate:
-            self.elo_p[0] = self.elo_p[0] / num_games
-            self.elo_p[1] = self.elo_p[1] / num_games
-            # 
-            self.ratings[self.player1_name]['games'] += num_games
-            self.ratings[self.player2_name]['games'] += num_games
-            # effective number of games
-            n[0] = 50.0 / ((0.662 + 0.00000739((2569 - r[0]) ** 2)) ** 0.5) if r[0] <= 2355 else 50.0
-            n[1] = 50.0 / ((0.662 + 0.00000739((2569 - r[1]) ** 2)) ** 0.5) if r[1] <= 2355 else 50.0
-            #
-            k = 800.0 / (n[0] + self.num_games)
-            self.ratings[self.player1_name]['elo'] = r[0] + k * (p[0] - e[0])
-            k = 800.0 / (n[1] + self.num_games)
-            self.ratings[self.player2_name]['elo'] = r[1] + k * (p[1] - e[1])
+    def update_ratings(self, num_games, player_name, player_index):
+        print('update')
+        # 
+        self.ratings[player_name]['games'] += num_games
+        # effective number of games
+        n_star = int(50.0 / ((0.662 + 0.00000739 * ((2569 - self.r[player_index]) ** 2)) ** 0.5))\
+            if self.r[player_index] <= 2355 else 50.0
+        # 
+        effective_n = min(self.ratings[player_name]['games'], n_star)
+        #
+        k = 800.0 / (effective_n + num_games)
+        self.ratings[player_name]['elo'] = self.r[player_index] + k * (self.elo_p[player_index] - self.elo_e[player_index])
+        # 
+        self.elo_e[player_index] = 0
 
     def import_ratings(self):
-        if self.should_rate:
-            path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + self.evaluation_output + '.json'))
-            # create the ratings file with a valid empty json structure
-            if not os.path.isfile(path):
-                with open(path, 'w+') as json_file:
-                    json.dump({}, json_file)
-            # import the ratings
-            with open(path, 'r') as json_file:
-                self.ratings = json.load(json_file)
-            add_player_to_ratings(player1_name)
-            add_player_to_ratings(player2_name)
-            # to make it more concise
-            self.r = [self.ratings[self.player1_name]['elo'], self.ratings[self.player2_name]['elo']]
+        path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/'))
+        if not os.path.exists(path):
+            os.makedirs(path)
+        # create the ratings file with a valid empty json structure
+        path = os.path.join(path, self.evaluation_output + '.json')
+        if not os.path.isfile(path):
+            with open(path, 'w+') as json_file:
+                json.dump({}, json_file)
+        # import the ratings
+        with open(path, 'r') as json_file:
+            self.ratings = json.load(json_file)
+        self.add_player_to_ratings(self.player1_name)
+        self.add_player_to_ratings(self.player2_name)
+        # to make it more concise
+        self.r = [self.ratings[self.player1_name]['elo'], self.ratings[self.player2_name]['elo']]
 
     def add_player_to_ratings(self, player):
         if not player in self.ratings:
             self.ratings[player] = {
-                'elo': 1300,
+                'elo': 750,
                 'wins':  0,
                 'games': 0,
                 'draws': 0,
             }
 
     def export_ratings(self):
-        if self.should_rate:
-            path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + self.evaluation_output + '.json'))
-            with open(path, 'w') as json_file:
-                json.dump(self.ratings, json_file)
+        path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + self.evaluation_output + '.json'))
+        with open(path, 'w') as json_file:
+            json.dump(self.ratings, json_file)
 
 class GameResult(Enum):
     WIN  = 0
