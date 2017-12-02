@@ -13,3 +13,4 @@ models/
 src/models/
 logs/
 src/logs
+evaluations/*
