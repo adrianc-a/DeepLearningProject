@@ -3,7 +3,6 @@ import keras
 import tensorflow as tf
 from collections import namedtuple
 import keras.backend as K
-from itertools import chain
 
 l2_reg = keras.regularizers.l2
 
@@ -71,9 +70,10 @@ class NetworkWrapper():
             and the second array of values are the v values
         """
         with self.sess.as_default():
-            net_out = self.sess.run((self.policy_head, self.value_head),
-                                     feed_dict={self.input:state_batch,
-                                        self.learning_phase: 0})
+            with self.graph.as_default():
+                net_out = self.sess.run((self.policy_head, self.value_head),
+                                         feed_dict={self.input:state_batch,
+                                            self.learning_phase: 0})
 
 
         return net_out[0].flatten(), net_out[1].flatten()
@@ -119,11 +119,12 @@ class NetworkWrapper():
         Returns:
         """
 
-        with self.sess.as_default() as sess:
-            self.train_step.run(feed_dict={self.input:state_batch,
-                                      self.value_label:value_batch,
-                                      self.policy_label:policy_batch,
-                                      self.learning_phase: 1})
+        with self.sess.as_default():
+            with self.graph.as_default():
+                self.train_step.run(feed_dict={self.input:state_batch,
+                                          self.value_label:value_batch,
+                                          self.policy_label:policy_batch,
+                                          self.learning_phase: 1})
 
     def save(self, path):
         with self.graph.as_default():

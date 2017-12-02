@@ -41,6 +41,7 @@ class AlphaGoZero:
         if is_train:
             ind = random.choice(len(pi), p=pi)
         else:
+            print('pi')
             print(pi)
             ind = argmax(pi)
 
@@ -92,10 +93,9 @@ class AlphaGoZeroArchitectures:
     @staticmethod
     def connect4_net():
         return AlphaGoZeroArchitectures.create_player(
-            #networks.alphago_net(AlphaGoZeroArchitectures.chess_input_shape(), 128, (3,3), 10, (3,3)),
-            #networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
-            networks.alphago_net(AlphaGoZeroArchitectures.connect4_input_shape(), 256, (3,3), 10, (3,3)),
-            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
+            networks.alphago_net(AlphaGoZeroArchitectures.connect4_input_shape(), 8, (3,3), 4, (3,3)),
+            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01),
+            connect4.Connect4Manager()
         )
 
     @staticmethod
@@ -161,7 +161,6 @@ class AlphaGoZeroTrainer:
                     #self.player.mcts._begin_game()
 
     def _eval_begin_game(self, prev, cur):
-        print('ok')
         prev.mcts._begin_game()
         cur.mcts._begin_game()
 
@@ -242,6 +241,13 @@ class AlphaGoZeroTrainer:
                 batch_Z.append(self.Z[i])
 
 
+        with open('training_step.txt', 'w+') as f:
+            f.write('S')
+            f.write(str(batch_S) + '\n')
+            f.write('P')
+            f.write(str(batch_P) + '\n')
+            f.write('Z')
+            f.write(str(batch_Z) + '\n')
 
         self.player.nn.training_step(
             array(batch_S),

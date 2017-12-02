@@ -66,6 +66,10 @@ class Connect4:
                 self.turn = not self.turn
                 return True
 
+    def is_draw(self):
+        draw = lambda l: all(x != self.empty for x in l)
+        return all(list(map(draw, self.state)))
+
     def has_winner(self):
         win = lambda l: all(x == 'o' for x in l) or all(x == 'x' for x in l)
 
@@ -116,7 +120,6 @@ class Connect4Manager(StateManager):
         copy = self.state.copy()
 
         copy.apply_move(self.moves[move_index])
-        print(copy)
         return Connect4Manager(copy)
 
     def state2vec(self):
@@ -149,13 +152,13 @@ class Connect4Manager(StateManager):
         return Connect4Manager(self.state.copy())
 
     def is_terminal_state(self):
-        return self.state.has_winner() or self.is_draw()
+        return self.is_win() or self.is_draw()
 
     def is_win(self):
         return self.state.has_winner()
 
     def is_draw(self):
-        return False
+        return self.state.is_draw()
 
     def zero_is_winner(self):
         return self.state.has_winner() and self.state.turn == False
@@ -166,7 +169,7 @@ class Connect4Manager(StateManager):
     def output(self):
         self.state.output()
 
-    @classmethod
+    @staticmethod
     def cl_name():
         return 'c4'
 
@@ -174,4 +177,4 @@ class Connect4Manager(StateManager):
         return Connect4Manager.cl_name()
 
     def num_full_moves(self):
-        return self.white_moves + self.black_moves
+        return self.state.white_moves + self.state.black_moves

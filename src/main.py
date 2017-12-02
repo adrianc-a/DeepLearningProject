@@ -40,7 +40,7 @@ def train_model(game, iterations, num_games):
     if game == 'ttt':
         player = ag.AlphaGoZeroArchitectures.ttt()
     elif game == 'c4':
-        player = ag.AlphaGoZeroArchitectures.c4()
+        player = ag.AlphaGoZeroArchitectures.connect4_net()
     else:  # chess
         player = ag.AlphaGoZeroArchitectures.chess()
 
@@ -97,9 +97,11 @@ def get_players(game, player, ag_player):
 def run_mode(args):
     if args.train_model:
         ag_player = train_model(args.game, args.iterations, args.num_games)
+        ag_player.mcts._begin_game()
     elif args.load_model:
         opt = OPTIMIZER_REG[args.optimizer](learning_rate=args.learning_rate)
         ag_player = load_model(args.game, args.save_file, opt)
+        ag_player.mcts._begin_game()
     else:
         ag_player = None
 

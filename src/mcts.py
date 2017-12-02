@@ -45,8 +45,12 @@ class Node(object):
         p, v = network_wrapper.forward(state_vecs)
         self.v = np.mean(v)
 
+        '''
+        print('p')
         print(p)
+        print('v')
         print(v)
+        '''
         self.p = p
         for i, (_, next_state) in enumerate(zip(p, state_mans)):
             child = Node(state_manager = next_state,
