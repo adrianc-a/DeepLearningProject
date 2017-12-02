@@ -132,20 +132,24 @@ class AlphaGoZeroTrainer:
     def __init__(self, alphagozero_player, name='',
                  states_to_sample=2048, batch_size=32, num_epochs=5):
         self.player = alphagozero_player
-        self.S = []
-        self.P = []
-        self.Z = []
+        self._reset_SPZ()
         self.path = 'models/'
         self.name = name
         self.states_to_sample = states_to_sample
         self.batch_size = batch_size
         self.num_epochs = num_epochs
 
+    def _reset_SPZ(self):
+        self.S = []
+        self.P = []
+        self.Z = []
+
     def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=10):
         self.path += manager.name() + '_' + self.name
         self.game = manager.name()
 
         for i in range(1, iterations + 1):
+            self._reset_SPZ()
             g = Game(
                 manager,
                 player1=self.play_move,
