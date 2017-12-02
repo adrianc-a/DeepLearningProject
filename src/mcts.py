@@ -9,7 +9,7 @@ class Node(object):
         self.moves = state_manager.get_moves()
 
 
-        self.num_children = len(moves)
+        num_children = len(self.moves)
 
         self.children = []
 
@@ -31,18 +31,9 @@ class Node(object):
         return self.q[child] + self.u[child]
 
     def get_best_child(self):
-        max_value = - np.inf
-        candidates = []
+        ind = np.argmax(self.u + self.q)
 
-        for child, value in zip(self.children, [self.tree_policy(child) for child in self.children]):
-            if value == max_value:
-                candidates.append(child)
-            elif value > max_value:
-                candidates = [child]
-                max_value = value
-
-        best_child = random.choice(candidates)
-        return best_child
+        return self.children[ind], ind
 
     def expand(self, network_wrapper):
         #self.value = 0.0
@@ -54,24 +45,32 @@ class Node(object):
         p, v = network_wrapper.forward(state_vecs)
         self.v = np.mean(v)
 
+        '''
+        print('p')
+        print(p)
+        print('v')
+        print(v)
+        '''
         self.p = p
         for i, (_, next_state) in enumerate(zip(p, state_mans)):
             child = Node(state_manager = next_state,
                          parent = self, idx = i)
+            self.w[i] = self.v
+            self.n[i] = 1
+            self.q[i] = self.w[i]
             self.children.append(child)
         return self
 
     def update(self, child_idx, v):
         self.n[child_idx] += 1.0
         self.w[child_idx] += v
-        self.q[child_idx] = (1 / self.n[child_idx]) * self.w[child_idx]
-        #s = #sum(list(map(lambda x: self.n[x], self.children)))
+        self.q[child_idx] = self.w[child_idx]/ self.n[child_idx]
         children_visits = np.sum(self.n)
         c_puct = 1.0
         for i,_ in enumerate(self.children):
             # u will change for all children due to change in the summation of n[child]
             # maybe some actual value for this constant?
-            self.u[i] = c_puct * self.p[i] * np.sqrt(s) / (1 + self.n[child_idx])
+            self.u[i] = c_puct * self.p[i] * np.sqrt(children_visits) / (1 + self.n[child_idx])
 
     def export_pi(self, move_number, temp_change_iter, temp_early, temp_late):
         temperature = temp_early if move_number < temp_change_iter else temp_late
@@ -80,42 +79,25 @@ class Node(object):
 
         return temp_vals / np.sum(temp_vals)
 
-
-    '''
-    def calc_value(self):
-        v = 0.0
-        for child in self.children:
-            v += self.v[child]
-        return v / len(self.children)
-    '''
-# ============================================================================================================================ #
-# MCTS
-# ============================================================================================================================ #
-
 class MCTS(object):
 
-    def __init__(self, network_wrapper, temp_change_iter=30, temp_early=1, temp_late = 0.33):
+    def __init__(self, network_wrapper, manager, temp_change_iter=30, temp_early=1, temp_late = 0.33):
         self.network_wrapper = network_wrapper
-        self.root = None
-        self.root = Node(state_manager = state_manager, parent = None)
+        self.manager = manager
         self.temp_change_iter = temp_change_iter
         self.temp_early = temp_early
         self.temp_late = temp_late
+        self._begin_game()
+
+    def _begin_game(self):
+        self.root = Node(state_manager = self.manager.current_state(), parent = None)
 
     def __call__(self, state_manager, n = 1500):
-        '''
-        if not self.root:
-            # print('starting mcts simulation ...')
-            self.root = Node(state_manager = state_manager, parent = None)
-            # print('root is:', self.root)
-        else:
-            # state_manager.output()
-            self.update_root(state_manager)
-        '''
         for i in range(n):
             (node, terminal) = self.traverse(self.root)
             if not terminal:
                 self.back_propagate(node)
+
         # print('root: ', self.root)
         # print('children: ', self.root.children)
         return self.root.export_pi(state_manager.num_full_moves(),
@@ -126,54 +108,19 @@ class MCTS(object):
     def set_root(self, move_idx):
         self.root = self.root.children[move_idx]
 
-    '''
-    def update_root(self, state_manager):
-        if not str(state_manager.board) == str(self.root.state_manager.board):
-            for child in self.root.children:
-                if str(child.state_manager.board) == str(state_manager.board):
-                    return child
-        else:
-            return self.root
-        print('PROBLEM')
-        root = self.root
-        while root.parent:
-            root = root.parent
-        return root
-        # print('updating root')
-        # go all the way to the tree root
-        # root = self.root
-        # while root.parent:
-        #     root = root.parent
-        # search for a state equal to this
-        # self.root = self.search(root, state_manager)
-    '''
-
-    def search(self, root, state_manager):
-        frontier = [root]
-        while True:
-            node = frontier.pop(0)
-            if str(node.state_manager.board) == str(state_manager.board):
-                return node
-            for child in node.children:
-                frontier.append(child)
-            if not len(frontier):
-                return None
-
-    def make_move(self, move_index):
-        self.root = self.root.children[move_index]
-        # print('root now at', self.root)
-
     def traverse(self, node):
         while not node.is_terminal():
             if node.is_leaf():
                 return (node.expand(self.network_wrapper), False)
             else:
-                node = node.get_best_child()
+                node, ind = node.get_best_child()
+                node.parent.update(ind, 0)
+
         return (node, True)
 
     def back_propagate(self, node):
         # this is the value predicted for the edge leading to this node by the NN
         #v = node.calc_value()
         while node.parent is not None:
-            node.parent.update(child_idx = node.idx, v = self.v)
+            node.parent.update(child_idx = node.idx, v = node.v)
             node = node.parent

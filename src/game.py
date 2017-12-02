@@ -6,10 +6,15 @@ import math
 
 class Evaluator:
     def __init__(self, manager, player1, player2,
-        player1_name = 'player 1', player2_name = 'player 2', should_rate = False, rate_after_each_game = False, evaluation_output = 'ratings'):
+            player1_notify=lambda x: None, player2_notify=lambda x: None, begin_game=lambda: None,
+            player1_name = 'player 1', player2_name = 'player 2', should_rate = False,
+            rate_after_each_game = False, evaluation_output = 'ratings'):
         self.game = Game(
             manager, player1, player2, end_game=self._end_game, log=False,
-            render=False
+            render=False,
+            player1_notify=player1_notify,
+            player2_notify=player2_notify,
+            begin_game=begin_game
         )
         self.should_rate = should_rate
         self.rate_after_each_game = rate_after_each_game
@@ -136,7 +141,7 @@ class Game:
         self.begin_play = begin_play
         self.end_game = end_game
         self.begin_game = begin_game
-        self.log = True
+        self.log = log
         self.render = render
         self.player1_notify = player1_notify
         self.player2_notify = player2_notify

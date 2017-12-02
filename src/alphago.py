@@ -8,14 +8,16 @@ from mcts import MCTS
 import chess_manager
 import tictactoe_manager
 import connect4
+import pickle
+import numpy as np
 
 class AlphaGoZero:
 
     # nn must be game specific and line up according to a respective
     # state_manager
-    def __init__(self, nn):
+    def __init__(self, nn, man):
         self.nn = nn
-        self.mcts = MCTS(network_wrapper = nn)
+        self.mcts = MCTS(nn, man)
 
     def notify_move(self, move_idx):
         self.mcts.set_root(move_idx)
@@ -36,12 +38,14 @@ class AlphaGoZero:
         # number of moves should not be a param, mcts should infer it
         # since not implemented i expect a normal python array of floats
 
-        pi = self.mcts(current_state, n = 5)
+        pi = self.mcts(current_state, n = 10)
 
         if is_train:
-            ind = np.random.choice(len(pi), p=pi)
+            ind = random.choice(len(pi), p=pi)
         else:
-            ind = np.argmax(pi)
+            print('pi')
+            print(pi)
+            ind = argmax(pi)
 
         self.mcts.set_root(ind)
 
@@ -56,8 +60,8 @@ class AlphaGoZero:
 class AlphaGoZeroArchitectures:
 
     @staticmethod
-    def create_player(nn, opt):
-        return AlphaGoZero(networks.NetworkWrapper(nn, opt))
+    def create_player(nn, opt, man):
+        return AlphaGoZero(networks.NetworkWrapper(nn, opt), man)
 
 
     # can we have this use state2vec.shape somehow?
@@ -70,8 +74,9 @@ class AlphaGoZeroArchitectures:
     @staticmethod
     def ttt():
         return AlphaGoZeroArchitectures.create_player(
-            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 64, (1,1), 5, (2,2)),
-            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
+            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 4, (1,1), 5, (2,2)),
+            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01),
+            tictactoe_manager.TicTacToeManager()
         )
 
     @staticmethod
@@ -90,10 +95,9 @@ class AlphaGoZeroArchitectures:
     @staticmethod
     def connect4_net():
         return AlphaGoZeroArchitectures.create_player(
-            #networks.alphago_net(AlphaGoZeroArchitectures.chess_input_shape(), 128, (3,3), 10, (3,3)),
-            #networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
-            networks.alphago_net(AlphaGoZeroArchitectures.connect4_input_shape(), 256, (3,3), 10, (3,3)),
-            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
+            networks.alphago_net(AlphaGoZeroArchitectures.connect4_input_shape(), 8, (3,3), 4, (3,3)),
+            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01),
+            connect4.Connect4Manager()
         )
 
     @staticmethod
@@ -101,8 +105,8 @@ class AlphaGoZeroArchitectures:
         return connect4.INPUT_SHAPE
 
     @staticmethod
-    def from_checkpoint(path, shape, opt):
-        return AlphaGoZero(networks.NetworkWrapper.restore(path, shape, opt))
+    def from_checkpoint(path, shape, opt, man):
+        return AlphaGoZero(networks.NetworkWrapper.restore(path, shape, opt), man)
 
     @staticmethod
     def shape(game):
@@ -124,30 +128,35 @@ class AlphaGoZeroArchitectures:
 
 
 class AlphaGoZeroTrainer:
-    def __init__(self, alphagozero_player, name=''):
+    def __init__(self, alphagozero_player, name='',
+                 states_to_sample=2048, batch_size=32, num_epochs=5):
         self.player = alphagozero_player
         self.S = []
         self.P = []
         self.Z = []
         self.path = 'models/'
         self.name = name
+        self.states_to_sample = states_to_sample
+        self.batch_size = 32
+        self.num_epochs = num_epochs
 
-    def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=5):
+    def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=15):
         self.path += manager.name() + '_' + self.name
         self.game = manager.name()
-        g = Game(
-            manager,
-            player1=self.play_move,
-            player2=self.play_move,
-            begin_play=self._begin_play,
-            end_game=self._end_game,
-            log=False,
-            render=False
-        )
 
         for i in range(1, iterations + 1):
+            g = Game(
+                manager,
+                player1=self.play_move,
+                player2=self.play_move,
+                begin_play=self._begin_play,
+                begin_game=self.player.mcts._begin_game,
+                end_game=self._end_game,
+                log=False,
+                render=False
+            )
             g.play(games)
-            self.update_weights(sample_pct)
+            self.update_weights()
             print('Finished iteration ' + str(i))
 
             if i % ckpt == 0:
@@ -155,19 +164,28 @@ class AlphaGoZeroTrainer:
                 # check it's not the 1st checkpoint
                 if i - ckpt > 0:
                     self.player = self._evaluate_cur_player(i - ckpt, i)
+                    #self.player.mcts._begin_game()
+
+    def _eval_begin_game(self, prev, cur):
+        prev.mcts._begin_game()
+        cur.mcts._begin_game()
 
     def _evaluate_cur_player(self, prev_i, cur_i):
         prev_player = AlphaGoZeroArchitectures.from_checkpoint(
             self.path + '_' + str(prev_i),
             AlphaGoZeroArchitectures.shape(self.game),
             #networks.OPTIMIZER_REG['sgd'](learning_rate=0.01)
-            self.player.nn.optimizer
+            self.player.nn.optimizer,
+            AlphaGoZeroArchitectures.get_manager(self.game)
         )
 
         winner, _ = Evaluator(
             AlphaGoZeroArchitectures.get_manager(self.game),
             prev_player.play_move,
-            self.player.play_move
+            self.player.play_move,
+            player1_notify=prev_player.notify_move,
+            player2_notify=self.player1.notify_move
+            begin_game=lambda: self._eval_begin_game(prev_player, self.player)
         ).evaluate()
 
         if winner == 0:
@@ -180,6 +198,7 @@ class AlphaGoZeroTrainer:
             return self.player
 
 
+
     def _begin_play(self):
         self.cur_S = []
         self.cur_P = []
@@ -187,55 +206,70 @@ class AlphaGoZeroTrainer:
     def _end_game(self, end_type, winner):
         # I'm not sure what to do if it's a draw/something else
         if end_type != GameResult.WIN:
-            return
+            winner = 0
+        else:
+            winner = 1 if winner == 0 else -1
 
-        winner = -1 if winner == 0 else 1
-
-        flip = lambda x: -1 if x == 1 else 1
+        flip = lambda x: x * -1
 
         # there is probably a more elegant method for adding these
         # cur_Z is the winner, relative to the current player
         cur_Z = []
         for i in range(len(self.cur_S)):
-            cur_Z.append(winner)
+            cur_Z.append(np.ones(self.cur_S[i].shape[0]) * winner)
             winner = flip(winner)
         cur_Z.reverse()
 
         # add the triple's for the latest game to the total data
-        self.S.extend(self.cur_S)
-        self.P.extend(self.cur_P)
-        self.Z.extend(cur_Z)
+
+        S = np.concatenate(self.cur_S)
+        P = np.concatenate(self.cur_P)
+        Z = np.concatenate(cur_Z)
+
+        Z = Z.reshape((Z.shape[0],1))
+        P = P.reshape((P.shape[0],1))
+
+        self.S.append(S)
+        self.P.append(P)
+        self.Z.append(Z)
+
+        #self.S = np.concatenate([self.S, S])
+        #self.P = np.concatenate([self.P, P])
+        #self.Z = np.concatenate([self.Z, Z])
 
 
-    def update_weights(self, pct):
+        with open('small_stuff.pl', 'wb') as f:
+            '''
+            f.write('S')
+            f.write(str(batch_S) + '\n')
+            f.write('P')
+            f.write(str(batch_P) + '\n')
+            f.write('Z')
+            f.write(str(batch_Z) + '\n')
+            '''
+            pickle.dump((self.cur_S,self.cur_P,cur_Z), f)
+
+
+    def update_weights(self):
         # based on the games and self.data
         # update the weights of the nn
 
-        batch_size = floor(pct * len(self.S))
-        ind = random.choice(len(self.S) - 1, batch_size, replace=False)
+        S = np.concatenate(self.S)
+        P = np.concatenate(self.P)
+        Z = np.concatenate(self.Z)
 
+        total_states = min(self.states_to_sample, S.shape[0])
 
-        self.S = array(self.S)[ind].tolist()
-        self.P = array(self.P)[ind].tolist()
-        self.Z = array(self.Z)[ind].tolist()
+        #batch_size = floor(pct * len(self.S))
+        #ind = random.choice(len(self.S) - 1, batch_size, replace=False)
 
-        batch_S = []
-        batch_P = []
-        batch_Z = []
+        with open('training_step.pl', 'wb') as f:
+            #idek anymore man
+            pickle.dump((S,P,Z), f)
 
-        for i in range(len(self.S)):
-            for j in range(len(self.S[i])):
-                batch_S.append(self.S[i][j])
-                batch_P.append(self.P[i][j])
-                batch_Z.append(self.Z[i])
-
-
-
-        self.player.nn.training_step(
-            array(batch_S),
-            array(batch_P),
-            array(batch_Z)
-        )
+        for _ in range(self.num_epochs):
+            for s, p, z in make_SPZ_batches(self.batch_size,S,P,Z):
+                self.player.nn.training_step(s,p,z)
 
 
     def play_move(self, current_state, next_states):
@@ -256,3 +290,13 @@ class AlphaGoZeroTrainer:
         self.cur_P.append(self.player.pi)
 
         return move_index
+
+
+def make_SPZ_batches(batch_size, S, P, Z):
+    n = S.shape[0]
+    indexes = np.arange(n)
+    np.random.shuffle(indexes)
+
+    for i in range(0, n, batch_size):
+        batch_indices = indexes[i:i+32]
+        yield S[batch_indices], P[batch_indices], Z[batch_indices]

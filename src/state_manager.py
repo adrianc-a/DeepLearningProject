@@ -46,9 +46,15 @@ class StateManager:
         next_states = self.next_states()
         next_vecs = [next_state.single_state2vec() for next_state in next_states]
 
-        return np.stack(
+        try:
+            return np.stack(
                  [np.concatenate([next_vec,cur_state_vec])
                  for next_vec in next_vecs]), next_states
+        except ValueError as e:
+            print(next_vecs)
+            print(state_vecs)
+            print(self.is_terminal_state())
+            print(e)
 
     # each subclass should return a new instance of itself, with the current
     # board state, or a copy
