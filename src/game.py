@@ -79,6 +79,7 @@ class Game:
 
         n = 0
         move_idx = -1
+        player_notifier = lambda x: None
         while not self.manager.is_terminal_state():
             moves = self.manager.next_states()
 
