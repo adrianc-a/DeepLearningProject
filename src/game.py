@@ -78,6 +78,7 @@ class Game:
         turn = True
 
         n = 0
+        move_idx = -1
         while not self.manager.is_terminal_state():
             moves = self.manager.next_states()
 
@@ -87,6 +88,9 @@ class Game:
 
             if self.log:
                 print('turn: ', turn)
+
+            if move_idx != -1:
+                player_notifier(move_idx)
 
             player = self.player1 if turn else self.player2
 
@@ -100,7 +104,6 @@ class Game:
 
             player_notifier = self.player1_notify if turn else self.player2_notify
 
-            player_notifier(move_idx)
 
             if self.log:
                 self.manager.output()

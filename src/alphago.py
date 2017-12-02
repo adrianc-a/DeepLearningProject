@@ -275,7 +275,7 @@ class AlphaGoZeroTrainer:
             pickle.dump((S,P,Z), f)
 
         for _ in range(self.num_epochs):
-            for s, p, z in make_SPZ_batches(total_states, self.batch_size,S,P,Z):
+            for s, p, z in make_SPZ_batches(self.batch_size,S,P,Z):
                 self.player.nn.training_step(s,p,z)
 
 
