@@ -74,8 +74,8 @@ class AlphaGoZeroArchitectures:
     @staticmethod
     def ttt():
         return AlphaGoZeroArchitectures.create_player(
-            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 4, (1,1), 5, (2,2)),
-            networks.OPTIMIZER_REG['sgd'](learning_rate=0.01),
+            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 10, (3,3), 5, (3,3)),
+            networks.OPTIMIZER_REG['sgd'](learning_rate=0.001),
             tictactoe_manager.TicTacToeManager()
         )
 
@@ -137,10 +137,10 @@ class AlphaGoZeroTrainer:
         self.path = 'models/'
         self.name = name
         self.states_to_sample = states_to_sample
-        self.batch_size = 32
+        self.batch_size = batch_size
         self.num_epochs = num_epochs
 
-    def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=15):
+    def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=10):
         self.path += manager.name() + '_' + self.name
         self.game = manager.name()
 
@@ -184,7 +184,7 @@ class AlphaGoZeroTrainer:
             prev_player.play_move,
             self.player.play_move,
             player1_notify=prev_player.notify_move,
-            player2_notify=self.player1.notify_move
+            player2_notify=self.player1.notify_move,
             begin_game=lambda: self._eval_begin_game(prev_player, self.player)
         ).evaluate()
 
@@ -260,6 +260,13 @@ class AlphaGoZeroTrainer:
 
         total_states = min(self.states_to_sample, S.shape[0])
 
+        print(S.shape[0])
+        sample_idxs = np.random.choice(total_states, self.states_to_sample)
+
+        S = S[sample_idxs]
+        P = P[sample_idxs]
+        Z = Z[sample_idxs]
+
         #batch_size = floor(pct * len(self.S))
         #ind = random.choice(len(self.S) - 1, batch_size, replace=False)
 
@@ -268,7 +275,7 @@ class AlphaGoZeroTrainer:
             pickle.dump((S,P,Z), f)
 
         for _ in range(self.num_epochs):
-            for s, p, z in make_SPZ_batches(self.batch_size,S,P,Z):
+            for s, p, z in make_SPZ_batches(total_states, self.batch_size,S,P,Z):
                 self.player.nn.training_step(s,p,z)
 
 

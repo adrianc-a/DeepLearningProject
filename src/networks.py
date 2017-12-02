@@ -215,6 +215,7 @@ def alphago_net(input_shape, # NOTE: Input shape should be the input size withou
                 conv_block_filter_size,
                 num_residual_layers,
                 residual_block_filter_size,
+                padding='same',
                 policy_head_num_filters=2,
                 policy_head_filter_size=(1,1),
                 value_head_num_filters=1,
