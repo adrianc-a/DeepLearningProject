@@ -111,7 +111,8 @@ def run_mode(args):
 
 
     if args.play_game:
-        Game(get_manager(args.game), p1, p2, player1_notify=ag_player.notify).play()
+        Game(get_manager(args.game), p1, p2,
+                player1_notify=ag_player.notify_move).play()
 
     if args.eval:
         print(Evaluator(get_manager(args.game), p1, p2).evaluate())
