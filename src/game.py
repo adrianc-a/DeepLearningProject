@@ -3,10 +3,13 @@ from enum import Enum
 
 
 class Evaluator:
-    def __init__(self, manager, player1, player2, begin_game=lambda: None):
+    def __init__(self, manager, player1, player2, player1_notify=lambda x: None,
+                 player2_notify=lambda x: None, begin_game=lambda: None):
         self.game = Game(
             manager, player1, player2, end_game=self._end_game, log=False,
             render=False,
+            player1_notify=player1_notify,
+            player2_notify=player2_notify,
             begin_game=begin_game
         )
         self.player1_wins = 1

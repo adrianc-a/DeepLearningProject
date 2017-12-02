@@ -111,8 +111,16 @@ def run_mode(args):
 
 
     if args.play_game:
+        player1_notify=lambda x: None
+        player2_notify=lambda x: None
+
+        if args.players[0] == 'alphago':
+            player1_notify = ag_player.notify_move
+        elif args.players[1] == 'alphago':
+            player2_notify = ag_player.notify_move
+
         Game(get_manager(args.game), p1, p2,
-                player1_notify=ag_player.notify_move).play()
+                player1_notify=player1_notify, player2_notify=player2_notify).play()
 
     if args.eval:
         print(Evaluator(get_manager(args.game), p1, p2).evaluate())

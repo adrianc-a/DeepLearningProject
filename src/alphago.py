@@ -183,6 +183,8 @@ class AlphaGoZeroTrainer:
             AlphaGoZeroArchitectures.get_manager(self.game),
             prev_player.play_move,
             self.player.play_move,
+            player1_notify=prev_player.notify_move,
+            player2_notify=self.player1.notify_move
             begin_game=lambda: self._eval_begin_game(prev_player, self.player)
         ).evaluate()
 
