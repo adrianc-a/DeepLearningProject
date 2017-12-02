@@ -56,7 +56,7 @@ def load_model(game, path, opt):
     if game == 'ttt':
         shape = ag.AlphaGoZeroArchitectures.ttt_input_shape()
     elif game == 'c4':
-        shape = ag.AlphaGoZeroArchitectures.c4_input_shape()
+        shape = ag.AlphaGoZeroArchitectures.connect4_input_shape()
     else:
         shape = ag.AlphaGoZeroArchitectures.chess_input_shape()
 
@@ -111,7 +111,7 @@ def run_mode(args):
 
 
     if args.play_game:
-        Game(get_manager(args.game), p1, p2).play()
+        Game(get_manager(args.game), p1, p2, player1_notify=ag_player.notify).play()
 
     if args.eval:
         print(Evaluator(get_manager(args.game), p1, p2).evaluate())
