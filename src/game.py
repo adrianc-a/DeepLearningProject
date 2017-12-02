@@ -177,6 +177,7 @@ class Game:
             if self.log:
                 print('turn: ', turn)
 
+
             player = self.player1 if turn else self.player2
 
             move_idx = player(self.manager.current_state(), moves)
@@ -188,7 +189,6 @@ class Game:
             self.manager = self.manager.make_move(move_idx)
 
             player_notifier = self.player1_notify if turn else self.player2_notify
-
             player_notifier(move_idx)
 
             if self.log:

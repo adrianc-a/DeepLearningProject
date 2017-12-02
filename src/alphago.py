@@ -20,7 +20,8 @@ class AlphaGoZero:
         self.mcts = MCTS(nn, man)
 
     def notify_move(self, move_idx):
-        self.mcts.set_root(move_idx)
+        #self.mcts.set_root(move_idx)
+        pass
 
     def play_move(self, current_state, next_states, is_train=False):
         """
@@ -38,7 +39,7 @@ class AlphaGoZero:
         # number of moves should not be a param, mcts should infer it
         # since not implemented i expect a normal python array of floats
 
-        pi = self.mcts(current_state, n = 10)
+        pi = self.mcts(current_state, n=10, is_train=is_train)
 
         if is_train:
             ind = random.choice(len(pi), p=pi)
@@ -131,20 +132,24 @@ class AlphaGoZeroTrainer:
     def __init__(self, alphagozero_player, name='',
                  states_to_sample=2048, batch_size=32, num_epochs=5):
         self.player = alphagozero_player
-        self.S = []
-        self.P = []
-        self.Z = []
+        self._reset_SPZ()
         self.path = 'models/'
         self.name = name
         self.states_to_sample = states_to_sample
         self.batch_size = batch_size
         self.num_epochs = num_epochs
 
+    def _reset_SPZ(self):
+        self.S = []
+        self.P = []
+        self.Z = []
+
     def train(self, manager, iterations=10, games=10, sample_pct=0.85, ckpt=10):
         self.path += manager.name() + '_' + self.name
         self.game = manager.name()
 
         for i in range(1, iterations + 1):
+            self._reset_SPZ()
             g = Game(
                 manager,
                 player1=self.play_move,
