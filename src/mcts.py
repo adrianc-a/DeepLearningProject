@@ -92,7 +92,9 @@ class MCTS(object):
     def _begin_game(self):
         self.root = Node(state_manager = self.manager.current_state(), parent = None)
 
-    def __call__(self, state_manager, n = 1500):
+    def __call__(self, state_manager, n = 1500, is_train=True):
+        if not is_train:
+            self.root = Node(state_manager=state_manager.current_state(), parent = None)
         for i in range(n):
             (node, terminal) = self.traverse(self.root)
             if not terminal:
