@@ -1,4 +1,7 @@
-import players
+import os
+import json
+
+import players as game_players
 import alphago as ag
 import argparse
 from game import Game
@@ -11,8 +14,8 @@ from sys import argv
 import tensorflow as tf
 import numpy as np
 
-import plotly.plotly as plotly
 import plotly.graph_objs as graph_objs
+import plotly.offline as plotly
 
 from IPython.display import clear_output, Image, display, HTML
 
@@ -23,7 +26,7 @@ def parse_args():
 
     parser.add_argument('-t', '--train-model', action='store_true')
     parser.add_argument('-l', '--load-model', action='store_true')
-    parser.add_argument('-m', '--model-name', action='store_true')
+    parser.add_argument('-m', '--model-name')
 
     parser.add_argument('-g', '--game', choices=['ttt', 'c4', 'chess'], required=True)
     parser.add_argument('-i', '--iterations', type=int)
@@ -80,11 +83,11 @@ def get_manager(game):
 
 def get_human_player(game):
     if game == 'ttt':
-        return players.ttt_human_player
+        return game_players.ttt_human_player
     elif game == 'c4':
-        return players.connect_human_player
+        return game_players.connect_human_player
     elif game == 'chess':
-        return players.chess_human_player
+        return game_players.chess_human_player
 
 
 def get_players(game, player, ag_player):
@@ -93,10 +96,9 @@ def get_players(game, player, ag_player):
     elif player == 'human':
         return get_human_player(game)
     elif player == 'simple':
-        return players.simple_player
+        return game_players.simple_player
     elif player == 'random':
-        return players.random_player
-
+        return game_players.random_player
 
 def run_model(args):
     if args.train_model:
@@ -134,10 +136,12 @@ def run_model(args):
     if args.save_model:
         ag_player.nn.save(args.save_file)
 
+# ============================================================================================================================ #
+# Elo scoring and evaluation stuff
+# ============================================================================================================================ #
+
 def evaluate_over_time(args):
-    player = get_players(args.game, args.players[0], ag_player)
-    # 
-    model_directory = os.path.asbpath(os.path.join(os.path.dirname(__file__), '../model'))
+    model_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '../models'))
     # get all checkpoints for this game and model
     checkpoints = []
     for directory in os.listdir(model_directory):
@@ -146,51 +150,91 @@ def evaluate_over_time(args):
                 checkpoints.append(os.path.join(model_directory, directory))
     # 
     evaluation_output_file = args.game + '_' + 'alphago' + '_' + 'checkpoints'
+    # 
+    simple_player = game_players.simple_player
+    random_player = game_players.random_player
     # sort lexicographically
     checkpoints = sorted(checkpoints)
     notifiers = []
     players = []
-    stats = {}
+    stats = []
     opt = OPTIMIZER_REG[args.optimizer](learning_rate = args.learning_rate)
+    # 
+    notifiers.append(lambda x: None)
+    players.append(simple_player)
+    stats.append({
+        'e': 0,
+        'p': 0,
+        'elo': 750,# + 100 * (len(players) - 1),
+        'wins': 0,
+        'draws': 0,
+        'games': 0,
+    })
+    # 
+    notifiers.append(lambda x: None)
+    players.append(random_player)
+    stats.append({
+        'e': 0,
+        'p': 0,
+        'elo': 750,# + 100 * (len(players) - 1),
+        'wins': 0,
+        'draws': 0,
+        'games': 0,
+    })
     #
     for checkpoint in checkpoints:
         checkpoint_number = checkpoint.split('_')[-1]
+        print('found checkpoint ', checkpoint, 'number: ', checkpoint_number)
         ag_player = load_model(args.game, checkpoint, opt)
-        players.append(ag_player)
+        players.append(ag_player.play_move)
         notifiers.append(ag_player.notify_move)
         stats.append({
             'e': 0,
             'p': 0,
-            'elo': 750,
+            'elo': 750,# + 100 * (len(players) - 1),
             'wins': 0,
             'draws': 0,
             'games': 0,
         })
         # 
-    num_games = 10
+    num_games = 5
     for iteration in range(args.iterations):
-        for i in range(len(checkpoints)):
-            for j in range(i + 1, len(checkpoints)):
+        print('iterations ', iteration)
+        for i in range(len(players)):
+            for j in range(0, len(players)):
+                if i == j:
+                    continue
+                print('playing', i, ' against', j)
+                player1_name = 'player' + '_' + str(i)
+                player2_name = 'player' + '_' + str(j)
                 iteration_stats = {
-                    'r' = [stats[i]['elo'], stats[j]['elo']],
-                    'e' = [0, 0],
-                    'p' = [0, 0],
+                    player1_name: stats[i],
+                    player2_name: stats[j],
+                    'e': [0, 0],
+                    'p': [0, 0],
                 }
                 Evaluator(get_manager(args.game), players[i], players[j],
                     player1_notify = notifiers[i],
                     player2_notify = notifiers[j],
-                    player1_name = 'checkpoint_' + str(iteration) + '_' + str(i),
-                    player2_name = 'checkpoint_' + str(iteration) + '_' + str(j),
+                    player1_name = player1_name,
+                    player2_name = player2_name,
                     should_rate = True, rate_after_each_game = False, should_import_export_ratings = False,
-                    game_stats = iteration_stats, update_ratings = update_ratings).evaluate(num_games = num_games)
-                stats[i]['p'] += iteration_stats[0]['p']
-                stats[i]['e'] += iteration_stats[0]['e']
-                stats[i]['p'] += iteration_stats[1]['p']
-                stats[i]['e'] += iteration_stats[1]['e']
+                    game_stats = iteration_stats).evaluate(num_games = num_games)
+                print(iteration_stats['p'])
+                print(iteration_stats['e'])
+                stats[i]['p'] += iteration_stats['p'][0]
+                stats[i]['e'] += iteration_stats['e'][0]
+                stats[j]['p'] += iteration_stats['p'][1]
+                stats[j]['e'] += iteration_stats['e'][1]
         for player in range(len(players)):
+            print(stats[player])
             update_player_ratings(num_games, stats, player)
+    # export ratings
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + evaluation_output_file + '.json'))
+    with open(path, 'w') as json_file:
+        json.dump(stats, json_file, sort_keys = True, indent = 4, separators = (',', ': '))
     # 
-    plot_elo_ratings(args, stats, evaluation_output_file)
+    plot_elo_ratings(args, evaluation_output_file)
 
 def update_player_ratings(num_games, stats, player):
     stats[player]['games'] += num_games
@@ -201,21 +245,29 @@ def update_player_ratings(num_games, stats, player):
     effective_n = min(stats[player]['games'], n_star)
     #
     k = 800.0 / (effective_n + num_games)
-    stats[player_name]['elo'] = stats[player][player_index] + k * (stats[player]['p'] - stats[player]['e'])
+    stats[player]['elo'] = stats[player]['elo'] + k * (stats[player]['p'] - stats[player]['e'])
+    stats[player]['p'] = 0
+    stats[player]['e'] = 0
 
-def plot_elo_ratings(args, stats, evaluation_output_file):
+def plot_elo_ratings(args, evaluation_output_file):
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + evaluation_output_file + '.json'))
     with open(path, 'r') as json_file:
-        ratings = json.load(json_file)
-    evaluation_file = args.game + '_' + 'alphago' + '_' + 'checkpoints'
+        stats = json.load(json_file)
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + evaluation_output_file + '.html'))
-    data = []
-    for player in ratings:
-        print(player, ':', ratings[player]['elo'])
-        data.append(ratings[player]['elo'])
-        # Create traces
+    # 
+    y = list(map(lambda x: stats[x]['elo'], range(0, len(stats))))
+    x = list(range(0, len(stats)))
+    print(x)
+    print(y)
+    trace = graph_objs.Scatter(
+        x = x,
+        y = y,
+        mode = 'lines+markers'
+    )
+    data = [trace]
     plotly.offline.plot(data, filename = path)
     
+"""
 def evaluate_against_each_other(args):
     if args.train_model:
         ag_player = train_model(args.game, args.iterations, args.num_games)
@@ -240,7 +292,16 @@ def evaluate_against_each_other(args):
         player1_notify = player1_notify, player2_notify = player2_notify,
         player1_name = args.game + '_' + args.model_name + '_' + checkpoint_number, player2_name = args.players[0],
         should_rate = True, rate_after_each_game = False, evaluation_output = evaluation_file).evaluate()
+"""
+
+# ============================================================================================================================ #
+# Point of entry
+# ============================================================================================================================ #
 
 if __name__ == '__main__':
-    run_model(parse_args())
+    # run_model(parse_args())
     # evaluate_against_each_other(parse_args())
+    # evaluate_over_time(parse_args())
+    args = parse_args()
+    evaluation_output_file = args.game + '_' + 'alphago' + '_' + 'checkpoints'
+    plot_elo_ratings(args, evaluation_output_file)

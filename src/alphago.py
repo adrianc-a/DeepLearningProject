@@ -44,8 +44,8 @@ class AlphaGoZero:
         if is_train:
             ind = random.choice(len(pi), p=pi)
         else:
-            print('pi')
-            print(pi)
+            # print('pi')
+            # print(pi)
             ind = argmax(pi)
 
         self.mcts.set_root(ind)

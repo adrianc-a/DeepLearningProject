@@ -8,8 +8,12 @@ class Evaluator:
     def __init__(self, manager, player1, player2,
             player1_notify=lambda x: None, player2_notify=lambda x: None, begin_game=lambda: None,
             player1_name = 'player 1', player2_name = 'player 2',
-            should_rate = False, rate_after_each_game = False, should_import_export_ratings = True, evaluation_output = 'ratings',
-            game_stats = game_stats):
+            should_rate = False, rate_after_each_game = False,
+            should_import_export_ratings = True, evaluation_output = 'ratings',
+            game_stats = {
+                'e': [0, 0],
+                'p': [0, 0]
+            }):
         self.game = Game(
             manager, player1, player2, end_game=self._end_game, log = False,
             render = False,
@@ -33,17 +37,20 @@ class Evaluator:
         if self.should_rate:
             self.game_stats['e'][0] += 1.0 / (1.0 + 10.0 ** ((self.r[1] - self.r[0]) / 400.0))
             self.game_stats['e'][1] += 1.0 / (1.0 + 10.0 ** ((self.r[0] - self.r[1]) / 400.0))
+            # print(self.game_stats['e'])
         if res == GameResult.WIN:
             if winner == 0:
                 self.player1_wins += 1
                 # ======================= #
                 if self.should_rate:
+                    print(self.player1_name + 'won')
                     self.game_stats['p'][0] += 1.0
                     self.game_stats[self.player1_name]['wins'] += 1
             else:
                 self.player2_wins += 1
                 # ======================= #
                 if self.should_rate:
+                    print(self.player2_name + 'won')
                     self.game_stats['p'][1] += 1.0
                     self.game_stats[self.player2_name]['wins'] += 1
         elif res == GameResult.DRAW:
@@ -59,7 +66,7 @@ class Evaluator:
             self.update_ratings(1, self.player1_name, 0)
             self.update_ratings(1, self.player2_name, 1)
 
-    def evaluate(self, num_games=5):
+    def evaluate(self, num_games = 5):
         if self.should_rate:
             self.import_ratings()
         # ======================= #
@@ -69,7 +76,6 @@ class Evaluator:
             if self.should_import_export_ratings and not self.rate_after_each_game:
                 self.update_ratings(num_games, self.player1_name, 0)
                 self.update_ratings(num_games, self.player2_name, 1)
-            print('exporting ratings')
             self.export_ratings()
         # ======================= #
         player1_to_2 = self.player1_wins / (self.player2_wins + self.player1_wins)
@@ -94,6 +100,7 @@ class Evaluator:
 
     def import_ratings(self):
         if self.should_import_export_ratings:
+            print('exporting ratings')
             path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/'))
             if not os.path.exists(path):
                 os.makedirs(path)
@@ -107,10 +114,10 @@ class Evaluator:
                 self.game_stats = json.load(json_file)
             self.add_player_to_ratings(self.player1_name)
             self.add_player_to_ratings(self.player2_name)
+            self.game_stats['e'] = [0, 0]
+            self.game_stats['p'] = [0, 0]
             # to make it more concise
-            self.r = [self.game_stats[self.player1_name]['elo'], self.game_stats[self.player2_name]['elo']]
-        else:
-            self.r = self.game_stats['r']
+        self.r = [self.game_stats[self.player1_name]['elo'], self.game_stats[self.player2_name]['elo']]
 
     def add_player_to_ratings(self, player):
         if not player in self.game_stats:
