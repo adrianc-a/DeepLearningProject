@@ -338,9 +338,11 @@ def value_head(inp, num_filters=1, filter_size=(1, 1), reg=0.001):
                 bias_regularizer=l2_reg(reg),
                 kernel_regularizer=l2_reg(reg),
                 data_format='channels_first')(v_in)
-    v2 = Activation('relu')(v1)
-    v_out = Dense(1, activation='tanh',
+    v2 = BatchNormalization(axis=1)(v1)
+    v3 = Activation('relu')(v2)
+    v4 = Dense(256, activation='relu',
                   bias_regularizer=l2_reg(reg),
-                  kernel_regularizer=l2_reg(reg), name='value_head')(Flatten()(v2))
+                  kernel_regularizer=l2_reg(reg))(Flatten()(v3))
+    v_out = Dense(1, activation='tanh', bias_regularizer=l2_reg(reg), kernel_regularizer=l2_reg(reg),name='value_head')(v4)
 
     return v_out

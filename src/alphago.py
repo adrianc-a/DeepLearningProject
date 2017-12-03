@@ -73,7 +73,7 @@ class AlphaGoZeroArchitectures:
     @staticmethod
     def ttt(opt, args):
         return AlphaGoZeroArchitectures.create_player(
-            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 10, (3, 3), 5, (3, 3)),
+            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 10, (3, 3), 5, (3, 3), regularization=args.regularization),
             opt,
             tictactoe_manager.TicTacToeManager(),
             args
@@ -87,7 +87,7 @@ class AlphaGoZeroArchitectures:
     def chess_net(opt, args):
         return AlphaGoZeroArchitectures.create_player(
             # the residual and conv blocks have 256 layers and there are 10 conv blocks
-            networks.alphago_net(AlphaGoZeroArchitectures.chess_input_shape(), 256, (3, 3), 10, (3, 3)),
+            networks.alphago_net(AlphaGoZeroArchitectures.chess_input_shape(), 256, (3, 3), 10, (3, 3), regularization=args.regularization),
             opt,
             chess_manager.ChessManager(),
             args
@@ -96,7 +96,7 @@ class AlphaGoZeroArchitectures:
     @staticmethod
     def connect4_net(opt, args):
         return AlphaGoZeroArchitectures.create_player(
-            networks.alphago_net(AlphaGoZeroArchitectures.connect4_input_shape(), 15, (4, 4), 4, (4, 4)),
+            networks.alphago_net(AlphaGoZeroArchitectures.connect4_input_shape(), 15, (4, 4), 4, (4, 4), regularization=args.regularization),
             opt,
             connect4.Connect4Manager(),
             args

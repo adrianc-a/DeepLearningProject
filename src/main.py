@@ -45,6 +45,7 @@ def parse_args():
     parser.add_argument('-T1', '--temp-early', type=float, default=1)
     parser.add_argument('-Tn', '--temp-late', type=float, default=0.5)
     parser.add_argument('-V', '--save-point', type=int, default=int(1e20))
+    parser.add_argument('-R', '--regularization', type=float, default=0.01)
 
     ret = parser.parse_args(argv[1:])
     print('Running with args:')
