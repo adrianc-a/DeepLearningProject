@@ -140,7 +140,7 @@ def run_model(args):
 # Elo scoring and evaluation stuff
 # ============================================================================================================================ #
 
-def evaluate_over_time(args):
+def extract_checkpoints(args):
     model_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '../models'))
     # get all checkpoints for this game and model
     checkpoints = []
@@ -148,6 +148,10 @@ def evaluate_over_time(args):
         if os.path.isdir(os.path.join(model_directory, directory)):
             if directory.startswith(args.game + '_' + args.model_name + '_'):
                 checkpoints.append(os.path.join(model_directory, directory))
+    return checkpoints
+
+def evaluate_over_time(args, freeze_previous_ratings = False):
+    checkpoints = extract_checkpoints(args)
     # 
     evaluation_output_file = args.game + '_' + 'alphago' + '_' + 'checkpoints'
     # 
@@ -198,11 +202,13 @@ def evaluate_over_time(args):
         })
         # 
     num_games = 5
-    for iteration in range(args.iterations):
-        print('iterations ', iteration)
-        for i in range(len(players)):
-            for j in range(0, len(players)):
-                if i == j:
+    iterations = 1 if freeze_previous_ratings else args.iterations
+    for iteration in range(iterations):
+        print('iteration:', iteration)
+        for i in range(1, len(players)): # start from random player and rate
+            r = range(0, i) if freeze_previous_ratings else range(0, len(players))
+            for j in r:
+                if i == j: # not playing against ourselves, done enough of that already :D
                     continue
                 print('playing', i, ' against', j)
                 player1_name = 'player' + '_' + str(i)
@@ -220,15 +226,19 @@ def evaluate_over_time(args):
                     player2_name = player2_name,
                     should_rate = True, rate_after_each_game = False, should_import_export_ratings = False,
                     game_stats = iteration_stats).evaluate(num_games = num_games)
-                print(iteration_stats['p'])
-                print(iteration_stats['e'])
+                # only update the rating for player i, freeze previous players
                 stats[i]['p'] += iteration_stats['p'][0]
                 stats[i]['e'] += iteration_stats['e'][0]
-                stats[j]['p'] += iteration_stats['p'][1]
-                stats[j]['e'] += iteration_stats['e'][1]
-        for player in range(len(players)):
-            print(stats[player])
-            update_player_ratings(num_games, stats, player)
+                if not freeze_previous_ratings:
+                    stats[j]['p'] += iteration_stats['p'][1]
+                    stats[j]['e'] += iteration_stats['e'][1]
+            if freeze_previous_ratings:
+                print(i, stats[i])
+                update_player_ratings(num_games, stats, i)
+        if not freeze_previous_ratings:
+            for player in range(len(players)):
+                print(stats[player])
+                update_player_ratings(num_games, stats, player)
     # export ratings
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + evaluation_output_file + '.json'))
     with open(path, 'w') as json_file:
@@ -251,7 +261,7 @@ def update_player_ratings(num_games, stats, player):
 
 def plot_elo_ratings(args, evaluation_output_file):
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + evaluation_output_file + '.json'))
-    with open(path, 'r') as json_file:
+    with open(path, 'r') as json_file:  
         stats = json.load(json_file)
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + evaluation_output_file + '.html'))
     # 
@@ -301,7 +311,7 @@ def evaluate_against_each_other(args):
 if __name__ == '__main__':
     # run_model(parse_args())
     # evaluate_against_each_other(parse_args())
-    # evaluate_over_time(parse_args())
-    args = parse_args()
-    evaluation_output_file = args.game + '_' + 'alphago' + '_' + 'checkpoints'
-    plot_elo_ratings(args, evaluation_output_file)
+    evaluate_over_time(parse_args(), True)
+    # args = parse_args()
+    # evaluation_output_file = args.game + '_' + 'alphago' + '_' + 'checkpoints'
+    # plot_elo_ratings(args, evaluation_output_file)

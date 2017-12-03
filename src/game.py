@@ -54,6 +54,7 @@ class Evaluator:
                     self.game_stats['p'][1] += 1.0
                     self.game_stats[self.player2_name]['wins'] += 1
         elif res == GameResult.DRAW:
+            print('draw')
             self.player1_wins += .1
             self.player2_wins += .1
             # ======================= #
