@@ -1,3 +1,5 @@
+import numpy as np
+
 class StateManager:
     """
     Abstract base class to wrap around actual implementations of games
@@ -15,23 +17,44 @@ class StateManager:
     def get_moves(self):
         pass
 
-    def make_move(self, move_index):
-        pass
+    def make_move(self, move_index): pass
 
     def state2vec(self):
         pass
 
     def next_states(self):
-        states = []
-        for i in range(len(self.get_moves())):
-            states.append(self.make_move(i))
-        return states
+        return [self.make_move(i) for i,_ in enumerate(self.get_moves())]
+
+    '''
+    def moves2vec(self):
+        "Returns a batch of state tensors for input to the network"
+        return np.concatenate([state.state2vec() for state in self.next_states()])
+    '''
 
     def moves2vec(self):
-        v_moves = []
-        for state in self.next_states():
-            v_moves.append(state.state2vec())
-        return v_moves
+        """
+        Returns a two-tuple of next play board represntations and state managers
+
+        The first element of the tuple is a 4-d numpy array where the first axis
+        associates to a single next board state
+
+        The second element of the tuple is all the state managers for the next states
+        of the current state
+        """
+        cur_state_vec = self.single_state2vec(include_player_pane=True)
+
+        next_states = self.next_states()
+        next_vecs = [next_state.single_state2vec() for next_state in next_states]
+
+        try:
+            return np.stack(
+                 [np.concatenate([next_vec,cur_state_vec])
+                 for next_vec in next_vecs]), next_states
+        except ValueError as e:
+            print(next_vecs)
+            print(state_vecs)
+            print(self.is_terminal_state())
+            print(e)
 
     # each subclass should return a new instance of itself, with the current
     # board state, or a copy
@@ -59,3 +82,9 @@ class StateManager:
     def render(self, n):
         pass
 
+    # number of moves (white & black)
+    def num_full_moves(self):
+        pass
+
+    def name(self):
+        pass

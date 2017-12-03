@@ -2,9 +2,6 @@ from random import randint
 
 import chess
 
-import policy
-import mcts
-
 def simple_player(state, moves):
     return 0
 
@@ -50,8 +47,3 @@ def chess_human_player(state, moves):
     move = chess.Move.from_uci(inp)
 
     return state.get_moves().index(move)
-
-# runs a number of mcts simulations from this state and return the best move
-def mcts_player(state, moves):
-    simulator = mcts.MCTS(tree_policy = policy.upper_confidence_bound)
-    return state.get_moves().index(simulator(state_manager = state))

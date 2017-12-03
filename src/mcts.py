@@ -1,93 +1,128 @@
 import random
-import numpy
-
-# ============================================================================================================================ #
-# Tree
-# ============================================================================================================================ #
+import numpy as np
 
 class Node(object):
 
-    def __init__(self, state_manager, parent, move_in):
+    def __init__(self, state_manager, parent, idx = -1):
         self.parent = parent
         self.state_manager = state_manager
         self.moves = state_manager.get_moves()
-        # the action parent took to arrive here
-        self.move_in = move_in
-        # initally all moves are untried
-        self.untried_actions = list(map(lambda x: x, self.moves))
-        # tried moves
-        self.children = []
-        # 
-        self.v = 0
-        self.n = {}
-        self.q = {}
-        self.p = {}
 
-    def has_untried_actions(self):
-        return not len(self.untried_actions) == 0
+
+        num_children = len(self.moves)
+
+        self.children = []
+
+        self.n = np.zeros(num_children)
+        self.p = np.zeros(num_children)
+        self.v = 0
+        self.q = np.zeros(num_children)
+        self.u = np.zeros(num_children)
+        self.w = np.zeros(num_children)
+        self.idx = idx
+
+    def is_leaf(self):
+        return len(self.children) == 0
 
     def is_terminal(self):
         return self.state_manager.is_terminal_state()
 
-    def get_best_child(self, tree_policy):
-        max_value = - numpy.inf
-        candidates = []
+    def tree_policy(self, child):
+        return self.q[child] + self.u[child]
 
-        for key, value in zip(self.children, [tree_policy(child) for child in self.children]):
-            if value == max_value:
-                candidates.append(key)
-            elif value > max_value:
-                candidates = [key]
-                max_value = value
+    def get_best_child(self):
+        ind = np.argmax(self.u + self.q)
 
-        best_child = random.choice(candidates)
-        return best_child
+        return self.children[ind], ind
 
-    def expand(self):
-        move = self.untried_actions[random.choice(range(0, len(self.untried_actions)))]
-        child = Node(state_manager = self.state_manager.make_move(self.moves.index(move)),
-            parent = self, move_in = move)
-        self.n[child] = 0
-        self.q[child] = 0
-        self.p[child] = 0
-        self.children.append(child)
-        return child
+    def expand(self, network_wrapper):
+        #self.value = 0.0
 
-    def update(self, child, v):
-        self.v += v
-        self.n[child] += 1.0
-        self.q[child] = (1 / self.n[child]) * self.v
+        # get the children state managers and their vec representations
+        state_vecs, state_mans = self.state_manager.moves2vec()
 
-# ============================================================================================================================ #
-# MCTS
-# ============================================================================================================================ #
+        #get the predicted p and v values for all the children
+        p, v = network_wrapper.forward(state_vecs)
+        self.v = np.mean(v)
+
+        '''
+        print('p')
+        print(p)
+        print('v')
+        print(v)
+        '''
+        self.p = p
+        for i, (_, next_state) in enumerate(zip(p, state_mans)):
+            child = Node(state_manager = next_state,
+                         parent = self, idx = i)
+            self.w[i] = self.v
+            self.n[i] = 1
+            self.q[i] = self.w[i]
+            self.children.append(child)
+        return self
+
+    def update(self, child_idx, v):
+        self.n[child_idx] += 1.0
+        self.w[child_idx] += v
+        self.q[child_idx] = self.w[child_idx]/ self.n[child_idx]
+        children_visits = np.sum(self.n)
+        c_puct = 1.0
+        for i,_ in enumerate(self.children):
+            # u will change for all children due to change in the summation of n[child]
+            # maybe some actual value for this constant?
+            self.u[i] = c_puct * self.p[i] * np.sqrt(children_visits) / (1 + self.n[child_idx])
+
+    def export_pi(self, move_number, temp_change_iter, temp_early, temp_late):
+        temperature = temp_early if move_number < temp_change_iter else temp_late
+        #return list(map(lambda x: self.n[x] ** (1.0 / temperature), self.children))
+        temp_vals = np.power(self.n, 1 / temperature)
+
+        return temp_vals / np.sum(temp_vals)
 
 class MCTS(object):
 
-    def __init__(self, tree_policy):
-        self.tree_policy = tree_policy
+    def __init__(self, network_wrapper, manager, args):
+        self.network_wrapper = network_wrapper
+        self.manager = manager
+        self.temp_change_iter = args.temp_change_iter
+        self.temp_early = args.temp_early
+        self.temp_late = args.temp_late
+        self._begin_game()
 
-    def __call__(self, state_manager, n = 1500):
-        root = Node(state_manager = state_manager, parent = None, move_in = None)
+    def _begin_game(self):
+        self.root = Node(state_manager = self.manager.current_state(), parent = None)
+
+    def __call__(self, state_manager, n=1500, is_train=True):
+        if not is_train:
+            self.root = Node(state_manager=state_manager.current_state(), parent = None)
         for i in range(n):
-            node = self.get_next_node(root)
-            self.back_propagate(node, self.evaluate_nn(node))
-        # now that the simulation is done, return some node
-        return root.get_best_child(self.tree_policy).move_in
+            (node, terminal) = self.traverse(self.root)
+            if not terminal:
+                self.back_propagate(node)
 
-    def get_next_node(self, node):
+        # print('root: ', self.root)
+        # print('children: ', self.root.children)
+        return self.root.export_pi(state_manager.num_full_moves(),
+                                  self.temp_change_iter,
+                                  self.temp_early,
+                                  self.temp_late)
+
+    def set_root(self, move_idx):
+        self.root = self.root.children[move_idx]
+
+    def traverse(self, node):
         while not node.is_terminal():
-            if node.has_untried_actions:
-                return node.expand()
+            if node.is_leaf():
+                return (node.expand(self.network_wrapper), False)
             else:
-                node = node.get_best_child(self.tree_policy)
-        return node
+                node, ind = node.get_best_child()
+                node.parent.update(ind, 0)
 
-    def back_propagate(self, node, v):
+        return (node, True)
+
+    def back_propagate(self, node):
+        # this is the value predicted for the edge leading to this node by the NN
+        #v = node.calc_value()
         while node.parent is not None:
-            node.parent.update(node, v)
+            node.parent.update(child_idx = node.idx, v = node.v)
             node = node.parent
-
-    def evaluate_nn(self, node):
-        # get this from the NN
-        return 1.0
