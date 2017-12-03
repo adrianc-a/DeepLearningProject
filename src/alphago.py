@@ -73,7 +73,7 @@ class AlphaGoZeroArchitectures:
     @staticmethod
     def ttt(opt, args):
         return AlphaGoZeroArchitectures.create_player(
-            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 10, (3, 3), 5, (3, 3), regularization=args.regularization),
+            networks.alphago_net(AlphaGoZeroArchitectures.ttt_input_shape(), 10, (3, 3), 2, (3, 3), regularization=args.regularization),
             opt,
             tictactoe_manager.TicTacToeManager(),
             args

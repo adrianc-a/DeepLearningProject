@@ -3,15 +3,23 @@ if [ ! -d "spz" ]; then
     mkdir spz
 fi
 
-python3 src/main.py      \
-    --train-model        \
-    --game=$1            \
-    --iterations=30      \
-    --num-games=6        \
-    --learning-rate=0.01 \
-    --optimizer=adam     \
-    --checkpoint=15      \
-    --name=$2            \
-    --epochs=5           \
-    --mcts-searches=6    \
-    --save-point=500
+python3 src/main.py        \
+    --train-model          \
+    --game=$1              \
+    --iterations=75       \
+    --num-games=15         \
+    --learning-rate=0.0001   \
+    --optimizer=adam       \
+    --checkpoint=100        \
+    --sample-states=2048   \
+    --batch-size=64        \
+    --name=$2              \
+    --epochs=25            \
+    --mcts-searches=10     \
+    --temp-change-iter=7   \
+    --regularization=0.001 \
+    --play-game            \
+    --players alphago human \
+    --save-model \
+    --save-file=nosave \
+    --save-point=25

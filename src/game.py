@@ -1,7 +1,6 @@
 from enum import Enum
 
 
-
 class Evaluator:
     def __init__(self, manager, player1, player2, player1_notify=lambda x: None,
                  player2_notify=lambda x: None, begin_game=lambda: None):
@@ -25,10 +24,14 @@ class Evaluator:
             self.player1_wins += .1
             self.player2_wins += .1
 
-
-
     def evaluate(self, num_games=5):
-        self.game.play(num_games)
+
+        for i in range(num_games):
+            self.game.player1, self.game.player2 = self.game.player2, self.game.player1
+            self.game.player1_notify, self.game.player2_notify = self.game.player2_notify, self.game.player1_notify
+            self.player1_wins, self.player2_wins = self.player2_wins, self.player1_wins
+            self.game.play()
+
 
         player1_to_2 = self.player1_wins / (self.player2_wins + self.player1_wins)
 
@@ -39,19 +42,19 @@ class Evaluator:
 
 
 class GameResult(Enum):
-    WIN  = 0
+    WIN = 0
     DRAW = 1
     # I have this as some catch-all.
     # Can we guarantee, that a game is either won or drawn?
     # will is_draw || is_win always be true when we have a end state?
     # I know for ttt and c4 it is true. what about chess?
-    END  = 2
+    END = 2
+
 
 class Game:
-
     def __init__(self, manager, player1, player2, begin_play=lambda: None, begin_game=lambda: None,
-            end_game=lambda t, w: None, log=True, render=True,
-            player1_notify=lambda i: None, player2_notify = lambda i: None, cutoff=False, max_length=100):
+                 end_game=lambda t, w: None, log=True, render=True,
+                 player1_notify=lambda i: None, player2_notify=lambda i: None, cutoff=False, max_length=100):
         self.manager = manager
         self.player1 = player1
         self.player2 = player2
@@ -90,7 +93,6 @@ class Game:
             if self.log:
                 print('turn: ', turn)
 
-
             player = self.player1 if turn else self.player2
 
             move_idx = player(self.manager.current_state(), moves)
@@ -117,7 +119,7 @@ class Game:
             if self.log:
                 print(
                     'The winner is: ' +
-                        ('player1' if winner == 0 else 'player2')
+                    ('player1' if winner == 0 else 'player2')
                 )
             return GameResult.WIN, winner
         elif self.manager.is_draw():
@@ -128,4 +130,3 @@ class Game:
             if self.log:
                 print('Game ended')
             return GameResult.END, 0
-

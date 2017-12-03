@@ -272,7 +272,7 @@ def alphago_net(input_shape,  # NOTE: Input shape should be the input size witho
 
 
 def alphago_loss(network_policy, true_policy, network_reward, true_reward):
-    return tf.reduce_mean(-true_policy * tf.log(network_policy) + tf.pow(network_reward - true_reward, 2), 0)
+    return tf.reduce_mean(tf.pow(network_policy - true_policy, 2) + tf.pow(network_reward - true_reward, 2), 0)
 
 
 def convolutional_block(inp, num_filters, filter_size, input_shape, reg=0.001):
@@ -340,7 +340,7 @@ def value_head(inp, num_filters=1, filter_size=(1, 1), reg=0.001):
                 data_format='channels_first')(v_in)
     v2 = BatchNormalization(axis=1)(v1)
     v3 = Activation('relu')(v2)
-    v4 = Dense(256, activation='relu',
+    v4 = Dense(16, activation='relu',
                   bias_regularizer=l2_reg(reg),
                   kernel_regularizer=l2_reg(reg))(Flatten()(v3))
     v_out = Dense(1, activation='tanh', bias_regularizer=l2_reg(reg), kernel_regularizer=l2_reg(reg),name='value_head')(v4)

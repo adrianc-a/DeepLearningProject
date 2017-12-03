@@ -41,11 +41,11 @@ def parse_args():
     parser.add_argument('-E', '--epochs', type=int, default=5)
     parser.add_argument('-B', '--batch-size', type=int, default=32)
     parser.add_argument('-X', '--mcts-searches', type=int, default=10)
-    parser.add_argument('-T', '--temp-change-iter', type=int, default=30)
+    parser.add_argument('-T', '--temp-change-iter', type=int, default=7)
     parser.add_argument('-T1', '--temp-early', type=float, default=1)
     parser.add_argument('-Tn', '--temp-late', type=float, default=0.5)
     parser.add_argument('-V', '--save-point', type=int, default=int(1e20))
-    parser.add_argument('-R', '--regularization', type=float, default=0.01)
+    parser.add_argument('-R', '--regularization', type=float, default=0.001)
     parser.add_argument('-z', '--cutoff', action='store_true')
     parser.add_argument('-L', '--max-length', type=int, default=100)
 
@@ -55,15 +55,7 @@ def parse_args():
     return ret
 
 
-def train_model(args):
-    opt = build_opt(args)
-    if args.game == 'ttt':
-        player = ag.AlphaGoZeroArchitectures.ttt(opt, args)
-    elif args.game == 'c4':
-        player = ag.AlphaGoZeroArchitectures.connect4_net(opt, args)
-    else:  # chess
-        player = ag.AlphaGoZeroArchitectures.chess(opt, args)
-
+def train_model(player, args):
     manager = get_manager(args)
 
     trainer = ag.AlphaGoZeroTrainer(player, args)
@@ -118,18 +110,26 @@ def build_opt(args):
         return OPTIMIZER_REG[args.optimizer](learning_rate=args.learning_rate, momentum=args.momentum)
 
 
+def build_player(args):
+    opt = build_opt(args)
+    if args.game == 'ttt':
+        return ag.AlphaGoZeroArchitectures.ttt(opt, args)
+    elif args.game == 'c4':
+        return ag.AlphaGoZeroArchitectures.connect4_net(opt, args)
+    else:  # chess
+        return ag.AlphaGoZeroArchitectures.chess(opt, args)
+
+
 def run_mode(args):
+    ag_player = None
+    if args.load_model:
+        ag_player = load_model(args)
     if args.train_model:
         if glob('{}_{}*'.format(args.game, args.name)):
             args.name = input('There are files matching this name. Pick another\n')
-
-        ag_player = train_model(args)
-        ag_player.mcts._begin_game()
-    elif args.load_model:
-        ag_player = load_model(args)
-        ag_player.mcts._begin_game()
-    else:
-        ag_player = None
+        if ag_player is None:
+            ag_player = build_player(args)
+        ag_player = train_model(ag_player, args)
 
     if args.play_game or args.eval:
         p1 = get_players(args.game, args.players[0], ag_player)
