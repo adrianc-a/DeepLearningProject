@@ -1,0 +1,6 @@
+python3 src/main.py \
+    --load-model    \
+    --game=$1       \
+    --save-file=$2  \
+    --play-game     \
+    --players $3 $4

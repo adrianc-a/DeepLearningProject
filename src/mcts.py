@@ -81,18 +81,18 @@ class Node(object):
 
 class MCTS(object):
 
-    def __init__(self, network_wrapper, manager, temp_change_iter=30, temp_early=1, temp_late = 0.33):
+    def __init__(self, network_wrapper, manager, args):
         self.network_wrapper = network_wrapper
         self.manager = manager
-        self.temp_change_iter = temp_change_iter
-        self.temp_early = temp_early
-        self.temp_late = temp_late
+        self.temp_change_iter = args.temp_change_iter
+        self.temp_early = args.temp_early
+        self.temp_late = args.temp_late
         self._begin_game()
 
     def _begin_game(self):
         self.root = Node(state_manager = self.manager.current_state(), parent = None)
 
-    def __call__(self, state_manager, n = 1500, is_train=True):
+    def __call__(self, state_manager, n=1500, is_train=True):
         if not is_train:
             self.root = Node(state_manager=state_manager.current_state(), parent = None)
         for i in range(n):
