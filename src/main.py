@@ -46,6 +46,8 @@ def parse_args():
     parser.add_argument('-Tn', '--temp-late', type=float, default=0.5)
     parser.add_argument('-V', '--save-point', type=int, default=int(1e20))
     parser.add_argument('-R', '--regularization', type=float, default=0.01)
+    parser.add_argument('-z', '--cutoff', action='store_true')
+    parser.add_argument('-L', '--max-length', type=int, default=100)
 
     ret = parser.parse_args(argv[1:])
     print('Running with args:')
@@ -143,7 +145,8 @@ def run_mode(args):
             player2_notify = ag_player.notify_move
 
         Game(get_manager(args), p1, p2,
-             player1_notify=player1_notify, player2_notify=player2_notify).play()
+             player1_notify=player1_notify, player2_notify=player2_notify, max_length=args.max_length,
+             cutoff=args.cutoff).play()
 
     if args.eval:
         print(Evaluator(get_manager(args), p1, p2).evaluate())

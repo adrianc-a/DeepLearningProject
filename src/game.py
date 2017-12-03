@@ -51,7 +51,7 @@ class Game:
 
     def __init__(self, manager, player1, player2, begin_play=lambda: None, begin_game=lambda: None,
             end_game=lambda t, w: None, log=True, render=True,
-            player1_notify=lambda i: None, player2_notify = lambda i: None):
+            player1_notify=lambda i: None, player2_notify = lambda i: None, cutoff=False, max_length=100):
         self.manager = manager
         self.player1 = player1
         self.player2 = player2
@@ -62,6 +62,8 @@ class Game:
         self.render = render
         self.player1_notify = player1_notify
         self.player2_notify = player2_notify
+        self.cutoff = cutoff
+        self.max_length = max_length
 
     def play(self, num_games=1):
         self.begin_play()
@@ -78,7 +80,7 @@ class Game:
         turn = True
 
         n = 0
-        while not self.manager.is_terminal_state():
+        while (not self.manager.is_terminal_state()) or (self.cutoff and n > self.max_length):
             moves = self.manager.next_states()
 
             if len(moves) == 0:

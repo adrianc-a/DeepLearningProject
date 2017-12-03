@@ -158,6 +158,8 @@ class AlphaGoZeroTrainer:
                 begin_play=self._begin_play,
                 begin_game=self.player.mcts._begin_game,
                 end_game=self._end_game,
+                cutoff=self.args.cutoff,
+                max_length=self.args.max_length,
                 log=False,
                 render=False
             )
