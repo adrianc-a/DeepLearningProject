@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2014.9.23)  4 DEC 2017 04:09
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2014.9.23)  4 DEC 2017 04:15
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -487,26 +487,29 @@ File: network.png Graphic file (type png)
  <use network.png>
 Package pdftex.def Info: network.png used on input line 318.
 (pdftex.def)             Requested size: 1122.18977pt x 1347.02924pt.
- [7] <loss_MSE.png, id=53, 1895.08pt x 1326.9575pt>
-File: loss_MSE.png Graphic file (type png)
- <use loss_MSE.png>
-Package pdftex.def Info: loss_MSE.png used on input line 364.
-(pdftex.def)             Requested size: 199.60895pt x 139.74973pt.
- <noise.png, id=54, 1854.93pt x 1262.7175pt>
-File: noise.png Graphic file (type png)
- <use noise.png>
-Package pdftex.def Info: noise.png used on input line 373.
-(pdftex.def)             Requested size: 185.50386pt x 126.27914pt.
+ [7]
+
+LaTeX Warning: Reference `fig:noise' on page 8 undefined on input line 358.
+
+<plots.png, id=53, 2687.03876pt x 927.465pt>
+File: plots.png Graphic file (type png)
+ <use plots.png>
+Package pdftex.def Info: plots.png used on input line 364.
+(pdftex.def)             Requested size: 443.57848pt x 153.09587pt.
 
 
-LaTeX Warning: Citation `ELO' on page 8 undefined on input line 380.
+LaTeX Warning: Citation `ELO' on page 8 undefined on input line 374.
 
-[8 <./network.png>] [9 <./loss_MSE.png> <./noise.png>] <./images/ttt.png, id=64, 702.625pt x 451.6875pt>
+[8 <./network.png>] <./images/ttt.png, id=59, 702.625pt x 451.6875pt>
 File: ./images/ttt.png Graphic file (type png)
  <use ./images/ttt.png>
-Package pdftex.def Info: ./images/ttt.png used on input line 386.
+Package pdftex.def Info: ./images/ttt.png used on input line 380.
 (pdftex.def)             Requested size: 310.50357pt x 199.61153pt.
- [10 <./images/ttt.png>] [11
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[9 <./plots.png>] [10 <./images/ttt.png>] [11
 
 ] (/Users/Parsoa/Desktop/Davis/Projects/DeepLearningProject/report/.texpadtmp/report.bbl) [12
 
@@ -516,18 +519,18 @@ LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 13316 strings out of 493117
- 256926 string characters out of 6135433
- 305987 words of memory out of 5000000
- 16490 multiletter control sequences out of 15000+600000
+ 13311 strings out of 493117
+ 256847 string characters out of 6135433
+ 305979 words of memory out of 5000000
+ 16486 multiletter control sequences out of 15000+600000
  17427 words of font info for 41 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  55i,9n,54p,921b,260s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2014/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm0700.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm2074.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb>
-Output written on /Users/Parsoa/Desktop/Davis/Projects/DeepLearningProject/report/.texpadtmp/report.pdf (13 pages, 846085 bytes).
+Output written on /Users/Parsoa/Desktop/Davis/Projects/DeepLearningProject/report/.texpadtmp/report.pdf (13 pages, 1076356 bytes).
 PDF statistics:
- 142 PDF objects out of 1000 (max. 8388607)
+ 140 PDF objects out of 1000 (max. 8388607)
  93 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 48 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 43 words of extra memory for PDF output out of 10000 (max. 10000000)
 
