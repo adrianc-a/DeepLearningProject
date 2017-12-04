@@ -31,7 +31,7 @@
 \title{\huge{Using AlphaGo Zero Techniques to Play Tic-Tac-Toe, Connect Four and Chess: Crop Dusting with an F-18}}
 %\rule[0.5ex]{1\columnwidth}{1pt}
 \author{
-Adrian Chmielewski-Anders, Kenan Nabalt, Parsoa Khorsand, Sadegh Shams \\
+Adrian Chmielewski-Anders, Kenan Nalbant, Parsoa Khorsand Rahimzadeh, Sadegh Shamsabardeh \\
 \{achmielewski, kanalbant, pkhorsand, mshamsabardeh\}@ucdavis.edu
 }
 \date{}
@@ -236,7 +236,10 @@ each move in each game, the tree maintained by MCTS is shared among both
 players, since they are the same. Moves are sampled from the probabilities $\pi$
 returned by the MCTS search. That is $a_t \tilde \pi$. After each iteration, the
 network is trained based on the loss function
-$$l=(z-v)^2 - \pi^T \log p$$
+\begin{equation}
+l=(z-v)^2 - \pi^T \log p
+    \label{eq:3}
+\end{equation}
 Note that we experimented with this loss function as $v$ is the average of $v$
 for all forward operations.
 
@@ -385,10 +388,38 @@ The graphs below depict the improvement in the model's playing performance over 
 \clearpage
 
 \section{Discussion}
+We experienced a myriad of difficulties in reproducing the success of the paper
+in other games.
+Initially, we tried to model the paper as close as possible and used the
+original loss function \ref{eq:3}. This did not work given the changes we made
+to the network output. Additionally it can be seen that this loss function is
+very noisy given our modifications.
+We also suspect that even though we use scaled down versions of the networks,
+that they are still quite large, and we did not have access to enough
+computational power in order to train our models over a large enough set of
+games. Moreover, we experienced problems with parameter tuning as there are well
+in excess of 15 different hyperparameters and we expect that to get a model
+which works very well that we would need to spend more resources on tuning these
+parameters to the games in question. We also suspect that our modifications to
+the output of the network in order to allow for playing chess resulted in
+considering all possible moves for a given state independently of one another
+and this perhaps resulted in our model making poor moves.
+
+Future work might entail exploration of how these techniques fare with other
+games apart from just Go. Work like this is imoprtant because it advances the
+field generally and helps in udnerstanding what more advanced algorithms are
+capable of.
+
 
 \clearpage
 \bibliography{references}
 \bibliographystyle{IEEEtran}
 
 \section{Author contributions}
+Adrian Chmielewski-Anders: Game infrastructure, game and network cohesion,
+report writing.
+Kenan Nalbant: Network design, network infrastructure, game infrastructure, data
+generation.
+Parsoa Khorsand Rahimzadeh: Elo ratings, data generation, paper writing, MCTS.
+Sadegh Shamsabardeh: Most of paper writing, move playing infrastructure
 \end{document}
