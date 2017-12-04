@@ -11,8 +11,10 @@ from connect4 import Connect4Manager
 from chess_manager import ChessManager
 from networks import NetworkWrapper, OPTIMIZER_REG
 from sys import argv
-import tensorflow as tf
-import numpy as np
+from glob import glob
+
+GAMES = ['ttt', 'c4', 'chess']
+PLAYERS = ['alphago', 'human', 'simple', 'random']
 
 import plotly.graph_objs as graph_objs
 import plotly.offline as plotly
@@ -26,58 +28,61 @@ def parse_args():
 
     parser.add_argument('-t', '--train-model', action='store_true')
     parser.add_argument('-l', '--load-model', action='store_true')
-    parser.add_argument('-m', '--model-name')
-
-    parser.add_argument('-g', '--game', choices=['ttt', 'c4', 'chess'], required=True)
-    parser.add_argument('-i', '--iterations', type=int)
-    parser.add_argument('-n', '--num_games', type=int)
-    parser.add_argument('-a', '--learning_rate', type=float)
+    parser.add_argument('-g', '--game', choices=GAMES, required=True)
+    parser.add_argument('-I', '--iterations', type=int)
+    parser.add_argument('-N', '--num-games', type=int)
+    parser.add_argument('-A', '--learning-rate', type=float)
     parser.add_argument('-p', '--play-game', action='store_true')
-    parser.add_argument('-q', '--players',
-        choices=['alphago', 'human','simple', 'random'], nargs='+')
+    parser.add_argument('-q', '--players', choices=PLAYERS, nargs='+')
     parser.add_argument('-s', '--save-model', action='store_true')
     parser.add_argument('-f', '--save-file', type=str)
-    parser.add_argument('-o', '--optimizer', choices=['sgd', 'adam'])
+    parser.add_argument('-o', '--optimizer', choices=list(OPTIMIZER_REG.keys()))
     parser.add_argument('-e', '--eval', action='store_true')
+    parser.add_argument('--elo', action='store_true')
+    parser.add_argument('-M', '--momentum', type=float, default=0.01)
+    parser.add_argument('-u', '--use-nesterov', action='store_true')
+    parser.add_argument('-C', '--checkpoint', type=int, default=15)
+    parser.add_argument('-n', '--name', type=str, default='')
+    parser.add_argument('-S', '--sample-states', type=int, default=2048)
+    parser.add_argument('-E', '--epochs', type=int, default=5)
+    parser.add_argument('-B', '--batch-size', type=int, default=32)
+    parser.add_argument('-X', '--mcts-searches', type=int, default=10)
+    parser.add_argument('-T', '--temp-change-iter', type=int, default=7)
+    parser.add_argument('-T1', '--temp-early', type=float, default=1)
+    parser.add_argument('-Tn', '--temp-late', type=float, default=0.5)
+    parser.add_argument('-V', '--save-point', type=int, default=int(1e20))
+    parser.add_argument('-R', '--regularization', type=float, default=0.001)
+    parser.add_argument('-z', '--cutoff', action='store_true')
+    parser.add_argument('-L', '--max-length', type=int, default=100)
 
-    return parser.parse_args(argv[1:])
+    ret = parser.parse_args(argv[1:])
+    print('Running with args:')
+    print(ret)
+    return ret
 
 
-def train_model(game, iterations, num_games):
-    if game == 'ttt':
-        player = ag.AlphaGoZeroArchitectures.ttt()
-    elif game == 'c4':
-        player = ag.AlphaGoZeroArchitectures.connect4_net()
-    else:  # chess
-        player = ag.AlphaGoZeroArchitectures.chess()
+def train_model(player, args):
+    manager = get_manager(args)
 
-    manager = get_manager(game)
-
-    trainer = ag.AlphaGoZeroTrainer(player)
-    trainer.train(manager, iterations=iterations, games=num_games)
+    trainer = ag.AlphaGoZeroTrainer(player, args)
+    trainer.train(manager, iterations=args.iterations, games=args.num_games, ckpt=args.checkpoint,
+                  savept=args.save_point)
 
     return player
 
 
-def load_model(game, path, opt):
-    if game == 'ttt':
-        shape = ag.AlphaGoZeroArchitectures.ttt_input_shape()
-    elif game == 'c4':
-        shape = ag.AlphaGoZeroArchitectures.connect4_input_shape()
-    else:
-        shape = ag.AlphaGoZeroArchitectures.chess_input_shape()
-
+def load_model(args):
     return ag.AlphaGoZero(
-        NetworkWrapper.restore(path, shape, opt), get_manager(game)
+        NetworkWrapper.restore(args.save_file), get_manager(args), args
     )
 
 
-def get_manager(game):
-    if game == 'ttt':
+def get_manager(args):
+    if args.game == 'ttt':
         return TicTacToeManager()
-    elif game == 'c4':
+    elif args.game == 'c4':
         return Connect4Manager()
-    elif game == 'chess':
+    elif args.game == 'chess':
         return ChessManager()
 
 
@@ -100,32 +105,52 @@ def get_players(game, player, ag_player):
     elif player == 'random':
         return game_players.random_player
 
+def build_opt(args):
+    if args.optimizer == 'sgd' or args.optimizer == 'adam':
+        return OPTIMIZER_REG[args.optimizer](learning_rate=args.learning_rate)
+    elif args.optimizer == 'momentum':
+        return OPTIMIZER_REG[args.optimizer](learing_rate=args.learning_rate, momentum=args.momentum,
+                                             use_nesterov=args.use_nesterov)
+    elif args.optimizer == 'rms':
+        return OPTIMIZER_REG[args.optimizer](learning_rate=args.learning_rate, momentum=args.momentum)
+
+
+def build_player(args):
+    opt = build_opt(args)
+    if args.game == 'ttt':
+        return ag.AlphaGoZeroArchitectures.ttt(opt, args)
+    elif args.game == 'c4':
+        return ag.AlphaGoZeroArchitectures.connect4_net(opt, args)
+    else:  # chess
+        return ag.AlphaGoZeroArchitectures.chess(opt, args)
+
 def run_model(args):
+    ag_player = None
+    if args.load_model:
+        ag_player = load_model(args)
     if args.train_model:
-        ag_player = train_model(args.game, args.iterations, args.num_games)
-        ag_player.mcts._begin_game()
-    elif args.load_model:
-        opt = OPTIMIZER_REG[args.optimizer](learning_rate=args.learning_rate)
-        ag_player = load_model(args.game, args.save_file, opt)
-        ag_player.mcts._begin_game()
-    else:
-        ag_player = None
+        if glob('{}_{}*'.format(args.game, args.name)):
+            args.name = input('There are files matching this name. Pick another\n')
+        if ag_player is None:
+            ag_player = build_player(args)
+        ag_player = train_model(ag_player, args)
 
     if args.play_game or args.eval:
         p1 = get_players(args.game, args.players[0], ag_player)
         p2 = get_players(args.game, args.players[1], ag_player)
 
     if args.play_game:
-        player1_notify=lambda x: None
-        player2_notify=lambda x: None
+        player1_notify = lambda x: None
+        player2_notify = lambda x: None
 
         if args.players[0] == 'alphago':
             player1_notify = ag_player.notify_move
         elif args.players[1] == 'alphago':
             player2_notify = ag_player.notify_move
 
-        Game(get_manager(args.game), p1, p2,
-                player1_notify=player1_notify, player2_notify=player2_notify).play()
+        Game(get_manager(args), p1, p2,
+             player1_notify=player1_notify, player2_notify=player2_notify, max_length=args.max_length,
+             cutoff=args.cutoff).play()
 
     if args.eval:
         print(Evaluator(get_manager(args.game), p1, p2,\
@@ -146,7 +171,7 @@ def extract_checkpoints(args):
     checkpoints = []
     for directory in os.listdir(model_directory):
         if os.path.isdir(os.path.join(model_directory, directory)):
-            if directory.startswith(args.game + '_' + args.model_name + '_'):
+            if directory.startswith(args.game + '_' + args.name + '_'):
                 checkpoints.append(os.path.join(model_directory, directory))
     return checkpoints
 
@@ -189,7 +214,8 @@ def evaluate_over_time(args, freeze_previous_ratings = False):
     for checkpoint in checkpoints:
         checkpoint_number = checkpoint.split('_')[-1]
         print('found checkpoint ', checkpoint, 'number: ', checkpoint_number)
-        ag_player = load_model(args.game, checkpoint, opt)
+        args.save_file = checkpoint
+        ag_player = load_model(args)
         players.append(ag_player.play_move)
         notifiers.append(ag_player.notify_move)
         stats.append({
@@ -213,11 +239,12 @@ def evaluate_over_time(args, freeze_previous_ratings = False):
                 print('playing', i, ' against', j)
                 player1_name = 'player' + '_' + str(i)
                 player2_name = 'player' + '_' + str(j)
+                # keep e and p separate from other stats as these are ephemeral
                 iteration_stats = {
                     player1_name: stats[i],
                     player2_name: stats[j],
-                    'e': [0, 0],
-                    'p': [0, 0],
+                    'e': {player1_name: 0, player2_name: 0},
+                    'p': {player1_name: 0, player2_name: 0},
                 }
                 Evaluator(get_manager(args.game), players[i], players[j],
                     player1_notify = notifiers[i],
@@ -227,11 +254,11 @@ def evaluate_over_time(args, freeze_previous_ratings = False):
                     should_rate = True, rate_after_each_game = False, should_import_export_ratings = False,
                     game_stats = iteration_stats).evaluate(num_games = num_games)
                 # only update the rating for player i, freeze previous players
-                stats[i]['p'] += iteration_stats['p'][0]
-                stats[i]['e'] += iteration_stats['e'][0]
+                stats[i]['p'] += iteration_stats['p'][player1_name]
+                stats[i]['e'] += iteration_stats['e'][player1_name]
                 if not freeze_previous_ratings:
-                    stats[j]['p'] += iteration_stats['p'][1]
-                    stats[j]['e'] += iteration_stats['e'][1]
+                    stats[j]['p'] += iteration_stats['p'][player2_name]
+                    stats[j]['e'] += iteration_stats['e'][player2_name]
             if freeze_previous_ratings:
                 print(i, stats[i])
                 update_player_ratings(num_games, stats, i)
@@ -276,42 +303,12 @@ def plot_elo_ratings(args, evaluation_output_file):
     )
     data = [trace]
     plotly.offline.plot(data, filename = path)
-    
-"""
-def evaluate_against_each_other(args):
-    if args.train_model:
-        ag_player = train_model(args.game, args.iterations, args.num_games)
-    elif args.load_model:
-        opt = OPTIMIZER_REG[args.optimizer](learning_rate=args.learning_rate)
-        ag_player = load_model(args.game, args.save_file, opt)
-    else:
-        ag_player = None
-    p1 = get_players(args.game, args.players[0], ag_player)
-    p2 = get_players(args.game, args.players[1], ag_player)
-    # 
-    player1_notify = lambda x: None
-    player2_notify = lambda x: None
-    if args.players[0] == 'alphago':
-        player1_notify = ag_player.notify_move
-    elif args.players[1] == 'alphago':
-        player2_notify = ag_player.notify_move
-    # 
-    evaluation_file = args.players[0] + '_vs_' + args.players[1]
-    # 
-    Evaluator(get_manager(args.game), p1, p2,
-        player1_notify = player1_notify, player2_notify = player2_notify,
-        player1_name = args.game + '_' + args.model_name + '_' + checkpoint_number, player2_name = args.players[0],
-        should_rate = True, rate_after_each_game = False, evaluation_output = evaluation_file).evaluate()
-"""
 
 # ============================================================================================================================ #
 # Point of entry
 # ============================================================================================================================ #
 
 if __name__ == '__main__':
-    # run_model(parse_args())
-    # evaluate_against_each_other(parse_args())
-    evaluate_over_time(parse_args(), True)
-    # args = parse_args()
-    # evaluation_output_file = args.game + '_' + 'alphago' + '_' + 'checkpoints'
-    # plot_elo_ratings(args, evaluation_output_file)
+    run_model(parse_args())
+    if args.elo:
+        evaluate_over_time(parse_args(), True)
