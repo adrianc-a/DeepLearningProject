@@ -122,7 +122,7 @@ def build_player(args):
     elif args.game == 'c4':
         return ag.AlphaGoZeroArchitectures.connect4_net(opt, args)
     else:  # chess
-        return ag.AlphaGoZeroArchitectures.chess(opt, args)
+        return ag.AlphaGoZeroArchitectures.chess_net(opt, args)
 
 def run_model(args):
     ag_player = None
