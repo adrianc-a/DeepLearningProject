@@ -123,8 +123,7 @@ probability $p$ and value $v$ be as close as possible to the search
 probability $\pi$ and actual game winner $z$, respectively.
 
 \subsection{Training}
-Each iteration of the training is composed of playing $X$ games of self
-play fig\ref{fig:fig2}. Each game is composed of actions that are
+Each iteration of the training is composed of playing $X$ games of self-play. Each game is composed of actions that are
 performed based on probability $\pi$ from the starting state $s_{0}$
 to the terminal state $s_{T}$. To take an action the MCTS search
 Algorithm simulates moves many times and then perform the move
@@ -148,17 +147,23 @@ games, it is used in the next iteration, otherwise, the previous
 $f_{\theta}^{\ast}$
 is used. Many iterations are run until good performance is achieved.
 
-
-
+\begin{figure}[h]
+\centering
+\caption{}
+\includegraphics[width=\textwidth]{./images/training}
+\label{fig:figure_training}
+\end{figure}
+\clearpage
 \subsection{Search Algorithm of MCTS-Simulation}
 
 In each position $s$ an MCTS search is executed during which the
 tree is expanded. The following flow chart depicts the steps taken
 by MCTS at each state $s$ of the game before making an actual action.
 
-\begin{figure}
-\includegraphics[scale=0.4]{a}
-    \caption{Select: Each simulation traverses the tree by selecting the edge with
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{./images/mcts}
+\caption{Select: Each simulation traverses the tree by selecting the edge with
 maximum action-value $Q$, plus an upper confidence bound $U$ that
 depends on a stored prior probability $P$ and visit count $N$ for
 that edge (which is incremented once traversed). Expand \& Evaluate:
@@ -169,9 +174,9 @@ $Q$ are updated to track the mean of all evaluations $V$ in the
 subtree below that action. play Once the search is complete, search
 probabilities $\pi$ are returned, proportional to $N^{\frac{1}{\tau}}$,
 where $N$ is the visit count of each move from the root state and
-$\tau$ is a parameter controlling temperature.\label{fig:fig}}
+$\tau$ is a parameter controlling temperature.}
+\label{fig:figure_mcts}
 \end{figure}
-
 
 MCTS begins with a root node $s_0$. In training, the game tree is shared across
 both players so it is most likely expanded. That is, has children. If playing,
@@ -197,7 +202,6 @@ key role comparing to $Q$; the nodes with higher prior probability
 are visited. However, this method asymptotically prefers actions with
 high action-value. In other words, initially it explores more and
 asymptotically it exploits more. 
-
 
 
 Once the search reaches a
@@ -233,6 +237,13 @@ $$l=(z-v)^2 - \pi^T \log p$$
 Note that we experimented with this loss function as $v$ is the average of $v$
 for all forward operations.
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{./images/self_play}
+\caption{}
+\label{fig:figure_self_play}
+\end{figure}
+
 \subsection{Evaluator}
 At fixed iteration intervals in the training process, we evaluate the current
 neural network, with the previous best $f_{\theta}^{\ast}$. When the two play
@@ -252,12 +263,22 @@ used for subsequent iterations. If not, the previous best is used.
 
 \subsection{Performance}
 
-Performance of the trained models was evaluated using the Elo\cit{Elo} rating system, the same measure used by the AlphaGo Zero paper. 
+Performance of the trained models was evaluated using the Elo\cite{Elo} rating system, the same measure used by the AlphaGo Zero paper. The details and inner-workings of the Elo algorithm are beyond the scope of this paper. We trained the model for each game for a number of iterations and ranked each iteration through a series of games with the previous iterations and a random player. The random player simply picks moves at random and was incorporated to provide a baseline for the Elo rating of the first iteration. Ranking of an iteration is adjusted once all the games have finished and once an iteration is rated, it rating will be frozen for the rest of the evaluation. Based on the system used by the FIDE to rank players with no prior history, each player (including the random player) will start with the Elo score of 750. 
+
+The graphs below depict the improvement in the model's playing performance over time. As expected, the Elo rating of the model increases (although not strictly) with training time.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{./images/ttt}
+\caption{The performance of the model trained for the tic-tac-toe game over time}
+\label{fig:figure_ttt}
+\end{figure}
+\clearpage
 \section{Discussion}
 
+\clearpage
 \bibliography{references}
 \bibliographystyle{IEEEtran}
-
 
 \section{Author contributions}
 \end{document}

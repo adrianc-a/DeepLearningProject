@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2014.9.23)  4 DEC 2017 01:25
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2014.9.23)  4 DEC 2017 02:40
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -250,39 +250,62 @@ Package grfext Info: Graphics extension search list:
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 )) [1
 
-{/usr/local/texlive/2014/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+{/usr/local/texlive/2014/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2] <./images/training.png, id=20, 1699.34875pt x 848.16875pt>
+File: ./images/training.png Graphic file (type png)
+ <use ./images/training.png>
+Package pdftex.def Info: ./images/training.png used on input line 153.
+(pdftex.def)             Requested size: 443.57848pt x 221.38579pt.
+ [3 <./images/training.png>] <./images/mcts.png, id=27, 1593.955pt x 1100.11pt>
+File: ./images/mcts.png Graphic file (type png)
+ <use ./images/mcts.png>
+Package pdftex.def Info: ./images/mcts.png used on input line 166.
+(pdftex.def)             Requested size: 354.86412pt x 244.91219pt.
+ [4
 
-LaTeX Warning: Citation `AlphaGoZero' on page 2 undefined on input line 89.
+ <./images/mcts.png>] <./images/self_play.png, id=37, 1597.97pt x 243.91125pt>
+File: ./images/self_play.png Graphic file (type png)
+ <use ./images/self_play.png>
+Package pdftex.def Info: ./images/self_play.png used on input line 243.
+(pdftex.def)             Requested size: 310.50357pt x 47.39316pt.
 
 
-LaTeX Warning: Reference `fig:fig2' on page 2 undefined on input line 127.
+LaTeX Warning: `h' float specifier changed to `ht'.
 
-[2] <a.png, id=21, 553.06625pt x 407.5225pt>
-File: a.png Graphic file (type png)
- <use a.png>
-Package pdftex.def Info: a.png used on input line 160.
-(pdftex.def)             Requested size: 221.22258pt x 163.0061pt.
- [3] [4 <./a.png>] (/Users/Parsoa/Desktop/Davis/Projects/DeepLearningProject/report/.texpadtmp/report.bbl) [5] (/Users/Parsoa/Desktop/Davis/Projects/DeepLearningProject/report/.texpadtmp/report.aux)
+[5]
+
+LaTeX Warning: Citation `Elo' on page 6 undefined on input line 267.
+
+<./images/ttt.png, id=41, 702.625pt x 451.6875pt>
+File: ./images/ttt.png Graphic file (type png)
+ <use ./images/ttt.png>
+Package pdftex.def Info: ./images/ttt.png used on input line 273.
+(pdftex.def)             Requested size: 310.50357pt x 199.61153pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[6 <./images/self_play.png>] [7 <./images/ttt.png>] [8
+
+] (/Users/Parsoa/Desktop/Davis/Projects/DeepLearningProject/report/.texpadtmp/report.bbl) [9
+
+] (/Users/Parsoa/Desktop/Davis/Projects/DeepLearningProject/report/.texpadtmp/report.aux)
 
 LaTeX Warning: There were undefined references.
 
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
  ) 
 Here is how much of TeX's memory you used:
- 3378 strings out of 493117
- 45530 string characters out of 6135433
- 120093 words of memory out of 5000000
- 6780 multiletter control sequences out of 15000+600000
+ 3397 strings out of 493117
+ 45977 string characters out of 6135433
+ 120120 words of memory out of 5000000
+ 6795 multiletter control sequences out of 15000+600000
  17427 words of font info for 41 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 38i,6n,23p,921b,228s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 38i,6n,23p,921b,240s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2014/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm0700.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm2074.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb>
-Output written on /Users/Parsoa/Desktop/Davis/Projects/DeepLearningProject/report/.texpadtmp/report.pdf (5 pages, 280040 bytes).
+Output written on /Users/Parsoa/Desktop/Davis/Projects/DeepLearningProject/report/.texpadtmp/report.pdf (9 pages, 374726 bytes).
 PDF statistics:
- 100 PDF objects out of 1000 (max. 8388607)
- 71 compressed objects within 1 object stream
+ 120 PDF objects out of 1000 (max. 8388607)
+ 81 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 6 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 

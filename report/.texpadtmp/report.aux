@@ -8,17 +8,25 @@
 \@writefile{toc}{\contentsline {section}{\numberline {2}Methods}{2}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Holistic Model}{2}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Training}{3}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Search Algorithm of MCTS-Simulation}{3}}
-\newlabel{eq:1}{{1}{3}}
-\newlabel{eq:2}{{2}{3}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Select: Each simulation traverses the tree by selecting the edge with maximum action-value $Q$, plus an upper confidence bound $U$ that depends on a stored prior probability $P$ and visit count $N$ for that edge (which is incremented once traversed). Expand \& Evaluate: The leaf node is expanded and the associated positions is evaluated by the neural network $(P(s,\cdot ),V(s))=f_{\theta }(s)$ ; the vector of $P$ values are stored in the outgoing edges from $s$. Backup: Action-values $Q$ are updated to track the mean of all evaluations $V$ in the subtree below that action. play Once the search is complete, search probabilities $\pi $ are returned, proportional to $N^{\frac  {1}{\tau }}$, where $N$ is the visit count of each move from the root state and $\tau $ is a parameter controlling temperature.}}{4}}
-\newlabel{fig:fig}{{1}{4}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces }}{3}}
+\newlabel{fig:figure_training}{{1}{3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Search Algorithm of MCTS-Simulation}{4}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Select: Each simulation traverses the tree by selecting the edge with maximum action-value $Q$, plus an upper confidence bound $U$ that depends on a stored prior probability $P$ and visit count $N$ for that edge (which is incremented once traversed). Expand \& Evaluate: The leaf node is expanded and the associated positions is evaluated by the neural network $(P(s,\cdot ),V(s))=f_{\theta }(s)$ ; the vector of $P$ values are stored in the outgoing edges from $s$. Backup: Action-values $Q$ are updated to track the mean of all evaluations $V$ in the subtree below that action. play Once the search is complete, search probabilities $\pi $ are returned, proportional to $N^{\frac  {1}{\tau }}$, where $N$ is the visit count of each move from the root state and $\tau $ is a parameter controlling temperature.}}{4}}
+\newlabel{fig:figure_mcts}{{2}{4}}
+\newlabel{eq:1}{{1}{4}}
+\newlabel{eq:2}{{2}{4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Self play}{5}}
+\citation{Elo}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces }}{6}}
+\newlabel{fig:figure_self_play}{{3}{6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Evaluator}{6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Neural Network Architecture}{6}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Results}{6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Performance}{6}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces The performance of the model trained for the tic-tac-toe game over time}}{7}}
+\newlabel{fig:figure_ttt}{{4}{7}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{8}}
 \bibdata{references}
 \bibcite{AlphaGoZero}{1}
 \bibstyle{IEEEtran}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Self play}{5}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Evaluator}{5}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Neural Network Architecture}{5}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Results}{5}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{5}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Author contributions}{5}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Author contributions}{9}}
