@@ -98,11 +98,12 @@ class NetworkWrapper():
             the policy head outputs for the batch
         """
         with self.sess.as_default():
-            loss_val = self.sess.run(self.loss_function, feed_dict={self.input: state_batch,
-                                                                    self.value_label: value_batch,
-                                                                    self.policy_label: policy_batch,
-                                                                    K.learning_phase(): 0})
-        return loss_val
+            with self.graph.as_default():
+                loss_val = self.sess.run(self.loss_function, feed_dict={self.input: state_batch,
+                                                                            self.value_label: value_batch,
+                                                                            self.policy_label: policy_batch,
+                                                                            K.learning_phase(): 0})
+                return loss_val
 
     def training_step(self, state_batch, policy_batch, value_batch):
         """
@@ -272,7 +273,8 @@ def alphago_net(input_shape,  # NOTE: Input shape should be the input size witho
 
 
 def alphago_loss(network_policy, true_policy, network_reward, true_reward):
-    return tf.reduce_mean(-true_policy * tf.log(network_policy) + tf.pow(network_reward - true_reward, 2), 0)
+    #return tf.reduce_mean(-true_policy * tf.log(network_policy) + tf.pow(network_reward - true_reward, 2), 0)
+    return -tf.tensordot(true_policy, tf.log(network_policy),axes=1) + tf.pow(network_reward - true_reward, 2)
 
 
 def convolutional_block(inp, num_filters, filter_size, input_shape, reg=0.001):
@@ -329,10 +331,10 @@ def policy_head(inp, num_filters=2, filter_size=(1, 1), reg=0.001):
                    bias_regularizer=l2_reg(reg),
                    kernel_regularizer=l2_reg(reg), name='policy_head')(Flatten()(pl3))
 
-    return pl_out
+    return tf.nn.softmax(pl_out, dim=0)
 
 
-def value_head(inp, num_filters=1, filter_size=(1, 1), reg=0.001):
+def value_head(inp, num_filters=1, filter_size=(1, 1), middle_num=128, reg=0.001):
     v_in = tf.identity(inp)
     v1 = Conv2D(num_filters, filter_size, padding='same',
                 bias_regularizer=l2_reg(reg),
@@ -340,9 +342,9 @@ def value_head(inp, num_filters=1, filter_size=(1, 1), reg=0.001):
                 data_format='channels_first')(v_in)
     v2 = BatchNormalization(axis=1)(v1)
     v3 = Activation('relu')(v2)
-    v4 = Dense(256, activation='relu',
+    v4 = Dense(middle_num, activation='relu',
                   bias_regularizer=l2_reg(reg),
                   kernel_regularizer=l2_reg(reg))(Flatten()(v3))
     v_out = Dense(1, activation='tanh', bias_regularizer=l2_reg(reg), kernel_regularizer=l2_reg(reg),name='value_head')(v4)
 
-    return v_out
+    return tf.reduce_mean(v_out,0)
