@@ -11,6 +11,9 @@
 \onehalfspacing
 \usepackage{babel}
 \usepackage{cite}
+\usepackage{rotating}
+\usepackage{tikz}
+\usepackage{pdflscape}
 
 \begin{document}
 
@@ -257,12 +260,119 @@ If the player using the current network wins more than 55\% of the games, it is
 used for subsequent iterations. If not, the previous best is used.
 
 \subsection{Neural Network Architecture}
+The network is similar to the one defined in the paper, although scaled down for
+tic-tac-toe and Connect Four. It may be seen in four parts, one convolutional
+block, followed by some number of residual blocks and the two outputs,
+the policy and value heads.
+For example, in tic-tac-toe, the following architecture was used:
+The convolutional block is comprised of
+\begin{enumerate}
+% TODO: Fix line spacing @parsoa
+    \itemsep0em 
+    \item 10 convolutional filters with dimension $3 \times 3$ with stride 1
+    \item Batch Normalization
+    \item Relu
+\end{enumerate}
+A residual Block is comprised of
+\begin{enumerate}
+    \itemsep0em 
+    \item 10 convolutional filters with dimension $3 \times 3$ with stride 1
+    \item Batch Normalization
+    \item Relu
+    \item 10 convolutional filters with dimension $3 \times 3$ with stride 1
+    \item Batch Normalization
+    \item Output of (5) is added to the input of the residual block
+\end{enumerate}
+The policy head consists of
+\begin{enumerate}
+    \itemsep0em 
+    \item 2 convolutional filters of dimension $1 \times 1$ with stride 1
+    \item Batch Normalization
+    \item Relu
+    \item A fully connected layer to a single output value
+    \item A nonlinearity (we experimented with sigmoid and softmax)
+\end{enumerate}
 
+The value head consists of
+\begin{enumerate}
+    \itemsep0em 
+    \item 1 convolutional filter of dimension $1 \times 1$
+    \item Batch Normalization
+    \item Relu
+    \item Fully connected layer of 16 output units
+    \item Relu
+    \item Fully connected layer to a single output value
+    \item Tanh
+\end{enumerate}
+
+The input to all convolutional layers are padded so that the input height and
+width match the output height and width.
+
+\begin{figure}
+	\centering
+    \includegraphics[angle=90,origin=c,scale=0.2]{network}
+    \caption{Our network for tic-tac-toe with 5 residual blocks}
+\end{figure}
+
+
+We cannot replicate the exact network that is used in \cite{AlphaGo} because
+each output unit simply corresponds to placing a piece in that position. In
+chess, we cannot accept this paradaigm for encoding a move and instead give to
+the input a pair of states, which represent a a move from the current state to
+the next state. The output of the network is two scalars $(p, v)$ which are
+combined with other calls to the network for all possible moves to create $p$ a
+vector, and $v$ a scalar which averages over all $v$.
+
+Due to this change, the original loss function does not work since the original
+loss function relies on $p$ being a probability distribution so the loss
+function does not make as much sense. We instead also experimented with a more
+simple MSE loss function, defined as follows
+$$l=(z-v)^2+(p-\pi)^2$$
+where all variables are scalars.
+
+We also attempted to use the collection of $p$ values from the output of our
+network, and feed this collection through a softmax, and the collection of $v$
+values through an average function. Here we tried to approximate more closely
+what is in the original paper, as we now have a true distribution over all
+possible actions.
 \section{Results}
+
+We were not able to achieve great success with using the methods described above
+in playing tic-tac-toe, Connect Four or chess. While it can be seen that over
+time the ELO score for our player increases, it does not achieve super human
+ability and can be beaten without too much effort. Although, it does not puerly
+make poor moves. It, for example, consistently picks good initial positions for
+tic-tac-toe and occasionally--depending on training parameters--for Connect
+Four. Across all games, it seems able to make good attack moves, although does
+not seem able to play defensively very well. For example, in Connect Four, a
+common scenario is having three in a row for both players. Our player will often
+give up a win by not blocking the opponents winning row or column. 
+
+While not as interpretable as some standard supervised machine learning
+problems, we can see that our model does reduce error over time, as seen in
+figure \ref{fig:lossMSE}. Moreover, in figure \ref{fig:noise} we can see that the original
+error function for our model is extremely noisy and our model does not learn
+from it.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.45\textwidth]{loss_MSE}
+    \label{fig:lossMSE}
+    \caption{The modified MSE loss function compared with the original MSE and
+    Cross-Entropy. Due to our modifications, the original loss function did not
+    capture quality of moves.}
+\end{figure}
+
+\begin{figure}
+    \label{fig:noise}
+    \includegraphics[scale=0.1]{noise}
+    \caption{The original loss function with our modifications is very noisy.}
+\end{figure}
+
 
 \subsection{Performance}
 
-Performance of the trained models was evaluated using the Elo\cite{Elo} rating system, the same measure used by the AlphaGo Zero paper. The details and inner-workings of the Elo algorithm are beyond the scope of this paper. We trained the model for each game for a number of iterations and ranked each iteration through a series of games with the previous iterations and a random player. The random player simply picks moves at random and was incorporated to provide a baseline for the Elo rating of the first iteration. Ranking of an iteration is adjusted once all the games have finished and once an iteration is rated, it rating will be frozen for the rest of the evaluation. Based on the system used by the FIDE to rank players with no prior history, each player (including the random player) will start with the Elo score of 750. 
+Performance of the trained models was evaluated using the Elo\cite{Elo} rating system, the same measure used by the AlphaGo Zero paper. The details and inner-workings of the Elo algorithm are beyond the scope of this paper. We trained the model for each game for a number of iterations and ranked each iteration through a series of games with the previous iterations and a random player. The random player simply picks moves at random and was incorporated to provide a baseline for the Elo rating of the first iteration. Ranking of an iteration is adjusted once all the games have finished and once an iteration is rated, it rating will be frozen for the rest of the evaluation. Based on the system used by the FIDE \cite{ELO} to rank players with no prior history, each player (including the random player) will start with the Elo score of 750. 
 
 The graphs below depict the improvement in the model's playing performance over time. As expected, the Elo rating of the model increases (although not strictly) with training time.
 
@@ -273,6 +383,7 @@ The graphs below depict the improvement in the model's playing performance over 
 \label{fig:figure_ttt}
 \end{figure}
 \clearpage
+
 \section{Discussion}
 
 \clearpage

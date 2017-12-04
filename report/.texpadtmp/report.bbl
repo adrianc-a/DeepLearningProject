@@ -77,4 +77,20 @@ D.~Silver, J.~Schrittwieser, K.~Simonyan, I.~Antonoglou, A.~Huang, A.~Guez,
   10 2017. [Online]. Available: \url{http://dx.doi.org/10.1038/nature24270}
 \BIBentrySTDinterwordspacing
 
+\bibitem{AlphaGo}
+\BIBentryALTinterwordspacing
+D.~Silver, A.~Huang, C.~J. Maddison, A.~Guez, L.~Sifre, G.~van~den Driessche,
+  J.~Schrittwieser, I.~Antonoglou, V.~Panneershelvam, M.~Lanctot, S.~Dieleman,
+  D.~Grewe, J.~Nham, N.~Kalchbrenner, I.~Sutskever, T.~Lillicrap, M.~Leach,
+  K.~Kavukcuoglu, T.~Graepel, and D.~Hassabis, ``Mastering the game of go with
+  deep neural networks and tree search,'' \emph{Nature}, vol. 529, pp. 484 EP
+  --, 01 2016. [Online]. Available: \url{http://dx.doi.org/10.1038/nature16961}
+\BIBentrySTDinterwordspacing
+
+\bibitem{Elo}
+\BIBentryALTinterwordspacing
+M.~Glickman and T.~Doan, ``The us chess rating system.'' [Online]. Available:
+  \url{http://www.glicko.net/ratings/rating.system.pdf}
+\BIBentrySTDinterwordspacing
+
 \end{thebibliography}
