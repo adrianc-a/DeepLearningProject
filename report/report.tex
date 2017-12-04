@@ -66,9 +66,9 @@ however, cannot perform better.
 On the other hand, the reinforcement learning systems can learn on
 their own based on their experiences and by taking random actions.
 This characteristic makes them capable of surpassing human knowledge.
-Reinforcement learning has recently drawn attentions of researchers
-and industries do to their promising capacities. These systems have
-demonstrated better performance than human in some domains{[}ref{]}.
+Reinforcement learning has recently drawn the attentions of researchers
+and industries due to their promising capacities. These systems have
+demonstrated better performance than human in some domains.
 Training deep neural network with reinforcement learning have outperformed
 human in computer games such as Atari and 3D virtual environments\cite{eight, nine, ten}. There have been some efforts in the literature by
 scholars to implement chess based on the reinforcement learning. In
@@ -198,7 +198,7 @@ at each edge $(s,a)$ of the tree. The visit count $N(s,a)$, the
 total action-value $W(s,a)$, the mean action-value $Q(s,a)$, and
 the prior probability of selecting that edge $P(s,a)$ . These values
 are stored for all legal actions $a\in A(s)$ from $s$.  where $c_{\text{puct}}$
-is a constant determining the level of exploration.
+is a constant determining the level of exploration \cite{puct}.
 Initially the visit counts are small numbers and the $U$ plays the
 key role comparing to $Q$; the nodes with higher prior probability
 are visited. However, this method asymptotically prefers actions with
@@ -265,7 +265,7 @@ used for subsequent iterations. If not, the previous best is used.
 \subsection{Neural Network Architecture}
 The network is similar to the one defined in the paper, although scaled down for
 tic-tac-toe and Connect Four. It may be seen in four parts, one convolutional
-block, followed by some number of residual blocks and the two outputs,
+block, followed by some number of residual blocks \cite{Residual} and the two outputs,
 the policy and value heads.
 For example, in tic-tac-toe, the following architecture was used:
 The convolutional block is comprised of
@@ -375,7 +375,16 @@ from it.
 
 \subsection{Performance}
 
-Performance of the trained models was evaluated using the Elo\cite{Elo} rating system, the same measure used by the AlphaGo Zero paper. The details and inner-workings of the Elo algorithm are beyond the scope of this paper. We trained the model for each game for a number of iterations and ranked each iteration through a series of games with the previous iterations and a random player. The random player simply picks moves at random and was incorporated to provide a baseline for the Elo rating of the first iteration. Ranking of an iteration is adjusted once all the games have finished and once an iteration is rated, it rating will be frozen for the rest of the evaluation. Based on the system used by the FIDE \cite{ELO} to rank players with no prior history, each player (including the random player) will start with the Elo score of 750. 
+Performance of the trained models was evaluated using the Elo\cite{Elo} rating
+system, the same measure used by the AlphaGo Zero paper. The details and
+inner-workings of the Elo algorithm are beyond the scope of this paper. We
+trained the model for each game for a number of iterations and ranked each
+iteration through a series of games with the previous iterations and a random
+player. The random player simply picks moves at random and was incorporated to
+provide a baseline for the Elo rating of the first iteration. Ranking of an
+iteration is adjusted once all the games have finished and once an iteration is
+rated, it rating will be frozen for the rest of the evaluation. Based on the
+system used by the FIDE \cite{Elo} to rank players with no prior history, each player (including the random player) will start with the Elo score of 750. 
 
 The graphs below depict the improvement in the model's playing performance over time. As expected, the Elo rating of the model increases (although not strictly) with training time.
 
