@@ -359,19 +359,12 @@ from it.
 
 \begin{figure}
 \centering
-\includegraphics[width=0.45\textwidth]{loss_MSE}
+\includegraphics[width=\textwidth]{plots}
     \label{fig:lossMSE}
-    \caption{The modified MSE loss function compared with the original MSE and
+    \caption{\textbf{Right}: The modified MSE loss function compared with the original MSE and
     Cross-Entropy. Due to our modifications, the original loss function did not
-    capture quality of moves.}
-\end{figure}
-
-\begin{figure}
-    \label{fig:noise}
-    \includegraphics[scale=0.1]{noise}
-    \caption{The original loss function with our modifications is very noisy.}
-\end{figure}
-
+    capture quality of moves. \textbf{Left}: The original loss function with our modifications is very noisy.}
+\end{figure}
 
 \subsection{Performance}
 
@@ -419,16 +412,13 @@ games apart from just Go. Work like this is imoprtant because it advances the
 field generally and helps in udnerstanding what more advanced algorithms are
 capable of.
 
-
 \clearpage
 \bibliography{references}
 \bibliographystyle{IEEEtran}
 
 \section{Author contributions}
-Adrian Chmielewski-Anders: Game infrastructure, game and network cohesion,
-report writing.
-Kenan Nalbant: Network design, network infrastructure, game infrastructure, data
-generation.
-Parsoa Khorsand Rahimzadeh: Elo ratings, data generation, paper writing, MCTS.
-Sadegh Shamsabardeh: Most of paper writing, move playing infrastructure
+Adrian Chmielewski-Anders: Game infrastructure, game and network cohesion, report writing.\\
+Kenan Nalbant: Network design, network infrastructure, game infrastructure, data generation.\\
+Parsoa Khorsand Rahimzadeh: MCTS implementation, Elo rating and evaluation, code debugging, data generation, report writing.\\
+Sadegh Shamsabardeh: Majority of paper writing, move playing infrastructure
 \end{document}
