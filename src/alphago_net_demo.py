@@ -10,52 +10,20 @@ import networks as nn
 reload(nn)
 reload(cm)
 
-sess = tf.Session()
-K.set_session(sess)
-
-g = cm.ChessManager()
-
-# create a 'batch' of the input data
-input_batch = g.moves2vec()
+chess_m = cm.ChessManager()
+input_batch = chess_m.moves2vec()[0]
 
 # create a batch of 'label' data
-valy = np.random.uniform(low=-1,high=1,size=(input_batch.shape[0],1))
-poly = np.random.uniform(low=0,high=1,size=(input_batch.shape[0],1))
+#valy = np.random.uniform(low=-1,high=1,size=(input_batch.shape[0]))
+valy = np.random.uniform(low = -1, high=1, size=(1,))
+poly = np.random.uniform(low=0,high=1,size=(input_batch.shape[0]))
 
-(inp,valY,polY,pl_out,v_out,loss) = nn.alphago_net((3,8,8), 256, (3,3), 1, (3,3))
-
-train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
-
-init_op = tf.global_variables_initializer()
-sess.run(init_op)
-
-###RUNNING NETWORKS THE MANUAL WAY
-
-# get the predicted output for policy and reward
-with sess.as_default():
-        # this would be the line to run during generating the tree
-        net_out = sess.run((v_out, pl_out), feed_dict={inp:input_batch, K.learning_phase(): 0})
-
-# calculate the actual value of the loss function
-with sess.as_default():
-        # this gives you the actual loss
-        loss_out = sess.run(loss, feed_dict={inp:input_batch, valY:valy,
-                                             polY:poly, K.learning_phase(): 0})
-
-k_old = sess.run(tf.trainable_variables()[0])
-#notice when I'm running training steps K.learning_phase: 1
-with sess.as_default():
-	batch = vec
-	for i in range(100):
-            train_step.run(feed_dict={inp: input_batch, valY:valy, polY:poly, K.learning_phase(): 1})
-            k = sess.run(tf.trainable_variables()[0])
-
-
+poly = poly / np.sum(poly)
 
 ###RUNNING A NETWORK WITH THE SIMPLIFIED INTERFACE
 
 # first you need to get a network and optimizer definition
-network = nn.alphago_net((3,8,8), 256, (3,3), 1, (3,3))
+network = nn.alphago_net((5,8,8), 256, (3,3), 1, (3,3))
 optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
 
 # then create a wrapper object
