@@ -247,8 +247,28 @@ If the player using the current network wins more than 55\% of the games, it is
 used for subsequent iterations. If not, the previous best is used.
 
 \subsection{Neural Network Architecture}
+blah blah bla
+\begin{figure}
+    \includegraphics[scale=0.15]{network}
+    \caption{Our network for tic-tac-toe}
+\end{figure}
 
 \section{Results}
+\begin{figure}
+\centering
+\includegraphics[width=0.45\textwidth]{loss_MSE}
+    \caption{The modified MSE loss function compared with the original MSE and
+    Cross-Entropy. Due to our modifications, the original loss function did not
+    capture quality of moves.}
+\end{figure}
+
+\begin{figure}
+    \includegraphics[scale=0.1]{noise}
+    \caption{The original loss function with our modifications is very noisy.}
+\end{figure}
+
+
+
 
 \section{Discussion}
 
