@@ -139,7 +139,7 @@ class ChessManager(StateManager):
     def num_full_moves(self):
         """Returns number of full moves played
            (i.e. for each pair of moves by white and black)"""
-        return int(self.fen()[-1])
+        return int(self.board.fen()[-1])
 
     # allays the need for call to output()
     def __str__(self):
