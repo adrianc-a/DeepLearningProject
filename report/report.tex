@@ -44,7 +44,7 @@ these techniques still rely on datasets of professional games for training.
 Most recently, it has been demonstrated that it is possible to play Go at
 the highest level, with no prior game datasets.
 This is achieve through consolidating the policy and value networks into a single
-network, and omitting the use of rollouts. This single policy and vlaue network
+network, and omitting the use of rollouts. This single policy and value network
 in conjunction with a modified Monte-Carlo Tree Search algorithm has proven to
 yield exceptional results. We try to use this approach to play
 other games, namely tic-tac-toe, Connect Four, and chess.
@@ -67,13 +67,12 @@ Reinforcement learning has recently drawn attentions of researchers
 and industries do to their promising capacities. These systems have
 demonstrated better performance than human in some domains{[}ref{]}.
 Training deep neural network with reinforcement learning have outperformed
-human in computer games such as Atari and 3D virtual environments
-{[}ref 8-10p{]}. There have been some efforts in the literature by
+human in computer games such as Atari and 3D virtual environments\cite{eight, nine, ten}. There have been some efforts in the literature by
 scholars to implement chess based on the reinforcement learning. In
-{[}1,2,3{]} the authors propose the reinforcement learning for the
+\cite{one, two, three} the authors propose the reinforcement learning for the
 self-play and the training is done based on temporal difference learning.
 The authors have used handcrafted input features and these features
-can be the source of performance limitation. 1 and 2 deploy a pre-existing
+can be the source of performance limitation. \cite{one} and \cite{two} deploy a pre-existing
 computer programs as training opponents which limits the best achievable
 performance. The large state space of the chess together with the
 above-mentioned problems makes our team to mimic the AlphaGo Zero

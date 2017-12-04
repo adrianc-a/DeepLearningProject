@@ -21,6 +21,53 @@
 \providecommand{\BIBdecl}{\relax}
 \BIBdecl
 
+\bibitem{eight}
+\BIBentryALTinterwordspacing
+V.~Mnih, A.~P. Badia, M.~Mirza, A.~Graves, T.~P. Lillicrap, T.~Harley,
+  D.~Silver, and K.~Kavukcuoglu, ``Asynchronous methods for deep reinforcement
+  learning,'' \emph{CoRR}, vol. abs/1602.01783, 2016. [Online]. Available:
+  \url{http://arxiv.org/abs/1602.01783}
+\BIBentrySTDinterwordspacing
+
+\bibitem{nine}
+\BIBentryALTinterwordspacing
+M.~Jaderberg, V.~Mnih, W.~M. Czarnecki, T.~Schaul, J.~Z. Leibo, D.~Silver, and
+  K.~Kavukcuoglu, ``Reinforcement learning with unsupervised auxiliary tasks,''
+  \emph{CoRR}, vol. abs/1611.05397, 2016. [Online]. Available:
+  \url{http://arxiv.org/abs/1611.05397}
+\BIBentrySTDinterwordspacing
+
+\bibitem{ten}
+\BIBentryALTinterwordspacing
+A.~Dosovitskiy and V.~Koltun, ``Learning to act by predicting the future,''
+  \emph{CoRR}, vol. abs/1611.01779, 2016. [Online]. Available:
+  \url{http://arxiv.org/abs/1611.01779}
+\BIBentrySTDinterwordspacing
+
+\bibitem{one}
+\BIBentryALTinterwordspacing
+J.~Baxter, A.~Tridgell, and L.~Weaver, ``Learning to play chess using temporal
+  differences,'' \emph{Machine Learning}, vol.~40, no.~3, pp. 243--263, Sep
+  2000. [Online]. Available: \url{https://doi.org/10.1023/A:1007634325138}
+\BIBentrySTDinterwordspacing
+
+\bibitem{two}
+\BIBentryALTinterwordspacing
+J.~Veness, D.~Silver, A.~Blair, and W.~Uther, ``Bootstrapping from game tree
+  search,'' in \emph{Advances in Neural Information Processing Systems 22},
+  Y.~Bengio, D.~Schuurmans, J.~D. Lafferty, C.~K.~I. Williams, and A.~Culotta,
+  Eds.\hskip 1em plus 0.5em minus 0.4em\relax Curran Associates, Inc., 2009,
+  pp. 1937--1945. [Online]. Available:
+  \url{http://papers.nips.cc/paper/3722-bootstrapping-from-game-tree-search.pdf}
+\BIBentrySTDinterwordspacing
+
+\bibitem{three}
+\BIBentryALTinterwordspacing
+M.~Lai, ``Giraffe: Using deep reinforcement learning to play chess,''
+  \emph{CoRR}, vol. abs/1509.01549, 2015. [Online]. Available:
+  \url{http://arxiv.org/abs/1509.01549}
+\BIBentrySTDinterwordspacing
+
 \bibitem{AlphaGoZero}
 \BIBentryALTinterwordspacing
 D.~Silver, J.~Schrittwieser, K.~Simonyan, I.~Antonoglou, A.~Huang, A.~Guez,

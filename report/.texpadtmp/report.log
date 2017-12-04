@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2014.9.23)  4 DEC 2017 02:40
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2014.9.23)  4 DEC 2017 03:21
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -294,15 +294,15 @@ LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 3397 strings out of 493117
- 45977 string characters out of 6135433
- 120120 words of memory out of 5000000
- 6795 multiletter control sequences out of 15000+600000
+ 3403 strings out of 493117
+ 46012 string characters out of 6135433
+ 120138 words of memory out of 5000000
+ 6801 multiletter control sequences out of 15000+600000
  17427 words of font info for 41 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  38i,6n,23p,921b,240s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2014/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm0700.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfrm2074.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb>
-Output written on /Users/Parsoa/Desktop/Davis/Projects/DeepLearningProject/report/.texpadtmp/report.pdf (9 pages, 374726 bytes).
+Output written on /Users/Parsoa/Desktop/Davis/Projects/DeepLearningProject/report/.texpadtmp/report.pdf (9 pages, 384820 bytes).
 PDF statistics:
  120 PDF objects out of 1000 (max. 8388607)
  81 compressed objects within 1 object stream
