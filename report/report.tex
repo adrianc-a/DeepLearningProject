@@ -47,7 +47,7 @@ these techniques still rely on datasets of professional games for training.
 Most recently, it has been demonstrated that it is possible to play Go at
 the highest level, with no prior game datasets.
 This is achieve through consolidating the policy and value networks into a single
-network, and omitting the use of rollouts. This single policy and vlaue network
+network, and omitting the use of rollouts. This single policy and value network
 in conjunction with a modified Monte-Carlo Tree Search algorithm has proven to
 yield exceptional results. We try to use this approach to play
 other games, namely tic-tac-toe, Connect Four, and chess.
@@ -70,13 +70,12 @@ Reinforcement learning has recently drawn attentions of researchers
 and industries do to their promising capacities. These systems have
 demonstrated better performance than human in some domains{[}ref{]}.
 Training deep neural network with reinforcement learning have outperformed
-human in computer games such as Atari and 3D virtual environments
-{[}ref 8-10p{]}. There have been some efforts in the literature by
+human in computer games such as Atari and 3D virtual environments\cite{eight, nine, ten}. There have been some efforts in the literature by
 scholars to implement chess based on the reinforcement learning. In
-{[}1,2,3{]} the authors propose the reinforcement learning for the
+\cite{one, two, three} the authors propose the reinforcement learning for the
 self-play and the training is done based on temporal difference learning.
 The authors have used handcrafted input features and these features
-can be the source of performance limitation. 1 and 2 deploy a pre-existing
+can be the source of performance limitation. \cite{one} and \cite{two} deploy a pre-existing
 computer programs as training opponents which limits the best achievable
 performance. The large state space of the chess together with the
 above-mentioned problems makes our team to mimic the AlphaGo Zero
@@ -313,7 +312,8 @@ The input to all convolutional layers are padded so that the input height and
 width match the output height and width.
 
 \begin{figure}
-    \includegraphics[scale=0.15]{network}
+	\centering
+    \includegraphics[angle=90,origin=c,scale=0.2]{network}
     \caption{Our network for tic-tac-toe with 5 residual blocks}
 \end{figure}
 
@@ -375,7 +375,7 @@ from it.
 
 \subsection{Performance}
 
-Performance of the trained models was evaluated using the Elo\cite{Elo} rating system, the same measure used by the AlphaGo Zero paper. The details and inner-workings of the Elo algorithm are beyond the scope of this paper. We trained the model for each game for a number of iterations and ranked each iteration through a series of games with the previous iterations and a random player. The random player simply picks moves at random and was incorporated to provide a baseline for the Elo rating of the first iteration. Ranking of an iteration is adjusted once all the games have finished and once an iteration is rated, it rating will be frozen for the rest of the evaluation. Based on the system used by the FIDE to rank players with no prior history, each player (including the random player) will start with the Elo score of 750. 
+Performance of the trained models was evaluated using the Elo\cite{Elo} rating system, the same measure used by the AlphaGo Zero paper. The details and inner-workings of the Elo algorithm are beyond the scope of this paper. We trained the model for each game for a number of iterations and ranked each iteration through a series of games with the previous iterations and a random player. The random player simply picks moves at random and was incorporated to provide a baseline for the Elo rating of the first iteration. Ranking of an iteration is adjusted once all the games have finished and once an iteration is rated, it rating will be frozen for the rest of the evaluation. Based on the system used by the FIDE \cite{ELO} to rank players with no prior history, each player (including the random player) will start with the Elo score of 750. 
 
 The graphs below depict the improvement in the model's playing performance over time. As expected, the Elo rating of the model increases (although not strictly) with training time.
 
