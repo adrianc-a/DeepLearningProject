@@ -224,30 +224,33 @@ class AlphaGoZeroTrainer:
 
         flip = lambda x: x * -1
 
+        #print(self.cur_S)
+
+
         # there is probably a more elegant method for adding these
         # cur_Z is the winner, relative to the current player
         cur_Z = []
         for i in range(len(self.cur_S)):
-            cur_Z.append(np.ones(self.cur_S[i].shape[0]) * winner)
+            cur_Z.append(np.array([winner]))
             winner = flip(winner)
         cur_Z.reverse()
 
         # add the triple's for the latest game to the total data
 
-        S = np.concatenate(self.cur_S)
-        P = np.concatenate(self.cur_P)
-        Z = np.concatenate(cur_Z)
 
-        Z = Z.reshape((Z.shape[0], 1))
-        P = P.reshape((P.shape[0], 1))
+        self.S.extend(self.cur_S)
+        self.P.extend(self.cur_P)
+        self.Z.extend(cur_Z)
 
-        self.S.append(S)
-        self.P.append(P)
-        self.Z.append(Z)
 
-        # self.S = np.concatenate([self.S, S])
-        # self.P = np.concatenate([self.P, P])
-        # self.Z = np.concatenate([self.Z, Z])
+        S = self.cur_S
+        P = self.cur_P
+        with open('wut.pl', 'wb') as f:
+            pickle.dump((self.S,self.P,self.Z), f)
+
+
+        self.cur_S = []
+        self.cur_P = []
 
 
 
@@ -255,18 +258,9 @@ class AlphaGoZeroTrainer:
         # based on the games and self.data
         # update the weights of the nn
 
-        S = np.concatenate(self.S)
-        P = np.concatenate(self.P)
-        Z = np.concatenate(self.Z)
-
-        total_states = min(self.states_to_sample, S.shape[0])
-
-        #print(S.shape[0])
-        sample_idxs = np.random.choice(total_states, self.states_to_sample)
-
-        S = S[sample_idxs]
-        P = P[sample_idxs]
-        Z = Z[sample_idxs]
+        S = np.array(self.S)
+        P = np.array(self.P)
+        Z = np.array(self.Z)
 
         self.save_SPZ(S, P, Z, i)
 
@@ -274,8 +268,11 @@ class AlphaGoZeroTrainer:
         # ind = random.choice(len(self.S) - 1, batch_size, replace=False)
 
         for _ in range(self.num_epochs):
-            for s, p, z in make_SPZ_batches(self.batch_size, S, P, Z):
+            for s, p, z in make_SPZ_batches(S, P, Z):
+                #print(p,z)
                 self.player.nn.training_step(s, p, z)
+
+
 
     def play_move(self, current_state, next_states):
         # since this is always called, regardless of player, we can keep the
@@ -301,11 +298,12 @@ class AlphaGoZeroTrainer:
             pickle.dump((S, P, Z), f)
 
 
-def make_SPZ_batches(batch_size, S, P, Z):
+def make_SPZ_batches(S, P, Z):
     n = S.shape[0]
     indexes = np.arange(n)
     np.random.shuffle(indexes)
 
-    for i in range(0, n, batch_size):
-        batch_indices = indexes[i:i + 32]
-        yield S[batch_indices], P[batch_indices], Z[batch_indices]
+    #for i in range(0, n, batch_size):
+    for idx in indexes:
+        #batch_indices = indexes[i]
+        yield S[idx], P[idx], Z[idx]

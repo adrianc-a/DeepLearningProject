@@ -327,7 +327,7 @@ def policy_head(inp, num_filters=2, filter_size=(1, 1), reg=0.001):
                  data_format='channels_first')(pl_in)
     pl2 = BatchNormalization(axis=1)(pl1)
     pl3 = Activation('relu')(pl2)
-    pl_out = Dense(1, activation='sigmoid',
+    pl_out = Dense(1, 
                    bias_regularizer=l2_reg(reg),
                    kernel_regularizer=l2_reg(reg), name='policy_head')(Flatten()(pl3))
 

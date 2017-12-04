@@ -43,14 +43,17 @@ class Node(object):
 
         #get the predicted p and v values for all the children
         p, v = network_wrapper.forward(state_vecs)
-        self.v = np.mean(v)
+        #self.v = np.mean(v)
+        self.v = v
 
         '''
-        print('p')
-        print(p)
-        print('v')
-        print(v)
+        if self.parent == None:
+            print('p')
+            print(p)
+            print('v')
+            print(v)
         '''
+
         self.p = p
         for i, (_, next_state) in enumerate(zip(p, state_mans)):
             child = Node(state_manager = next_state,
