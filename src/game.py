@@ -32,9 +32,9 @@ class Evaluator:
     def _end_game(self, res, winner):
         if self.should_rate:
             self.game_stats['e'][self.player1_name] +=\
-                1.0 / (1.0 + 10.0 ** ((self.game_stats[player2_name]['elo'] - game_stats[player1_name]['elo']) / 400.0))
+                1.0 / (1.0 + 10.0 ** ((self.game_stats[self.player2_name]['elo'] - self.game_stats[self.player1_name]['elo']) / 400.0))
             self.game_stats['e'][self.player2_name] +=\
-                1.0 / (1.0 + 10.0 ** ((self.game_stats[player1_name]['elo'] - game_stats[player2_name]['elo']) / 400.0))
+                1.0 / (1.0 + 10.0 ** ((self.game_stats[self.player1_name]['elo'] - self.game_stats[self.player2_name]['elo']) / 400.0))
         if res == GameResult.WIN:
             if winner == 0:
                 self.player1_wins += 1

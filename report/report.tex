@@ -1,69 +1,100 @@
-\documentclass[conference]{IEEEtran}
+\documentclass[12pt]{IEEEtran}
 \usepackage{cite}
-
-\ifCLASSINFOpdf
-  % \usepackage[pdftex]{graphicx}
-  % declare the path(s) where your graphic files are
-  % \graphicspath{{../pdf/}{../jpeg/}}
-  % and their extensions so you won't have to specify these with
-  % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
-\else
-  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
-  % will default to the driver specified in the system graphics.cfg if no
-  % driver is specified.
-  % \usepackage[dvips]{graphicx}
-  % declare the path(s) where your graphic files are
-  % \graphicspath{{../eps/}}
-  % and their extensions so you won't have to specify these with
-  % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.eps}
-\fi
 \usepackage{amsmath}
 
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor}
-
 
 \begin{document}
 % paper title
 \title{AlphaGo Zero Techniques on other games}
 
 \author{
-Adrian Chmielewski-Anders, Parsoa Khorsand, Sadegh Shams \\
+Adrian Chmielewski-Anders, Kenan Nabalt, Parsoa Khorsand, Sadegh Shams \\
 \{achmielewski, kanalbant, pkhorsand, mshamsabardeh\}@ucdavis.edu
 }
 
 \maketitle
 
 \begin{abstract}
-    Our abstract
+
+There has been much success with using deep neural networks combined
+with various forms of tree search in order to play perfect knowledge, zero-sum
+games. Most notably are the techniques of AlphaGo \cite{AlphaGo}. However,
+these techniques still rely on databases of professional games for training.
+Most recently, the new so-called AlphaGo Zero paper \cite{AlphaGoZero} shows
+that it is possible to consolidate the policy and value networks into a single
+network, and omit the use of rollouts and learn from no knowledge
+apart from the rules of the game. We try to use this approach to play
+other games, namely tic-tac-toe, connect four, and chess.  
+
 \end{abstract}
 
-
-% For peer review papers, you can put extra information on the cover
-% page as needed:
-% \ifCLASSOPTIONpeerreview
-% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
-% \fi
-%
-% For peerreview papers, this IEEEtran command inserts a page break and
-% creates the second title. It will be ignored for other modes.
-%\IEEEpeerreviewmaketitle
-
-
-
 \section{Introduction}
-\begin{enumerate}
-    \item
-    Intro part 1
-    \item
-    Intro part 2
+
+For years supervised learning has been the de-facto standard for artificial intelligence systems meant to replicate the behavior of a human expert. One of the major areas of research in this field is game playing. Supervised learning algorithms have long been successfully exploited to beat humans in various games, the most prominent of which is IBM's Deep Blue chess-playing machine which best world champion Garry Kasparov in 1996. With chess out of the way, much research has been focused on the game of Go. Recent work has recently achieved significant successes in playing Go \cite{AphaGo}. However, these approaches use large databases of games of Go, played by elite professionals. The most recent development has been learning from scratch. That is techniques which have no previous data or knowledge about the game aside from its rules. Not only has this been shown to perform better than previous versions which do use large databases of games, it also makes progress in long-standing goal of artificial intelligence. Namely, learning with no prior knowledge. 
+
+We slightly modify the AlphaGo Zero techniques to play tic-tac-toe, Connect Four as well as chess. Modifications were made so as to be able to apply this methodology to chess. The need for this change arises from the complexity of defining a chess move and representing it as the output of a neural network. The performance of this slightly modified method is first tried on simpler games and then applied to chess. 
+
+
+P-------aragraph on intro to how we tweak the methods of ag_zero.
 
 \end{enumerate}
 
 \section{Methods}
-    Our methods \cite{AlphaGoZero}.
+	\subsection{Monte-Carlo Tree Search}
+		The game is represented by a game tree, where each node is a particular
+		game state. Each edge holds the following values and is indexed by
+		a state, and a particular action, which leads to another state
+		$$ W(s_t, a), Q(s_t, a), P(s_t, a) N(s_t, a) $$
+		$W$ is the total action value, $Q$ is the average action value, $P$ is
+		the prior probability of making the move $a$ from state $s_t$ and $N$ 
+		is the visit count.
+		
+		The tree search begins at the node which represents the current state
+		of the game. Next, an action $a_t$ is selected by
+		\begin{equation*}
+		\begin{aligned}
+		a_t= 
+		& \underset{a} {\text{argmax}}
+		& & Q(s_t, a) + U(s_t, a)
+		\end{aligned}	
+		\end{equation*}
+ 
+		where $U$ is defined as 
+		$$U(s,a) = c_{puct}P(s,a)\frac{\sqrt{\sum_b N(s,b)}}{1+N(s,a)}$$
+		The action is selected to move to state $s_{t+1}$. If this state
+		is a leaf-node, then it is expanded such that its children are all
+		legal next states of the game. At this point, the state of the board
+		at time $L$ is fed through the neural network to produce
+		$(p, v) = f_{\theta}(s_L)$. Where, each edge connecting $s_L$ with
+		$s_{L+1}$ is assigned values
+		$$ N(s_L, a) = 0, W(s_L, a) = 0, Q(s_L, a) = 0, P(s_L, a) = p_a$$.
+		
+		Next, the value $v$ is propagated up the tree. Each edge $N(s_t, a)$ 
+		where $t \leq L$ is updated as follows
+		$$N(s_t, a) = N(s_t, a)+1, W(s_t, a) = W(s_t,a)+v, Q(s_t, a) = \frac{Q(s_t, a)}{N(s_t, a)}$$
+		
+		This process is repeated $N$ times, per turn. After $N$ searches,
+		the MCTS outputs probabilities
+		$$\pi(a|s_0)=\frac{N(s_0, a)^{\frac{1}{\tau}}}{\sum_b N(s_0,b)^{\frac{1}{\tau}}}$$
+		Where $\tau=1$ for the first 30 moves of the game, and $\tau \rightarrow 0$ afterwards. The player then samples from this distribution and makes a move. 
+		
+	\subsection{Network Architecture}
+	\subsection{Training}
+		Since there is no previous data which is used to train the neural network. The player plays itself many times and generates data to train with.
+		For each iteration, many games of self play are played. That is, the AlphaGo Zero player plays itself, reusing the same search tree every move within a game. At the end of an iteration the triples
+		$(s_t, \pi_t, z_t)$ are saved where $s_t$ is the state of a board at time $t$, $\pi_t$ is the probabilities generated by the MCTS, and $z_t=1$ if the current player at time $t$ has won, or $-1$ if the current player has lost.
+		This constitutes a single training example. The network uses $s_t$ to produce $(p, v)$ again and the loss is defined as
+		$$l = (z-v)^2 - \pi^T\log{p}$$
+		Out of all training examples $(s, \pi, t)$, the network is trained on subset which is uniformly sampled among all samples.
+\begin{itemize}
+  \item F
+\end{itemize}
+		
+		
+	\subsection{Playing}
+		Playing a game is much similar to training, minus the training step. Most notably, the move is not sampled from the probability distribution $\pi$ returned by the MCTS search but rather the action corresponding to the largest $\pi$ value is selected. And the temperature parameter $\tau$ is set to be small ($\tau \rightarrow 0$).
 \section{Results}
     Our results.
 

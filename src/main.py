@@ -187,7 +187,6 @@ def evaluate_over_time(args, freeze_previous_ratings = False):
     notifiers = []
     players = []
     stats = []
-    opt = OPTIMIZER_REG[args.optimizer](learning_rate = args.learning_rate)
     # 
     notifiers.append(lambda x: None)
     players.append(simple_player)
@@ -215,6 +214,7 @@ def evaluate_over_time(args, freeze_previous_ratings = False):
         checkpoint_number = checkpoint.split('_')[-1]
         print('found checkpoint ', checkpoint, 'number: ', checkpoint_number)
         args.save_file = checkpoint
+        print(args)
         ag_player = load_model(args)
         players.append(ag_player.play_move)
         notifiers.append(ag_player.notify_move)
@@ -246,7 +246,7 @@ def evaluate_over_time(args, freeze_previous_ratings = False):
                     'e': {player1_name: 0, player2_name: 0},
                     'p': {player1_name: 0, player2_name: 0},
                 }
-                Evaluator(get_manager(args.game), players[i], players[j],
+                Evaluator(get_manager(args), players[i], players[j],
                     player1_notify = notifiers[i],
                     player2_notify = notifiers[j],
                     player1_name = player1_name,
@@ -292,10 +292,10 @@ def plot_elo_ratings(args, evaluation_output_file):
         stats = json.load(json_file)
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../evaluation/' + evaluation_output_file + '.html'))
     # 
-    y = list(map(lambda x: stats[x]['elo'], range(0, len(stats))))
-    x = list(range(0, len(stats)))
-    print(x)
-    print(y)
+    x = list(map(lambda x: args.save_point * (x - 1), range(1, len(stats))))
+    y = list(map(lambda x: stats[x]['elo'], range(1, len(stats))))
+    # print(x)
+    # print(y)
     trace = graph_objs.Scatter(
         x = x,
         y = y,
@@ -309,6 +309,7 @@ def plot_elo_ratings(args, evaluation_output_file):
 # ============================================================================================================================ #
 
 if __name__ == '__main__':
-    run_model(parse_args())
+    args = parse_args()
+    run_model(args)
     if args.elo:
-        evaluate_over_time(parse_args(), True)
+        evaluate_over_time(args, True)
