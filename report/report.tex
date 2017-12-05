@@ -12,6 +12,14 @@
 \usepackage{rotating}
 \usepackage{tikz}
 \usepackage{pdflscape}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    filecolor=magenta,
+    urlcolor=blue,
+    citecolor=black
+}
 
 \begin{document}
 
@@ -69,7 +77,7 @@ self-play and the training is done based on temporal difference learning.
 The authors have used handcrafted input features and these features
 can be the source of performance limitation. \cite{one} and \cite{two} deploy pre-existing
 computer programs as training opponents which limits the best achievable
-performance. 
+performance.
 
 Additionally, there have been efforts which demonstrate that using deep neural
 networks in conjunction with Q-learning can surpass humans at playing select
@@ -315,7 +323,7 @@ block, followed by some number of residual blocks \cite{Residual} and the two ou
 the policy and value heads.
 For example, in tic-tac-toe, the following architecture was used:
 The convolutional block is comprised of: 10 convolutional filters with dimension
-$3 \times 3$ with stride 1, Batch Normalization, Relu. 
+$3 \times 3$ with stride 1, Batch Normalization, Relu.
 A residual block is comprised of: 10 convolutional filters with dimension
 $3 \times 3$ with stride 1, Batch Normalization, Relu, 10 convolutional filters
 with dimension $3 \times 3$ with stride 1, Batch Normalization, Output of Batch
@@ -369,7 +377,7 @@ tic-tac-toe and occasionally--depending on training parameters--for Connect
 Four. Across all games, it seems able to make good attack moves, although does
 not seem able to play defensively very well. For example, in Connect Four, a
 common scenario is having three in a row for both players. Our player will often
-give up a win by not blocking the opponents winning row or column. 
+give up a win by not blocking the opponents winning row or column.
 
 While not as interpretable as some standard supervised machine learning
 problems, we can see that our model does reduce error over time, as seen in
@@ -397,7 +405,7 @@ player. The random player simply picks moves at random and was incorporated to
 provide a baseline for the Elo rating of the first iteration. Ranking of an
 iteration is adjusted once all the games have finished and once an iteration is
 rated, it rating will be frozen for the rest of the evaluation. Based on the
-system used by the FIDE \cite{Elo} to rank players with no prior history, each player (including the random player) will start with the Elo score of 750. 
+system used by the FIDE \cite{Elo} to rank players with no prior history, each player (including the random player) will start with the Elo score of 750.
 
 The graphs below depict the improvement in the model's playing performance over time. As expected, the Elo rating of the model increases (although not strictly) with training time.
 
@@ -440,4 +448,7 @@ Adrian Chmielewski-Anders: Game infrastructure, game and network cohesion, repor
 Kenan Nalbant: Network design, network infrastructure, game infrastructure, data generation.\\
 Parsoa Khorsand Rahimzadeh: MCTS implementation, Elo rating and evaluation, code debugging, data generation, report writing.\\
 Sadegh Shamsabardeh: Majority of paper writing, move playing infrastructure
+The code is publicly available
+\href{https://github.com/adrianc-a/DeepLearningProject}{https://github.com/adrianc-a/DeepLearningProject}.
+And also contains information about who made what commits/etc.
 \end{document}
