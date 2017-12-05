@@ -136,9 +136,97 @@ publisher = {Curran Associates, Inc.},
 url = {http://papers.nips.cc/paper/3722-bootstrapping-from-game-tree-search.pdf}
 }
 
-@article{ELO,
+@article{Elo,
     Author = {Glickman, Mark and Doan, Thomas},
     Date = {2017/04/24},
     Title = {The U.S Chess Rating System},
     Url = {http://www.glicko.net/ratings/rating.system.pdf}
+}
+
+@article{Residual,
+  author    = {Kaiming He and
+               Xiangyu Zhang and
+               Shaoqing Ren and
+               Jian Sun},
+  title     = {Deep Residual Learning for Image Recognition},
+  journal   = {CoRR},
+  volume    = {abs/1512.03385},
+  year      = {2015},
+  url       = {http://arxiv.org/abs/1512.03385},
+  archivePrefix = {arXiv},
+  eprint    = {1512.03385},
+  timestamp = {Wed, 07 Jun 2017 14:41:17 +0200},
+  biburl    = {http://dblp.org/rec/bib/journals/corr/HeZRS15},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+
+@inproceedings{tensorflow,
+title = {TensorFlow: A system for large-scale machine learning},
+author  = {Martin Abadi and Paul Barham and Jianmin Chen and Zhifeng Chen and Andy Davis and Jeffrey Dean and Matthieu Devin and Sanjay Ghemawat and Geoffrey Irving and Michael Isard and Manjunath Kudlur and Josh Levenberg and Rajat Monga and Sherry Moore and Derek G. Murray and Benoit Steiner and Paul Tucker and Vijay Vasudevan and Pete Warden and Martin Wicke and Yuan Yu and Xiaoqiang Zheng},
+year  = {2016},
+URL = {https://www.usenix.org/system/files/conference/osdi16/osdi16-abadi.pdf},
+booktitle = {12th USENIX Symposium on Operating Systems Design and Implementation (OSDI 16)},
+pages = {265--283}
+}
+
+
+@Article{puct,
+author="Rosin, Christopher D.",
+title="Multi-armed bandits with episode context",
+journal="Annals of Mathematics and Artificial Intelligence",
+year="2011",
+month="Mar",
+day="01",
+volume="61",
+number="3",
+pages="203--230",
+abstract="A multi-armed bandit episode consists of n trials, each allowing selection of one of K arms,
+resulting in payoff from a distribution over [0,1] associated with that arm. We assume contextual side
+information is available at the start of the episode. This context enables an arm predictor to identify
+ possible favorable arms, but predictions may be imperfect so that they need to be combined with furthe
+r exploration during the episode. Our setting is an alternative to classical multi-armed bandits which
+provide no contextual side information, and is also an alternative to contextual bandits which provide
+new context each individual trial. Multi-armed bandits with episode context can arise naturally, for ex
+ample in computer Go where context is used to bias move decisions made by a multi-armed bandit algorith
+m. The UCB1 algorithm for multi-armed bandits achieves worst-case regret bounded by
+                                                       {\$}O{\backslash}left({\backslash}sqrt{\{}Kn{\ba
+ckslash}log(n){\}}{\backslash}right){\$}                . We seek to improve this using episode context
+, particularly in the case where K is large. Using a predictor that places weight M
+              i                {\thinspace}>{\thinspace}0 on arm i with weights summing to 1, we presen
+t the PUCB algorithm which achieves regret
+              {\$}O{\backslash}left({\backslash}frac{\{}1{\}}{\{}M{\_}{\{}{\backslash}ast{\}}{\}}{\back
+slash}sqrt{\{}n{\backslash}log(n){\}}{\backslash}right){\$}                 where M                {\th
+inspace}∗{\thinspace} is the weight on the optimal arm. We illustrate the behavior of PUCB with small s
+imulation experiments, present extensions that provide additional capabilities for PUCB, and describe m
+ethods for obtaining suitable predictors for use with PUCB.",
+issn="1573-7470",
+doi="10.1007/s10472-011-9258-6",
+url="https://doi.org/10.1007/s10472-011-9258-6"
+}
+
+
+
+@article{dqn,
+	Author = {Mnih, Volodymyr and Kavukcuoglu, Koray and Silver, David and Rusu, Andrei A. and Veness, Joel and Bellemare, Marc G. and Graves, Alex and Riedmiller, Martin and Fidjeland, Andreas K. and Ostrovski, Georg and Petersen, Stig and Beattie, Charles and Sadik, Amir and Antonoglou, Ioannis and King, Helen and Kumaran, Dharshan and Wierstra, Daan and Legg, Shane and Hassabis, Demis},
+	Date = {2015/02/25/online},
+	Date-Added = {2017-12-05 01:45:47 +0000},
+	Date-Modified = {2017-12-05 01:45:47 +0000},
+	Day = {25},
+	Journal = {Nature},
+	L3 = {10.1038/nature14236; https://www.nature.com/articles/nature14236#supplementary-information},
+	Month = {02},
+	Pages = {529 EP  -},
+	Publisher = {Nature Publishing Group, a division of Macmillan Publishers Limited. All Rights Reserved. SN  -},
+	Title = {Human-level control through deep reinforcement learning},
+	Ty = {JOUR},
+	Url = {http://dx.doi.org/10.1038/nature14236},
+	Volume = {518},
+	Year = {2015},
+	Bdsk-Url-1 = {http://dx.doi.org/10.1038/nature14236}}
+
+
+@misc{deepmind,
+  title = {AlphaGo Home},
+  howpublished = {\url{https://deepmind.com/research/alphago/}},
+  note = {Accessed: 2017-12-04}
 }
