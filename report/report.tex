@@ -4,6 +4,7 @@
 \usepackage{geometry}
 \geometry{verbose,lmargin=3cm,rmargin=3cm}
 \usepackage{amsmath}
+\usepackage{subfig}
 \usepackage{graphicx}
 \usepackage{setspace}
 \onehalfspacing
@@ -392,21 +393,39 @@ Performance of the trained models was evaluated using the Elo\cite{Elo} rating
 system, the same measure used by the AlphaGo Zero paper. The details and
 inner-workings of the Elo algorithm are beyond the scope of this paper. We
 trained the model for each game for a number of iterations and ranked each
-iteration through a series of games with the previous iterations and a random
-player. The random player simply picks moves at random and was incorporated to
+iteration through a series of 10 games with each of the previous iterations and a random
+player. The random player simply picks moves at random and was incorporated to help
 provide a baseline for the Elo rating of the first iteration. Ranking of an
 iteration is adjusted once all the games have finished and once an iteration is
-rated, it rating will be frozen for the rest of the evaluation. Based on the
-system used by the FIDE \cite{Elo} to rank players with no prior history, each player (including the random player) will start with the Elo score of 750. 
+rated, its rating will be frozen for the rest of the evaluation. Based on the
+system used by the FIDE \cite{Elo} to rank players with no prior history, each player (including the random player) will start with the initial Elo rating of 750. 
 
-The graphs below depict the improvement in the model's playing performance over time. As expected, the Elo rating of the model increases (although not strictly) with training time.
+The graphs below depict the improvement in the model's playing performance over time. In case of the tic-tac-toe the Elo rating of the model increases (although not strictly) with training time as expected.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.7\textwidth]{./images/ttt}
-\caption{The performance of the model trained for the tic-tac-toe game over time}
-\label{fig:figure_ttt}
+\subfloat[first]{
+	\includegraphics[width=0.5\textwidth]{./images/ttt}
+}
+\subfloat[second]{
+	\includegraphics[width=0.5\textwidth]{./images/c4}
+}
+\caption{Elo rating of the neural network trained on the tic-tac-toe (right) and Connect-Four (left) games over time}
 \end{figure}
+
+%\begin{table}
+%  	\centering
+%	\begin{tabular}{p{0.49\textwidth}p{0.49\textwidth}}
+%	\begin{minipage}{0.49\textwidth}
+%	\includegraphics[width=\textwidth]{./images/ttt}
+%	\end{minipage}
+%	&
+%	\begin{minipage}{0.49\textwidth}
+%	\includegraphics[width=\textwidth]{./images/ttt}
+%	\end{minipage}
+%	\end{tabular}
+%	\caption {Should be a caption}
+%\end{table}
 
 \section{Discussion}
 We experienced a myriad of difficulties in reproducing the success of the paper
