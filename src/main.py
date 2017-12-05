@@ -232,6 +232,7 @@ def evaluate_over_time(args, freeze_previous_ratings = False):
     for iteration in range(iterations):
         print('iteration:', iteration)
         for i in range(1, len(players)): # start from random player and rate
+            stats[i]['elo'] = stats[i - 1]['elo']
             r = range(0, i) if freeze_previous_ratings else range(0, len(players))
             for j in r:
                 if i == j: # not playing against ourselves, done enough of that already :D
