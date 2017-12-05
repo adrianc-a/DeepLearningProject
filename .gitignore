@@ -13,7 +13,7 @@ models/
 src/models/
 logs/
 src/logs
-evaluations/*
+evaluation/*
 spz/
 src/spz/
 */.texpadtmp/*
