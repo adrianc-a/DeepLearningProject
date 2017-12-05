@@ -13,8 +13,9 @@ models/
 src/models/
 logs/
 src/logs
-*/evaluation/*
+evaluation/
 spz/
 src/spz/
 */.texpadtmp/*
+*.json
 *.html
