@@ -1,18 +1,78 @@
 \relax 
-\citation{AlphaGo}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{eight,nine,ten}
+\citation{one,two,three}
+\citation{one}
+\citation{two}
+\select@language{english}
+\@writefile{toc}{\select@language{english}}
+\@writefile{lof}{\select@language{english}}
+\@writefile{lot}{\select@language{english}}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}}
+\citation{DQN}
+\citation{AlphaGo,deepmind}
+\citation{eight,nine,ten}
 \citation{AlphaGoZero}
-\citation{AphaGo}
-\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}}
-\@writefile{toc}{\contentsline {section}{\numberline {II}Methods}{1}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-A}}Monte-Carlo Tree Search}{1}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Methods}{2}{section.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Holistic Model}{2}{subsection.2.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Training}{3}{subsection.2.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Self play}{3}{subsection.2.3}}
+\newlabel{eq:3}{{1}{3}{Self play}{equation.2.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces What occurs during a single iteration of training. A series of games are played to generate data. The data is sampled uniformly, and the neural network is trained over many epochs on this data. At fixed poits, a checkpoint occurs and we evaluate the performance of the current player against the prevous best to determine which to use for future data generation.\relax }}{4}{figure.caption.1}}
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:figure_training}{{1}{4}{What occurs during a single iteration of training. A series of games are played to generate data. The data is sampled uniformly, and the neural network is trained over many epochs on this data. At fixed poits, a checkpoint occurs and we evaluate the performance of the current player against the prevous best to determine which to use for future data generation.\relax }{figure.caption.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces How a move is made when training. A MCTS search is applied using the current network $f_{\theta }$ to expand a leaf node, if one is reached, edge values are modified, and $\pi _t$ is generated, an action is sampled from $\pi _t$ and applied. The process is repeated for all moves to generate data for a single game.\relax }}{4}{figure.caption.2}}
+\newlabel{fig:figure_self_play}{{2}{4}{How a move is made when training. A MCTS search is applied using the current network $f_{\theta }$ to expand a leaf node, if one is reached, edge values are modified, and $\pi _t$ is generated, an action is sampled from $\pi _t$ and applied. The process is repeated for all moves to generate data for a single game.\relax }{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Evaluator}{4}{subsection.2.4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Search Algorithm of MCTS-Simulation}{4}{subsection.2.5}}
+\citation{puct}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Select: Each simulation traverses the tree by selecting the edge with maximum action-value $Q$, plus an upper confidence bound $U$ that depends on a stored prior probability $P$ and visit count $N$ for that edge (which is incremented once traversed). Expand \& Evaluate: The leaf node is expanded and the associated positions is evaluated by the neural network $(P(s,\cdot ),V(s))=f_{\theta }(s)$ ; the vector of $P$ values are stored in the outgoing edges from $s$. Backup: Action-values $Q$ are updated to track the mean of all evaluations $V$ in the subtree below that action. play Once the search is complete, search probabilities $\pi $ are returned, proportional to $N^{\frac  {1}{\tau }}$, where $N$ is the visit count of each move from the root state and $\tau $ is a parameter controlling temperature.\relax }}{5}{figure.caption.3}}
+\newlabel{fig:figure_mcts}{{3}{5}{Select: Each simulation traverses the tree by selecting the edge with maximum action-value $Q$, plus an upper confidence bound $U$ that depends on a stored prior probability $P$ and visit count $N$ for that edge (which is incremented once traversed). Expand \& Evaluate: The leaf node is expanded and the associated positions is evaluated by the neural network $(P(s,\cdot ),V(s))=f_{\theta }(s)$ ; the vector of $P$ values are stored in the outgoing edges from $s$. Backup: Action-values $Q$ are updated to track the mean of all evaluations $V$ in the subtree below that action. play Once the search is complete, search probabilities $\pi $ are returned, proportional to $N^{\frac {1}{\tau }}$, where $N$ is the visit count of each move from the root state and $\tau $ is a parameter controlling temperature.\relax }{figure.caption.3}{}}
+\newlabel{eq:1}{{3}{5}{Search Algorithm of MCTS-Simulation}{equation.2.3}{}}
+\newlabel{eq:2}{{4}{5}{Search Algorithm of MCTS-Simulation}{equation.2.4}{}}
+\citation{Residual}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Neural Network Architecture}{6}{subsection.2.6}}
+\citation{AlphaGo}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Our network for tic-tac-toe with 5 residual blocks, in TensorFlow.\relax }}{7}{figure.caption.4}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Results}{7}{section.3}}
+\citation{Elo}
+\citation{Elo}
+\newlabel{fig:lossMSE}{{\caption@xref {fig:lossMSE}{ on input line 394}}{8}{Results}{figure.caption.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces \textbf  {Right}: The modified MSE loss function compared with the original MSE and Cross-Entropy. Due to our modifications, the original loss function did not capture quality of moves. \textbf  {Left}: The original loss function with our modifications is very noisy.\relax }}{8}{figure.caption.5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Performance}{8}{subsection.3.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{8}{section.4}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Elo rating of the neural network trained on the tic-tac-toe (right) and Connect-Four (left) games over time\relax }}{9}{figure.caption.6}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(a)}{\ignorespaces {first}}}{9}{subfigure.6.1}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(b)}{\ignorespaces {second}}}{9}{subfigure.6.2}}
 \bibdata{references}
-\bibcite{AlphaGoZero}{1}
+\bibcite{eight}{1}
+\bibcite{nine}{2}
+\bibcite{ten}{3}
+\bibcite{one}{4}
+\bibcite{two}{5}
+\bibcite{three}{6}
+\bibcite{DQN}{7}
+\bibcite{AlphaGo}{8}
+\bibcite{deepmind}{9}
+\bibcite{AlphaGoZero}{10}
+\bibcite{puct}{11}
+\bibcite{Residual}{12}
+\bibcite{Elo}{13}
 \bibstyle{IEEEtran}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-B}}Network Architecture}{2}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-C}}Training}{2}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-D}}Playing}{2}}
-\@writefile{toc}{\contentsline {section}{\numberline {III}Results}{2}}
-\@writefile{toc}{\contentsline {section}{\numberline {IV}Discussion}{2}}
-\@writefile{toc}{\contentsline {section}{\numberline {V}Conclusion}{2}}
-\@writefile{toc}{\contentsline {section}{References}{2}}
-\@writefile{toc}{\contentsline {section}{\numberline {VI}Author Contributions}{2}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Author contributions}{11}{section.5}}

@@ -13,9 +13,7 @@ models/
 src/models/
 logs/
 src/logs
-<<<<<<< HEAD
 evaluations/*
-=======
 spz/
 src/spz/
->>>>>>> master
+*/.texpadtmp/*

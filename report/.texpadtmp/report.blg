@@ -8,52 +8,52 @@ Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: ../references.bib
-Warning--I didn't find a database entry for "AlphaGo"
-Warning--I didn't find a database entry for "AphaGo"
 -- IEEEtran.bst version 1.13 (2008/09/30) by Michael Shell.
 -- http://www.michaelshell.org/tex/ieeetran/bibtex/
 -- See the "IEEEtran_bst_HOWTO.pdf" manual for usage information.
+Warning--empty journal in Elo
+Warning--empty year in Elo
 
 Done.
-You've used 1 entry,
+You've used 13 entries,
             4039 wiz_defined-function locations,
-            825 strings with 7938 characters,
-and the built_in function-call counts, 1592 in all, are:
-= -- 105
-> -- 77
-< -- 10
-+ -- 37
-- -- 17
-* -- 96
-:= -- 220
-add.period$ -- 2
-call.type$ -- 1
-change.case$ -- 1
-chr.to.int$ -- 24
-cite$ -- 1
-duplicate$ -- 98
-empty$ -- 98
-format.name$ -- 18
-if$ -- 353
+            905 strings with 10854 characters,
+and the built_in function-call counts, 11355 in all, are:
+= -- 869
+> -- 434
+< -- 68
++ -- 215
+- -- 93
+* -- 608
+:= -- 1723
+add.period$ -- 27
+call.type$ -- 13
+change.case$ -- 16
+chr.to.int$ -- 150
+cite$ -- 15
+duplicate$ -- 790
+empty$ -- 808
+format.name$ -- 104
+if$ -- 2561
 int.to.chr$ -- 0
-int.to.str$ -- 1
-missing$ -- 23
-newline$ -- 28
-num.names$ -- 1
-pop$ -- 61
+int.to.str$ -- 13
+missing$ -- 167
+newline$ -- 86
+num.names$ -- 14
+pop$ -- 416
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 2
-skip$ -- 109
+skip$ -- 842
 stack$ -- 0
-substring$ -- 64
-swap$ -- 95
-text.length$ -- 2
+substring$ -- 386
+swap$ -- 669
+text.length$ -- 18
 text.prefix$ -- 0
 top$ -- 5
-type$ -- 1
-warning$ -- 0
-while$ -- 4
-width$ -- 2
-write$ -- 35
+type$ -- 13
+warning$ -- 2
+while$ -- 34
+width$ -- 15
+write$ -- 178
 (There were 2 warnings)
