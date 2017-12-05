@@ -148,7 +148,7 @@ class ChessManager(StateManager):
     def output(self):
         print(self.board)
 
-    @classmethod
+    @staticmethod
     def cl_name():
         return 'chess'
 

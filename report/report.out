@@ -1,0 +1,12 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Methods}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Holistic Model}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Training}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Self play}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{Evaluator}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.5}{Search Algorithm of MCTS-Simulation}{section.2}% 7
+\BOOKMARK [2][-]{subsection.2.6}{Neural Network Architecture}{section.2}% 8
+\BOOKMARK [1][-]{section.3}{Results}{}% 9
+\BOOKMARK [2][-]{subsection.3.1}{Performance}{section.3}% 10
+\BOOKMARK [1][-]{section.4}{Discussion}{}% 11
+\BOOKMARK [1][-]{section.5}{Author contributions}{}% 12

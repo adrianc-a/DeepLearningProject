@@ -4,7 +4,9 @@
 \usepackage{geometry}
 \geometry{verbose,lmargin=3cm,rmargin=3cm}
 \usepackage{amsmath}
+\usepackage{subfig}
 \usepackage{graphicx}
+\usepackage{wrapfig}
 \usepackage{setspace}
 \onehalfspacing
 \usepackage{babel}
@@ -34,10 +36,10 @@
 
 %\rule[0.5ex]{1\columnwidth}{1pt}
 
-\title{\huge{Using AlphaGo Zero Techniques to Play Tic-Tac-Toe, Connect Four and Chess: Crop Dusting with an F-18}}
+\title{Using AlphaGo Zero Techniques to Play Tic-Tac-Toe, Connect Four and Chess: Crop Dusting with an F-18}
 %\rule[0.5ex]{1\columnwidth}{1pt}
 \author{
-Adrian Chmielewski-Anders, Kenan Nalbant, Parsoa Khorsand Rahimzadeh, Sadegh Shamsabardeh \\
+Adrian Chmielewski-Anders, Kenan Nalbant, \\ Parsoa Khorsand Rahimzadeh, Sadegh Shamsabardeh \\
 \{achmielewski, kanalbant, pkhorsand, mshamsabardeh\}@ucdavis.edu
 }
 \date{}
@@ -53,7 +55,8 @@ these techniques still rely on datasets of professional games for training.
 Most recently, it has been demonstrated that it is possible to play Go at
 the highest level, with no prior game datasets.
 This is achieved through consolidating the policy and value networks into a single
-network, and omitting the use of rollouts. This single policy and value network
+network, omitting the use of rollouts and generating data via self-play to train the
+network. This single policy and value network
 in conjunction with a modified Monte-Carlo Tree Search algorithm has proven to
 yield exceptional results. We try to use this approach to play
 other games, namely tic-tac-toe, Connect Four, and chess.
@@ -62,17 +65,18 @@ other games, namely tic-tac-toe, Connect Four, and chess.
 \section{Introduction}
 The history of creating AI for game-playing dates far back. There have been many
 efforts to create superhuman AI to play various board games. Most well-known
-perhaps is that of IBM's Deep Blue. Previously, many of these methods relied on
+perhaps is that of IBM's chess-playing Deep Blue. Previously, many of these methods relied on
 quality of heuristic functions in order to evaluate board states.
 
-Recently, due to the surge in development and progress of neural networks and
-specifically deep neural networks has given rise to using neural networks in
+Recently, due to the surge in progress of neural networks--and
+specifically deep neural networks--has given rise to using neural networks in
 conjunction with hand-crafted data--for example games of professional play--in
 order to abstract out the handmade heuristic functions.
-Training deep neural network with reinforcement learning have outperformed
-human in computer games such as Atari and 3D virtual environments\cite{eight, nine, ten}. There have been some efforts in the literature by
+Training deep neural network with reinforcement learning has outperformed
+humans in computer games such as Atari and 3D virtual environments
+\cite{eight, nine, ten}. There have been some efforts in the literature by
 scholars to implement chess based on the reinforcement learning. In
-\cite{one, two, three} the authors propose the reinforcement learning for 
+\cite{one, two, three} the authors propose the reinforcement learning for
 self-play and the training is done based on temporal difference learning.
 The authors have used handcrafted input features and these features
 can be the source of performance limitation. \cite{one} and \cite{two} deploy pre-existing
@@ -87,7 +91,7 @@ to the very large board size ($19 \times 19$) which led many previous algorithms
 to perform suboptimally. However, in recent years techniques involving using
 neural networks for evaluating quality of board states and move possibilities
 trained on games of professional play--the techniques behind AlphaGo--defeated the
-European Go champion and later Lee Sedol--winner of 18 world titles--in a series
+European Go champion Fan Hui and later Lee Sedol--winner of 18 world titles--in a series
 of 5 games in 2016 where AlphaGo won 4-1 \cite{AlphaGo, deepmind}.
 
 The large state space of the chess together with the
@@ -107,7 +111,8 @@ We first attempt to play tic-tac-toe and Connect Four before moving on to chess.
 %   and industries due to their promising capacities. These systems have
 %   demonstrated better performance than human in some domains.
 %   Training deep neural network with reinforcement learning have outperformed
-%   human in computer games such as Atari and 3D virtual environments\cite{eight, nine, ten}.
+%   human in computer games such as Atari and 3D virtual environments
+\cite{eight, nine, ten}.
 %   There have been some efforts in the literature by
 %   scholars to implement chess based on the reinforcement learning. In
 %   \cite{one, two, three} the authors propose the reinforcement learning for 
@@ -133,7 +138,7 @@ These differences are noted throughout.
 \subsection{Holistic Model}
 
 The goal is to build a system which will output which action $a$ to make at a
-give game state $s_t$. To do this, a variant of Monte-Carlo Tree Search (MCTS)
+given game state $s_t$. To do this, a variant of Monte-Carlo Tree Search (MCTS)
 is used wherein the neural
 network $f_{\theta}$ is used to guide the search. In the initial
 game tree, the root node $s_0$ has no children. Such a node (while having
@@ -166,7 +171,7 @@ probability $\pi$ and actual game winner $z$, respectively.
 Each iteration of the training is composed of playing $X$ games of self-play. Each game is composed of actions that are
 performed based on probability $\pi$ from the starting state $s_{0}$
 to the terminal state $s_{T}$. To take an action the MCTS search
-Algorithm simulates moves many times and then perform the move
+algorithm simulates moves many times and then performs the move
 based on $\pi$. The simulation starts at current state $s_0$ and ends
 at a leaf node $s_{L}$ by doing $L$ moves. At each time step $t<L$
 of the simulation, an action is selected according to search tree
@@ -179,8 +184,8 @@ player loses.
 
 At the end of each iteration, a sample of all $(s, \pi, z)$ values are sampled
 uniformly and split into batches. From $s$ $(p, v) = f_{\theta}(s)$ are
-obtained. For $E$ epochs, the network is trained on these batches. At fixed
-number of iterations, a checkpoint occurs. Here, the previous best network,
+obtained. For $E$ epochs, the network is trained on these batches. After a
+number of fixed iterations, a checkpoint occurs. Here, the previous best network,
 $f_{\theta}^{\ast}$ is played against the current, recently trained network
 $f_{\theta}$ over many games, if the current player wins more than 55\% of the
 games, it is used in the next iteration, otherwise, the previous
@@ -205,7 +210,7 @@ is used. Many iterations are run until good performance is achieved. Figure
 During training, at each iteration many games of self-play are generated. For
 each move in each game, the tree maintained by MCTS is shared among both
 players, since they are the same. Moves are sampled from the probabilities $\pi$
-returned by the MCTS search. That is $a_t \textasciitilde \pi$. After each iteration, the
+returned by the MCTS search. That is $a_t \sim \pi$. After each iteration, the
 network is trained based on the loss function
 \begin{equation}
 l=(z-v)^2 - \pi^T \log p
@@ -213,7 +218,7 @@ l=(z-v)^2 - \pi^T \log p
 \end{equation}
 Figure \ref{fig:figure_self_play} depicts what happens at one game of
 self-play.
-Note that we experimented with this loss function as $v$ is the average of $v$
+Note that we usedloss function with $v$ as the average of $v$
 for all forward operations.
 
 \begin{figure}[h]
@@ -331,7 +336,6 @@ Normalization is added to the input of the residual block.
 The policy head consists of 2 convolutional filters of dimension $1 \times 1$
 with stride 1, Batch Normalization, Relu, A fully connected layer to a single
 output value, A nonlinearity (we experimented with sigmoid and softmax).
-
 The value head consists of, 1 convolutional filter of dimension $1 \times 1$,
 Batch Normalization, Relu, Fully connected layer of 16 output units, Relu,
 Fully connected layer to a single output value, Tanh.
@@ -339,12 +343,14 @@ Fully connected layer to a single output value, Tanh.
 The input to all convolutional layers are padded so that the input height and
 width match the output height and width.
 
-\begin{figure}
-	\centering
-    \includegraphics[scale=0.12]{network}
-    \caption{Our network for tic-tac-toe with 5 residual blocks, in TensorFlow.}
-\end{figure}
+For Connect Four and chess, the network pattern is the same, we just add more
+residual blocks. For Connect Four, the filter size is $4\times 4$.
 
+\begin{wrapfigure}{l}{0.5\textwidth}
+	\centering
+    \includegraphics[width=0.5\textwidth]{network}
+    \caption{Our network for tic-tac-toe with 5 residual blocks, in TensorFlow.}
+\end{wrapfigure}
 
 We cannot replicate the exact network that is used in \cite{AlphaGo} because
 each output unit simply corresponds to placing a piece in that position. In
@@ -368,6 +374,57 @@ what is in the original paper, as we now have a true distribution over all
 possible actions.
 \section{Results}
 
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{plots}
+    \caption{\textbf{Right}: The modified MSE loss function compared with the original MSE and
+    Cross-Entropy. Due to our modifications, the original loss function did not
+    capture quality of moves. \textbf{Left}: The original loss function with our modifications is very noisy.}
+    \label{fig:lossMSE}
+\end{figure}
+
+
+\subsection{Performance}
+
+Performance of the trained models was evaluated using the Elo\cite{Elo} rating
+system, the same measure used by the AlphaGo Zero paper. The details and
+inner-workings of the Elo algorithm are beyond the scope of this paper. We
+trained the model for each game for a number of iterations and ranked each
+iteration through a series of 10 games with each of the previous iterations and a random
+player. The random player simply picks moves at random and was incorporated to help
+provide a baseline for the Elo rating of the first iteration. Ranking of an
+iteration is adjusted once all the games have finished and once an iteration is
+rated, its rating will be frozen for the rest of the evaluation. Based on the
+system used by the FIDE \cite{Elo} to rank players with no prior history, each player (including the random player) will start with the initial Elo rating of 750. 
+
+The graphs below depict the improvement in the model's playing performance over time. In case of the tic-tac-toe the Elo rating of the model increases (although not strictly) with training time as expected.
+
+\begin{figure}[h]
+\centering
+\subfloat[first]{
+	\includegraphics[width=0.5\textwidth]{./images/ttt}
+}
+\subfloat[second]{
+	\includegraphics[width=0.5\textwidth]{./images/c4}
+}
+\caption{Elo rating of the neural network trained on the tic-tac-toe (right) and Connect-Four (left) games over time}
+\end{figure}
+
+%\begin{table}
+%  	\centering
+%	\begin{tabular}{p{0.49\textwidth}p{0.49\textwidth}}
+%	\begin{minipage}{0.49\textwidth}
+%	\includegraphics[width=\textwidth]{./images/ttt}
+%	\end{minipage}
+%	&
+%	\begin{minipage}{0.49\textwidth}
+%	\includegraphics[width=\textwidth]{./images/ttt}
+%	\end{minipage}
+%	\end{tabular}
+%	\caption {Should be a caption}
+%\end{table}
+
+\section{Discussion}
 We were not able to achieve great success with using the methods described above
 in playing tic-tac-toe, Connect Four or chess. While it can be seen that over
 time the Elo score for our player increases, it does not achieve super human
@@ -380,43 +437,12 @@ common scenario is having three in a row for both players. Our player will often
 give up a win by not blocking the opponents winning row or column.
 
 While not as interpretable as some standard supervised machine learning
-problems, we can see that our model does reduce error over time, as seen in
+problems since the loss function is dependent upon data which is generated by
+the network, we can see that our model does reduce error over time, as seen in
 figure \ref{fig:lossMSE}. Moreover, in figure \ref{fig:lossMSE} we can see that the original
 error function for our model is extremely noisy and our model does not learn
 from it.
 
-\begin{figure}
-\centering
-\includegraphics[width=\textwidth]{plots}
-    \label{fig:lossMSE}
-    \caption{\textbf{Right}: The modified MSE loss function compared with the original MSE and
-    Cross-Entropy. Due to our modifications, the original loss function did not
-    capture quality of moves. \textbf{Left}: The original loss function with our modifications is very noisy.}
-\end{figure}
-
-\subsection{Performance}
-
-Performance of the trained models was evaluated using the Elo\cite{Elo} rating
-system, the same measure used by the AlphaGo Zero paper. The details and
-inner-workings of the Elo algorithm are beyond the scope of this paper. We
-trained the model for each game for a number of iterations and ranked each
-iteration through a series of games with the previous iterations and a random
-player. The random player simply picks moves at random and was incorporated to
-provide a baseline for the Elo rating of the first iteration. Ranking of an
-iteration is adjusted once all the games have finished and once an iteration is
-rated, it rating will be frozen for the rest of the evaluation. Based on the
-system used by the FIDE \cite{Elo} to rank players with no prior history, each player (including the random player) will start with the Elo score of 750.
-
-The graphs below depict the improvement in the model's playing performance over time. As expected, the Elo rating of the model increases (although not strictly) with training time.
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.7\textwidth]{./images/ttt}
-\caption{The performance of the model trained for the tic-tac-toe game over time}
-\label{fig:figure_ttt}
-\end{figure}
-
-\section{Discussion}
 We experienced a myriad of difficulties in reproducing the success of the paper
 in other games.
 Initially, we tried to model the paper as close as possible and used the
@@ -435,8 +461,8 @@ considering all possible moves for a given state independently of one another
 and this perhaps resulted in our model making poor moves.
 
 Future work might entail exploration of how these techniques fare with other
-games apart from just Go. Work like this is imoprtant because it advances the
-field generally and helps in udnerstanding what more advanced algorithms are
+games apart from just Go. Work like this is important because it advances the
+field generally and helps in understanding what more advanced algorithms are
 capable of.
 
 \clearpage

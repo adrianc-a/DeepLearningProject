@@ -41,7 +41,7 @@ class StateManager:
         The second element of the tuple is all the state managers for the next states
         of the current state
         """
-        cur_state_vec = self.single_state2vec(include_player_pane=False)
+        cur_state_vec = self.single_state2vec(include_player_pane=True)
 
         next_states = self.next_states()
         next_vecs = [next_state.single_state2vec() for next_state in next_states]
