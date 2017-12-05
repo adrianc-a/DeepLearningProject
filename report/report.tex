@@ -86,7 +86,7 @@ performance.
 Additionally, there have been efforts which demonstrate that using deep neural
 networks in conjunction with Q-learning can surpass humans at playing select
 Atari video games \cite{DQN}. However, the game of Go remained unsolved in terms
-of the ability of comptuers to play at professional human levels. This is due
+of the ability of computers to play at professional human levels. This is due
 to the very large board size ($19 \times 19$) which led many previous algorithms
 to perform suboptimally. However, in recent years techniques involving using
 neural networks for evaluating quality of board states and move possibilities
@@ -199,9 +199,9 @@ is used. Many iterations are run until good performance is achieved. Figure
 \includegraphics[scale=0.2]{./images/training}
 \caption{What occurs during a single iteration of training. A series of games
     are played to generate data. The data is sampled uniformly, and the neural
-    network is trained over many epochs on this data. At fixed poits, a
+    network is trained over many epochs on this data. At fixed points, a
     checkpoint occurs and we evaluate the performance of the current player
-    against the prevous best to determine which to use for future data
+    against the previous best to determine which to use for future data
     generation.}
 \label{fig:figure_training}
 \end{figure}
@@ -328,16 +328,16 @@ block, followed by some number of residual blocks \cite{Residual} and the two ou
 the policy and value heads.
 For example, in tic-tac-toe, the following architecture was used:
 The convolutional block is comprised of: 10 convolutional filters with dimension
-$3 \times 3$ with stride 1, Batch Normalization, Relu.
+$3 \times 3$ with stride 1, Batch Normalization, ReLu.
 A residual block is comprised of: 10 convolutional filters with dimension
-$3 \times 3$ with stride 1, Batch Normalization, Relu, 10 convolutional filters
+$3 \times 3$ with stride 1, Batch Normalization, ReLu, 10 convolutional filters
 with dimension $3 \times 3$ with stride 1, Batch Normalization, Output of Batch
 Normalization is added to the input of the residual block.
 The policy head consists of 2 convolutional filters of dimension $1 \times 1$
-with stride 1, Batch Normalization, Relu, A fully connected layer to a single
+with stride 1, Batch Normalization, ReLu, A fully connected layer to a single
 output value, A nonlinearity (we experimented with sigmoid and softmax).
 The value head consists of, 1 convolutional filter of dimension $1 \times 1$,
-Batch Normalization, Relu, Fully connected layer of 16 output units, Relu,
+Batch Normalization, ReLu, Fully connected layer of 16 output units, ReLu,
 Fully connected layer to a single output value, Tanh.
 
 The input to all convolutional layers are padded so that the input height and
@@ -354,7 +354,7 @@ residual blocks. For Connect Four, the filter size is $4\times 4$.
 
 We cannot replicate the exact network that is used in \cite{AlphaGo} because
 each output unit simply corresponds to placing a piece in that position. In
-chess, we cannot accept this paradaigm for encoding a move and instead give to
+chess, we cannot accept this paradigm for encoding a move and instead give to
 the input a pair of states, which represent a a move from the current state to
 the next state. The output of the network is two scalars $(p, v)$ which are
 combined with other calls to the network for all possible moves to create $p$ a
