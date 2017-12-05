@@ -13,6 +13,14 @@
 \usepackage{rotating}
 \usepackage{tikz}
 \usepackage{pdflscape}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    filecolor=magenta,
+    urlcolor=blue,
+    citecolor=black
+}
 
 \begin{document}
 
@@ -70,7 +78,7 @@ self-play and the training is done based on temporal difference learning.
 The authors have used handcrafted input features and these features
 can be the source of performance limitation. \cite{one} and \cite{two} deploy pre-existing
 computer programs as training opponents which limits the best achievable
-performance. 
+performance.
 
 Additionally, there have been efforts which demonstrate that using deep neural
 networks in conjunction with Q-learning can surpass humans at playing select
@@ -316,7 +324,7 @@ block, followed by some number of residual blocks \cite{Residual} and the two ou
 the policy and value heads.
 For example, in tic-tac-toe, the following architecture was used:
 The convolutional block is comprised of: 10 convolutional filters with dimension
-$3 \times 3$ with stride 1, Batch Normalization, Relu. 
+$3 \times 3$ with stride 1, Batch Normalization, Relu.
 A residual block is comprised of: 10 convolutional filters with dimension
 $3 \times 3$ with stride 1, Batch Normalization, Relu, 10 convolutional filters
 with dimension $3 \times 3$ with stride 1, Batch Normalization, Output of Batch
@@ -364,13 +372,13 @@ possible actions.
 We were not able to achieve great success with using the methods described above
 in playing tic-tac-toe, Connect Four or chess. While it can be seen that over
 time the ELO score for our player increases, it does not achieve super human
-ability and can be beaten without too much effort. Although, it does not puerly
+ability and can be beaten without too much effort. Although, it does not purely
 make poor moves. It, for example, consistently picks good initial positions for
 tic-tac-toe and occasionally--depending on training parameters--for Connect
 Four. Across all games, it seems able to make good attack moves, although does
 not seem able to play defensively very well. For example, in Connect Four, a
 common scenario is having three in a row for both players. Our player will often
-give up a win by not blocking the opponents winning row or column. 
+give up a win by not blocking the opponents winning row or column.
 
 While not as interpretable as some standard supervised machine learning
 problems, we can see that our model does reduce error over time, as seen in
@@ -459,4 +467,7 @@ Adrian Chmielewski-Anders: Game infrastructure, game and network cohesion, repor
 Kenan Nalbant: Network design, network infrastructure, game infrastructure, data generation.\\
 Parsoa Khorsand Rahimzadeh: MCTS implementation, Elo rating and evaluation, code debugging, data generation, report writing.\\
 Sadegh Shamsabardeh: Majority of paper writing, move playing infrastructure
+The code is publicly available
+\href{https://github.com/adrianc-a/DeepLearningProject}{https://github.com/adrianc-a/DeepLearningProject}.
+And also contains information about who made what commits/etc.
 \end{document}
