@@ -1,5 +1,3 @@
-%% LyX 2.2.0 created this file.  For more info, see http://www.lyx.org/.
-%% Do not edit unless you really know what you are doing.
 \documentclass[english]{article}
 \usepackage[T1]{fontenc}
 \usepackage[latin9]{inputenc}
@@ -46,45 +44,77 @@ games. Most notable are the techniques of AlphaGo. However,
 these techniques still rely on datasets of professional games for training.
 Most recently, it has been demonstrated that it is possible to play Go at
 the highest level, with no prior game datasets.
-This is achieve through consolidating the policy and value networks into a single
+This is achieved through consolidating the policy and value networks into a single
 network, and omitting the use of rollouts. This single policy and value network
 in conjunction with a modified Monte-Carlo Tree Search algorithm has proven to
 yield exceptional results. We try to use this approach to play
 other games, namely tic-tac-toe, Connect Four, and chess.
 
 \end{abstract}
-
 \section{Introduction}
+The history of creating AI for game-playing dates far back. There have been many
+efforts to create superhuman AI to play various board games. Most well-known
+perhaps is that of IBM's Deep Blue. Previously, many of these methods relied on
+quality of heuristic functions in order to evaluate board states.
 
-The supervised learning is based on the data obtained from the experts.
-These data are expensive to gather and sometimes unreliable. The best
-performance that can be expected from a Neural Network being trained
-with such data cannot exceed human level intelligence. Playing chess
-based on supervised learning can achieve performance of the champions,
-however, cannot perform better. 
-
-On the other hand, the reinforcement learning systems can learn on
-their own based on their experiences and by taking random actions.
-This characteristic makes them capable of surpassing human knowledge.
-Reinforcement learning has recently drawn the attentions of researchers
-and industries due to their promising capacities. These systems have
-demonstrated better performance than human in some domains.
+Recently, due to the surge in development and progress of neural networks and
+specifically deep neural networks has given rise to using neural networks in
+conjunction with hand-crafted data--for example games of professional play--in
+order to abstract out the handmade heuristic functions.
 Training deep neural network with reinforcement learning have outperformed
 human in computer games such as Atari and 3D virtual environments\cite{eight, nine, ten}. There have been some efforts in the literature by
 scholars to implement chess based on the reinforcement learning. In
-\cite{one, two, three} the authors propose the reinforcement learning for the
+\cite{one, two, three} the authors propose the reinforcement learning for 
 self-play and the training is done based on temporal difference learning.
 The authors have used handcrafted input features and these features
-can be the source of performance limitation. \cite{one} and \cite{two} deploy a pre-existing
+can be the source of performance limitation. \cite{one} and \cite{two} deploy pre-existing
 computer programs as training opponents which limits the best achievable
-performance. The large state space of the chess together with the
-above-mentioned problems makes our team to mimic the AlphaGo Zero
-algorithm, developed by Google Deep Mind for the Game of Go, as reasonable
-solution to address these problems. This algorithm solves the problem
+performance. 
+
+Additionally, there have been efforts which demonstrate that using deep neural
+networks in conjunction with Q-learning can surpass humans at playing select
+Atari video games \cite{DQN}. However, the game of Go remained unsolved in terms
+of the ability of comptuers to play at professional human levels. This is due
+to the very large board size ($19 \times 19$) which led many previous algorithms
+to perform suboptimally. However, in recent years techniques involving using
+neural networks for evaluating quality of board states and move possibilities
+trained on games of professional play--the techniques behind AlphaGo--defeated the
+European Go champion and later Lee Sedol--winner of 18 world titles--in a series
+of 5 games in 2016 where AlphaGo won 4-1 \cite{AlphaGo, deepmind}.
+
+The large state space of the chess together with the
+aforementioned problems has led us to try using AlphaGo Zero techniques
+to address these problems. This algorithm solves the problem
 of large state space by exploring only those states that have more
 probability of wining. To our best knowledge this is the first work
-implementing AlphaGo Zero algorithm for the game of Chess. The following
-sections of this paper are organized as follow: \dots . 
+implementing AlphaGo Zero algorithm for the game of Chess.
+
+We first attempt to play tic-tac-toe and Connect Four before moving on to chess.
+
+
+%On the other hand, the reinforcement learning systems can learn on
+%   their own based on their experiences and by taking random actions.
+%   This characteristic makes them capable of surpassing human knowledge.
+%   Reinforcement learning has recently drawn the attentions of researchers
+%   and industries due to their promising capacities. These systems have
+%   demonstrated better performance than human in some domains.
+%   Training deep neural network with reinforcement learning have outperformed
+%   human in computer games such as Atari and 3D virtual environments\cite{eight, nine, ten}.
+%   There have been some efforts in the literature by
+%   scholars to implement chess based on the reinforcement learning. In
+%   \cite{one, two, three} the authors propose the reinforcement learning for 
+%   self-play and the training is done based on temporal difference learning.
+%   The authors have used handcrafted input features and these features
+%   can be the source of performance limitation. \cite{one} and \cite{two} deploy pre-existing
+%   computer programs as training opponents which limits the best achievable
+%   performance. The large state space of the chess together with the
+%   above-mentioned problems makes our team to mimic the AlphaGo Zero
+%   algorithm, developed by Google Deep Mind for the Game of Go, as reasonable
+%   solution to address these problems. This algorithm solves the problem
+%   of large state space by exploring only those states that have more
+%   probability of wining. To our best knowledge this is the first work
+%implementing AlphaGo Zero algorithm for the game of Chess. The following
+%sections of this paper are organized as follow: \dots . 
 
 \section{Methods}
 
@@ -144,18 +174,67 @@ uniformly and split into batches. From $s$ $(p, v) = f_{\theta}(s)$ are
 obtained. For $E$ epochs, the network is trained on these batches. At fixed
 number of iterations, a checkpoint occurs. Here, the previous best network,
 $f_{\theta}^{\ast}$ is played against the current, recently trained network
-$f_{\theta}$ over many games, if the current player wins more than 55 of the
+$f_{\theta}$ over many games, if the current player wins more than 55\% of the
 games, it is used in the next iteration, otherwise, the previous
 $f_{\theta}^{\ast}$
-is used. Many iterations are run until good performance is achieved.
+is used. Many iterations are run until good performance is achieved. Figure
+\ref{fig:figure_training} depicts a single iteration of training.
+
 
 \begin{figure}[h]
 \centering
-\caption{}
-\includegraphics[width=\textwidth]{./images/training}
+\includegraphics[scale=0.2]{./images/training}
+\caption{What occurs during a single iteration of training. A series of games
+    are played to generate data. The data is sampled uniformly, and the neural
+    network is trained over many epochs on this data. At fixed poits, a
+    checkpoint occurs and we evaluate the performance of the current player
+    against the prevous best to determine which to use for future data
+    generation.}
 \label{fig:figure_training}
 \end{figure}
-\clearpage
+
+\subsection{Self play}
+During training, at each iteration many games of self-play are generated. For
+each move in each game, the tree maintained by MCTS is shared among both
+players, since they are the same. Moves are sampled from the probabilities $\pi$
+returned by the MCTS search. That is $a_t \textasciitilde \pi$. After each iteration, the
+network is trained based on the loss function
+\begin{equation}
+l=(z-v)^2 - \pi^T \log p
+    \label{eq:3}
+\end{equation}
+Figure \ref{fig:figure_self_play} depicts what happens at one game of
+self-play.
+Note that we experimented with this loss function as $v$ is the average of $v$
+for all forward operations.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{./images/self_play}
+\caption{How a move is made when training. A MCTS search is applied using the
+    current network $f_{\theta}$ to expand a leaf node, if one is reached, edge
+    values are modified, and $\pi_t$ is generated, an action is sampled from
+    $\pi_t$ and applied. The process is repeated for all moves to generate data
+    for a single game.}
+\label{fig:figure_self_play}
+\end{figure}
+
+\subsection{Evaluator}
+At fixed iteration intervals in the training process, we evaluate the current
+neural network, with the previous best $f_{\theta}^{\ast}$. When the two play
+against each other, they do not share the game tree maintained by MCTS.
+Moreover, the moves $a_t$ are not sampled from $\pi$ but instead
+
+\begin{equation}
+    a_t=\underset{a}{\text{argmax}} (\pi_t)
+\end{equation}
+
+If the player using the current network wins more than 55\% of the games, it is
+used for subsequent iterations. If not, the previous best is used.
+
+
+
+
 \subsection{Search Algorithm of MCTS-Simulation}
 
 In each position $s$ an MCTS search is executed during which the
@@ -164,7 +243,7 @@ by MCTS at each state $s$ of the game before making an actual action.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.8\textwidth]{./images/mcts}
+\includegraphics[width=0.7\textwidth]{./images/mcts}
 \caption{Select: Each simulation traverses the tree by selecting the edge with
 maximum action-value $Q$, plus an upper confidence bound $U$ that
 depends on a stored prior probability $P$ and visit count $N$ for
@@ -229,92 +308,33 @@ the game, and then is set to be small, $\tau \rightarrow 0$. Again, this favors
 exploration over exploitation earlier on in the game.
 
 
-\subsection{Self play}
-During training, at each iteration many games of self-play are generated. For
-each move in each game, the tree maintained by MCTS is shared among both
-players, since they are the same. Moves are sampled from the probabilities $\pi$
-returned by the MCTS search. That is $a_t \tilde \pi$. After each iteration, the
-network is trained based on the loss function
-\begin{equation}
-l=(z-v)^2 - \pi^T \log p
-    \label{eq:3}
-\end{equation}
-Note that we experimented with this loss function as $v$ is the average of $v$
-for all forward operations.
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.7\textwidth]{./images/self_play}
-\caption{}
-\label{fig:figure_self_play}
-\end{figure}
-
-\subsection{Evaluator}
-At fixed iteration intervals in the training process, we evaluate the current
-neural network, with the previous best $f_{\theta}^{\ast}$. When the two play
-against each other, they do not share the game tree maintained by MCTS.
-Moreover, the moves $a_t$ are not sampled from $\pi$ but instead
-
-\begin{equation}
-    a_t=\underset{a}{\text{argmax}} (\pi_t)
-\end{equation}
-
-If the player using the current network wins more than 55\% of the games, it is
-used for subsequent iterations. If not, the previous best is used.
-
 \subsection{Neural Network Architecture}
 The network is similar to the one defined in the paper, although scaled down for
 tic-tac-toe and Connect Four. It may be seen in four parts, one convolutional
 block, followed by some number of residual blocks \cite{Residual} and the two outputs,
 the policy and value heads.
 For example, in tic-tac-toe, the following architecture was used:
-The convolutional block is comprised of
-\begin{enumerate}
-% TODO: Fix line spacing @parsoa
-    \itemsep0em 
-    \item 10 convolutional filters with dimension $3 \times 3$ with stride 1
-    \item Batch Normalization
-    \item Relu
-\end{enumerate}
-A residual Block is comprised of
-\begin{enumerate}
-    \itemsep0em 
-    \item 10 convolutional filters with dimension $3 \times 3$ with stride 1
-    \item Batch Normalization
-    \item Relu
-    \item 10 convolutional filters with dimension $3 \times 3$ with stride 1
-    \item Batch Normalization
-    \item Output of (5) is added to the input of the residual block
-\end{enumerate}
-The policy head consists of
-\begin{enumerate}
-    \itemsep0em 
-    \item 2 convolutional filters of dimension $1 \times 1$ with stride 1
-    \item Batch Normalization
-    \item Relu
-    \item A fully connected layer to a single output value
-    \item A nonlinearity (we experimented with sigmoid and softmax)
-\end{enumerate}
+The convolutional block is comprised of: 10 convolutional filters with dimension
+$3 \times 3$ with stride 1, Batch Normalization, Relu. 
+A residual block is comprised of: 10 convolutional filters with dimension
+$3 \times 3$ with stride 1, Batch Normalization, Relu, 10 convolutional filters
+with dimension $3 \times 3$ with stride 1, Batch Normalization, Output of Batch
+Normalization is added to the input of the residual block.
+The policy head consists of 2 convolutional filters of dimension $1 \times 1$
+with stride 1, Batch Normalization, Relu, A fully connected layer to a single
+output value, A nonlinearity (we experimented with sigmoid and softmax).
 
-The value head consists of
-\begin{enumerate}
-    \itemsep0em 
-    \item 1 convolutional filter of dimension $1 \times 1$
-    \item Batch Normalization
-    \item Relu
-    \item Fully connected layer of 16 output units
-    \item Relu
-    \item Fully connected layer to a single output value
-    \item Tanh
-\end{enumerate}
+The value head consists of, 1 convolutional filter of dimension $1 \times 1$,
+Batch Normalization, Relu, Fully connected layer of 16 output units, Relu,
+Fully connected layer to a single output value, Tanh.
 
 The input to all convolutional layers are padded so that the input height and
 width match the output height and width.
 
 \begin{figure}
 	\centering
-    \includegraphics[angle=90,origin=c,scale=0.2]{network}
-    \caption{Our network for tic-tac-toe with 5 residual blocks}
+    \includegraphics[scale=0.12]{network}
+    \caption{Our network for tic-tac-toe with 5 residual blocks, in TensorFlow.}
 \end{figure}
 
 
@@ -353,7 +373,7 @@ give up a win by not blocking the opponents winning row or column.
 
 While not as interpretable as some standard supervised machine learning
 problems, we can see that our model does reduce error over time, as seen in
-figure \ref{fig:lossMSE}. Moreover, in figure \ref{fig:noise} we can see that the original
+figure \ref{fig:lossMSE}. Moreover, in figure \ref{fig:lossMSE} we can see that the original
 error function for our model is extremely noisy and our model does not learn
 from it.
 
@@ -387,7 +407,6 @@ The graphs below depict the improvement in the model's playing performance over 
 \caption{The performance of the model trained for the tic-tac-toe game over time}
 \label{fig:figure_ttt}
 \end{figure}
-\clearpage
 
 \section{Discussion}
 We experienced a myriad of difficulties in reproducing the success of the paper
