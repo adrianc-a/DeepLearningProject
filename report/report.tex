@@ -36,7 +36,7 @@
 
 %\rule[0.5ex]{1\columnwidth}{1pt}
 
-\title{Using AlphaGo Zero Techniques to Play Tic-Tac-Toe, Connect Four and Chess: Crop Dusting with an F-18}
+\title{Using AlphaGo Zero Techniques to Play Tic-Tac-Toe, Connect Four and Chess}
 %\rule[0.5ex]{1\columnwidth}{1pt}
 \author{
 Adrian Chmielewski-Anders, Kenan Nalbant, \\ Parsoa Khorsand Rahimzadeh, Sadegh Shamsabardeh \\
@@ -213,9 +213,11 @@ players, since they are the same. Moves are sampled from the probabilities $\pi$
 returned by the MCTS search. That is $a_t \sim \pi$. After each iteration, the
 network is trained based on the loss function
 \begin{equation}
-l=(z-v)^2 - \pi^T \log p
+    l=(z_t-v_{t,i})^2 - \pi_{t,i} \log p_{t,i}
     \label{eq:3}
 \end{equation}
+where $\pi_{t,i}$, $z_{t,i}$ and $p_{t,i}$ are values at the $i-$th index of the vectors
+$\pi$ $z$ and $p$ at time step $t$ since we do not output vectors from our neural network.
 Figure \ref{fig:figure_self_play} depicts what happens at one game of
 self-play.
 Note that we usedloss function with $v$ as the average of $v$
@@ -364,7 +366,7 @@ Due to this change, the original loss function does not work since the original
 loss function relies on $p$ being a probability distribution so the loss
 function does not make as much sense. We instead also experimented with a more
 simple MSE loss function, defined as follows
-$$l=(z-v)^2+(p-\pi)^2$$
+$$l=(z_{t}-v_{t,i})^2+(p_{t,i}-\pi_{t,i})^2$$
 where all variables are scalars.
 
 We also attempted to use the collection of $p$ values from the output of our
@@ -401,13 +403,13 @@ The graphs below depict the improvement in the model's playing performance over 
 
 \begin{figure}[h]
 \centering
-\subfloat[first]{
+%\subfloat[first]{
 	\includegraphics[width=0.5\textwidth]{./images/ttt}
-}
-\subfloat[second]{
-	\includegraphics[width=0.5\textwidth]{./images/c4}
-}
-\caption{Elo rating of the neural network trained on the tic-tac-toe (right) and Connect-Four (left) games over time}
+%}
+%\subfloat[second]{
+%	\includegraphics[width=0.5\textwidth]{./images/c4}
+%}
+\caption{Elo rating of the neural network trained on the tic-tac-toe over time.}
 \end{figure}
 
 %\begin{table}
@@ -470,7 +472,8 @@ capable of.
 \bibliographystyle{IEEEtran}
 
 \section{Author contributions}
-Adrian Chmielewski-Anders: Game infrastructure, game and network cohesion, report writing.\\
+Adrian Chmielewski-Anders: Game infrastructure, game and network cohesion, data
+generation, report writing.\\
 Kenan Nalbant: Network design, network infrastructure, game infrastructure, data generation.\\
 Parsoa Khorsand Rahimzadeh: MCTS implementation, Elo rating and evaluation, code debugging, data generation, report writing.\\
 Sadegh Shamsabardeh: Majority of paper writing, move playing infrastructure
